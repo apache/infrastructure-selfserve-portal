@@ -7,5 +7,5 @@ Certain features listed on the front page of the self-serve portal are links to 
 self-serve services, and are not documented here. As of this writing, they are:
 
 - Create a Git repository: https://gitbox.apache.org/boxer/?action=newrepo
-- Edit your identity: https://whimsy.apache.org/roster/committer/__self__
+- Edit your identity: [https://whimsy.apache.org/roster/committer/\_\_self\_\_](https://whimsy.apache.org/roster/committer/__self__)
 - Reset your password: https://id.apache.org/reset/enter
