@@ -18,5 +18,5 @@ Committers and PMC members that are not a foundation member or a chair of a proj
 
 ## Notification scheme
 Creating a new Confluence space will notify the infrastructure team via email and Slack for provenance and audit reasons.
-The requestor (the chair/member requesting the new Jira project) will also receive a receipt of the action performed.
+The requestor (the chair/member requesting the new Confluence space) will also receive a receipt of the action performed.
 
