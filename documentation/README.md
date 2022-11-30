@@ -1,5 +1,5 @@
 # Self-serve portal documentation
-This directory contains the documentation for the various self-serve features.
+This directory contains the documentation for the various [self-serve](https://selfserve.apache.org) features.
 Each self-serve feature has an associated .md file with documentation on how the feature works and the policies surrounding it.
 
 ## External self-serve features
