@@ -1,7 +1,7 @@
-# Confluence Space Archiving
+# Confluence Wiki Space Archiving
 
 ## Summary
-This feature allows projects to archive an existing confluence space, making it read-only.
+This feature allows projects to archive an existing Confluence wiki space, making it read-only.
 
 ## Canonical URL
 https://selfserve.apache.org/archive-cwiki.html
@@ -10,11 +10,11 @@ https://selfserve.apache.org/archive-cwiki.html
 - Confluence Wiki, https://cwiki.apache.org/
 
 ## Intended audience
-This feature is intended for projects (both top-level projects and podlings).
+This feature is intended for both top-level projects and podlings.
 
 ## Access level(s) required
-Full access to this feature is granted to chairs of projects, as well as all foundation members.
-Committers and PMC members that are not a foundation member or a chair of a project will not be able to use this feature.
+Full access to this feature is granted to chairs of projects, as well as all Foundation members.
+Committers and PMC members who are not Foundation members or chairs of projects cannot use this feature.
 
 ## Notification scheme
 Archiving a Confluence space will notify the infrastructure team via email and Slack for provenance and audit reasons.
