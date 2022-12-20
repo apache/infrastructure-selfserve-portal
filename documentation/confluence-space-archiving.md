@@ -6,14 +6,14 @@ This feature allows projects to archive an existing Confluence wiki space, makin
 ## Canonical URL
 https://selfserve.apache.org/archive-cwiki.html
 
-## Serviced managed by this feature
+## Service managed by this feature
 - Confluence Wiki, https://cwiki.apache.org/
 
 ## Intended audience
 This feature is intended for both top-level projects and podlings.
 
 ## Access level(s) required
-Full access to this feature is granted to chairs of projects, as well as all Foundation members.
+Full access to this feature is granted to chairs of projects and all Foundation members.
 Committers and PMC members who are not Foundation members or chairs of projects cannot use this feature.
 
 ## Notification scheme
