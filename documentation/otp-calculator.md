@@ -6,7 +6,7 @@ This calculator generates passwords for OTP or S/Key one-time-password systems.
 ## Canonical URL
 https://selfserve.apache.org/otp-md5.html
 
-## Serviced managed by this feature
+## Service managed by this feature
 Not applicable
 
 ## Intended audience
