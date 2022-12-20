@@ -9,7 +9,7 @@ now need to use this tool to set up accounts for new users.
 ## Canonical URL
 https://selfserve.apache.org/jira-acct.html
 
-## Serviced managed by this feature
+## Service managed by this feature
 - Jira issue tracking platform, https://issues.apache.org/jira/
 
 ## Intended audience
@@ -19,5 +19,5 @@ This feature is intended for both top-level projects and podlings.
 Full access to this feature is granted to anyone on a PMC or PPMC.
 
 ## Notification scheme
-New account creations will notify [notifications@infra.apache.org](https://lists.apache.org/list.html?notifications@infra.apache.org) for provenance and audit reasons.
+Account creations will notify [notifications@infra.apache.org](https://lists.apache.org/list.html?notifications@infra.apache.org) for provenance and audit reasons.
 The original account requestor will also be notified via email with a detailed description of how to proceed with the new account.
