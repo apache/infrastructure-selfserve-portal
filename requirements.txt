@@ -2,7 +2,7 @@ aiofiles
 aiohttp
 asfpy[aioldap] >= 0.45  # For aioldap and clitools
 async-timeout
-bonsai
+bonsai  # NOTE: This requires libsasl2-dev installed first!
 hypercorn
 pyyaml
 quart
