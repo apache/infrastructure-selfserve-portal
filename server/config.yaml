@@ -1,0 +1,21 @@
+# ASF Selfserve Portal configuration file
+
+server:
+  bind: 127.0.0.1
+  port: 8000
+  error_reporting: show   #show: output to client in text, hide: output an incident ID only, show incident in stderr
+  max_form_size: 5mb # largest form data payload.
+  debug_mode: false  # If set to true, adds a test account for trying out features.
+  debug_password: ~ # Sets the debug superuser password, if debug_mode is true.
+                    # Can be one of:
+                    # ~: (nil) Auto-generate a new random password for this superuser on startup
+                    # "string": Use this string as the superuser debug password
+ldap:
+  uri: ldaps://ldap-eu.apache.org:636
+  userbase: uid=%s,ou=people,dc=apache,dc=org
+  groupbase: cn=%s,ou=project,ou=groups,dc=apache,dc=org
+  servicebase: cn=%s,ou=groups,ou=services,dc=apache,dc=org
+  ldapbase: dc=apache,dc=org
+
+storage:
+  queue_dir:  "/x1/selfserve-queue/"  # Where to store queued requests for external services

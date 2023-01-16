@@ -1,0 +1,12 @@
+aiofiles
+aiohttp
+asfpy[aioldap] >= 0.45  # For aioldap and clitools
+async-timeout
+bonsai
+hypercorn
+pyyaml
+quart
+rfc3339
+pytest-asyncio
+cmarkgfm
+
