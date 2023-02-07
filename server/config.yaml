@@ -19,3 +19,7 @@ ldap:
 
 storage:
   queue_dir:  "/x1/selfserve-queue/"  # Where to store queued requests for external services
+  db_dir:     "/x1/database/"  # Where to store databases (sqlite)
+
+messaging:
+  sender: "ASF Self-serve Portal <no-reply@apache.org>"

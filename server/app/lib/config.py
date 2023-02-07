@@ -83,6 +83,15 @@ class StorageConfiguration:
         if not os.path.isdir(self.queue_dir):
             log.log(f"Queue directory {self.queue_dir} does not exist, will attempt to create it")
             os.makedirs(self.queue_dir, exist_ok=True, mode=0o700)
+        self.db_dir = yml["db_dir"]
+        if not os.path.isdir(self.db_dir):
+            log.log(f"Database directory {self.db_dir} does not exist, will attempt to create it")
+            os.makedirs(self.db_dir, exist_ok=True, mode=0o700)
+
+
+class MessagingConfiguration:
+    def __init__(self, yml: dict):
+        self.sender = yml["sender"]
 
 
 async def get_projects_from_ldap():
@@ -106,4 +115,5 @@ cfg_yaml = yaml.safe_load(open(CONFIG_FILE, "r"))
 server = ServerConfiguration(cfg_yaml.get("server", {}))
 ldap = LDAPConfiguration(cfg_yaml.get("ldap", {}))
 storage = StorageConfiguration(cfg_yaml.get("storage", {}))
+messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
 projects = []  # Filled every 10 min by get_projects_from_ldap
