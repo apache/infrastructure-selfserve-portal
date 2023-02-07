@@ -47,6 +47,8 @@ def main():
 
             # Regularly update the list of projects from LDAP
             app.add_background_task(config.get_projects_from_ldap)
+            # Reset rate limits daily
+            app.add_background_task(config.reset_rate_limits)
 
     @app.after_serving
     async def shutdown():

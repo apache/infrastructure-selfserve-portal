@@ -10,6 +10,7 @@ server:
                     # Can be one of:
                     # ~: (nil) Auto-generate a new random password for this superuser on startup
                     # "string": Use this string as the superuser debug password
+  rate_limit_per_ip: 100  # Max 100 lookup requests per day, or we bork!
 ldap:
   uri: ldaps://ldap-eu.apache.org:636
   userbase: uid=%s,ou=people,dc=apache,dc=org

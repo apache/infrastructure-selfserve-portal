@@ -18,6 +18,7 @@
 """SelfServe Platform for the Apache Software Foundation"""
 import asyncio
 
+
 """Configuration classes for the platform"""
 
 import yaml
@@ -64,6 +65,7 @@ class ServerConfiguration:
         self.max_form_size = text_to_int(yml.get("max_form_size", "100mb"))
         assert self.max_form_size >= 1024, "Max form size needs to be at least 1kb!"
         self.max_content_length = int(self.max_form_size * 1.34)  # Max plus b64 overhead
+        self.rate_limit_per_ip = int(yml.get("rate_limit_per_ip", 0))
 
 
 class LDAPConfiguration:
@@ -112,9 +114,25 @@ async def get_projects_from_ldap():
         await asyncio.sleep(600)
 
 
+async def reset_rate_limits():
+    """Reset daily rate limits for lookups"""
+    while True:
+        await asyncio.sleep(86400)
+        rate_limits.clear()
+
+
+def is_rate_limited(ip):
+    usage = rate_limits.get(ip, 0) + 1
+    if server.rate_limit_per_ip and usage > server.rate_limit_per_ip:
+        return True
+    rate_limits[ip] = usage
+    return False
+
+
 cfg_yaml = yaml.safe_load(open(CONFIG_FILE, "r"))
 server = ServerConfiguration(cfg_yaml.get("server", {}))
 ldap = LDAPConfiguration(cfg_yaml.get("ldap", {}))
 storage = StorageConfiguration(cfg_yaml.get("storage", {}))
 messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
 projects = []  # Filled every 10 min by get_projects_from_ldap
+rate_limits = {}  # Tracks IPs and their usage, resets every day
