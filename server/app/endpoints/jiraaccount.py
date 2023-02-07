@@ -28,6 +28,8 @@ import os
 import re
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
+VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
+# Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 JIRA_CREATE_USERS_STATEMENT = """
 CREATE TABLE IF NOT EXISTS users (
@@ -89,6 +91,9 @@ async def process(form_data):
             assert (
                 isinstance(desired_username, str) and len(desired_username) >= 4
             ), "Jira Username should at least be four character long"
+            assert VALID_JIRA_USERNAME_RE.match(
+                desired_username
+            ), "Your Jira username contains invalid characters, or is too long"
             assert (
                 isinstance(real_name, str) and len(real_name) >= 3
             ), "Your public (real) name must be at least three characters long"
@@ -161,15 +166,9 @@ async def process(form_data):
                 message=f"Testing, testing, https://{quart.app.request.host}/jira-validate.html?{token}",
             )
 
-            return {
-                "success": True,
-                "message": "bleep blorp"
-            }
+            return {"success": True, "message": "bleep blorp"}
         else:
-            return {
-                "success": False,
-                "message": "Blooorp :("
-            }
+            return {"success": False, "message": "Blooorp :("}
 
 
 app = quart.current_app
@@ -182,9 +181,9 @@ jira_check_user_middlewared = middleware.middleware(check_user_exists)
 @app.route(
     "/api/jira-account",
     methods=[
-        "GET",     # Token verification (email validation)
-        "POST",    # User submits request
-        "PATCH",   # PMC verifying a request
+        "GET",  # Token verification (email validation)
+        "POST",  # User submits request
+        "PATCH",  # PMC verifying a request
         "DELETE",  # PMC denying a request
     ],
 )
