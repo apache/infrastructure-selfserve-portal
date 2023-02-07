@@ -22,7 +22,6 @@ from ..lib import middleware, config
 import quart
 import uuid
 import time
-import yaml
 import asfpy.messaging
 import asfpy.sqlite
 import os
@@ -158,7 +157,7 @@ async def process(form_data):
             asfpy.messaging.mail(
                 sender=config.messaging.sender,
                 recipient=f"private@{project}.apache.org",
-                subject="New Jira account requested: {userid}",
+                subject=f"New Jira account requested: {userid}",
                 message=f"Testing, testing, https://{quart.app.request.host}/jira-validate.html?{token}",
             )
 
