@@ -123,7 +123,7 @@ async def reset_rate_limits():
 
 
 def is_rate_limited(request: quart.Request):
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr).split(",")[-1].strip()
     usage = rate_limits.get(ip, 0) + 1
     if server.rate_limit_per_ip and usage > server.rate_limit_per_ip:
         return True
