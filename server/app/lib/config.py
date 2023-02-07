@@ -104,6 +104,7 @@ async def get_projects_from_ldap():
             if ldap_data and len(ldap_data) > 100:
                 project_list = set([x["cn"][0] for x in ldap_data])
             projects.clear()
+            project_list.add("infra")  # Add infra for testing
             projects.extend(sorted(project_list))
 
         except asyncio.exceptions.TimeoutError:
