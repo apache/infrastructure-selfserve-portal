@@ -18,6 +18,7 @@
 """SelfServe Platform for the Apache Software Foundation"""
 import asyncio
 
+import quart
 
 """Configuration classes for the platform"""
 
@@ -121,7 +122,8 @@ async def reset_rate_limits():
         rate_limits.clear()
 
 
-def is_rate_limited(ip):
+def is_rate_limited(request: quart.Request):
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
     usage = rate_limits.get(ip, 0) + 1
     if server.rate_limit_per_ip and usage > server.rate_limit_per_ip:
         return True

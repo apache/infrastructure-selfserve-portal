@@ -68,7 +68,7 @@ if not JIRA_DB.table_exists("pending"):
 async def check_user_exists(form_data):
     """Checks if a username has already been taken"""
     # Rate limited?
-    if config.is_rate_limited(quart.request.remote_addr):
+    if config.is_rate_limited(quart.request):
         return quart.Response(status=429, response="Your request has been rate-limited. Please check back tomorrow!")
     userid = form_data.get("userid")
     if userid and JIRA_DB.fetchone("users", userid=userid):
