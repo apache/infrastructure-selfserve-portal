@@ -155,7 +155,7 @@ async def process(form_data):
     elif quart.request.method == "GET":
         token = form_data.get("token")
         record = JIRA_DB.fetchone("pending", token=token)
-        if record:  # Valid token?
+        if record and record["validated"] == 0:  # Valid, not-already-validated token?
             # Set validated to true
             JIRA_DB.update("pending", {"validated": 1}, token=token)
 
