@@ -23,6 +23,8 @@ from .lib import config, log, middleware
 import os
 
 STATIC_DIR = os.path.join(os.path.realpath(".."), "htdocs")  # File location of static assets
+TEMPLATES_DIR = os.path.join(STATIC_DIR, "templates")  # HTML master templates
+COMPILED_DIR = os.path.join(STATIC_DIR, "compiled")    # Compiled HTML (template + content)
 
 
 def main():
@@ -37,7 +39,22 @@ def main():
     async def static_files(path="index.html"):
         if path.endswith("/"):
             path += "index.html"
+        if path.endswith(".html"):  # Serve HTML from the compiled output dir
+            return await quart.send_from_directory(COMPILED_DIR, path)
         return await quart.send_from_directory(STATIC_DIR, path)
+
+    @app.before_serving
+    async def compile_html():
+        """Compiles HTML files in htdocs/ using a master template"""
+        master_template = open(os.path.join(TEMPLATES_DIR, "master.html")).read()
+        if not os.path.isdir(COMPILED_DIR):
+            log.log(f"Compiled HTML directory {COMPILED_DIR} does not exist, will attempt to create it")
+            os.makedirs(COMPILED_DIR, exist_ok=True, mode=0o700)
+        for htmlfile in [filename for filename in os.listdir(STATIC_DIR) if filename.endswith(".html")]:
+            print(f"Compiling {htmlfile} into output/{htmlfile}")
+            htmldata = open(os.path.join(STATIC_DIR, htmlfile)).read()
+            output = master_template.replace("{contents}", htmldata)
+            open(os.path.join(COMPILED_DIR, htmlfile), "w").write(output)
 
     @app.before_serving
     async def load_endpoints():

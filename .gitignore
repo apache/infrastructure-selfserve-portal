@@ -193,3 +193,4 @@ Pipfile*
 
 # Generated documentation
 htdocs/docs/*
+htdocs/compiled/*
