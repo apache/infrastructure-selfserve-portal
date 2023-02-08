@@ -178,3 +178,13 @@ async function jira_account_request_submit(form) {
   }
   return false
 }
+
+async function jira_verify_email(token) {
+  const resp = await GET(`/api/jira-account?token=${token}`);
+  const result = await resp.json();
+  if (result.success) {
+    location.href = "/jira-account-verified.html";
+  } else {
+    toast(result.message);
+  }
+}
