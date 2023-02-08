@@ -1,9 +1,9 @@
 Please verify your email address
 --
-This email has been sent to you in order to verify the authenticity of a request to create a new
-Jira account with the Apache Software Foundation. If you requested an account, please visit the
-following address to verify your email address:
-{verify_url}
+This email has been sent to you in order to verify the authenticity of a request to create a
+Jira account with The Apache Software Foundation. If you requested an account, please visit {verify_url}
+to verify your email address:
+
 
 If you did not request an account, please disregard this notice.
 
