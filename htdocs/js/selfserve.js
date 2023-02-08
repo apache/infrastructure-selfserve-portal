@@ -175,7 +175,10 @@ async function jira_account_request_submit(form) {
   const result = await resp.json();
   if (!result.success) {
     toast(result.message);
+    return false
   }
+  const container = document.getElementById('contents');
+  container.innerText = "Your request to create a Jira account has been submitted. Please check your email inbox for further information, as you will need to verify your email address."
   return false
 }
 
