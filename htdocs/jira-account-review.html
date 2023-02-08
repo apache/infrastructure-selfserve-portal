@@ -2,9 +2,9 @@
 
 <form onsubmit="jira_account_request_submit(this); return false;">
     <div class="mb-3">
-        <label for="username" class="form-label">Desired Username</label>
+        <label for="username" class="form-label">Desired User name</label>
         <input type="text" class="form-control" id="username"  readonly name="username"aria-describedby="usernameHelp">
-        <div id="usernameHelp" class="form-text">The username must be between 4 and 20 characters long.</div>
+        <div id="usernameHelp" class="form-text">The user name must be between 4 and 20 characters long.</div>
     </div>
     <div class="mb-3">
         <label for="realname" class="form-label">Their real (public) name</label>
@@ -25,7 +25,7 @@
         <div class="mb-3">
             <label for="reason" class="form-label">Optional reason for denying the request</label>
             <input type="text" class="form-control" id="reason" name="reason" aria-describedby="reasonHelp">
-            <div id="reasonHelp" class="form-text">If you wish to supply a reason for denying this request, please do so here. This will be sent to both the project and the requester.</div>
+            <div id="reasonHelp" class="form-text">If you wish to supply a reason for denying this request, do so here. We will send the reason to both the project and the requester.</div>
         </div>
         <button type="button" onclick="jira_account_approve(this.form, 'deny');"  class="btn btn-danger">Deny request</button>
     </div>
