@@ -182,9 +182,8 @@ async def process_review(form_data):
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
         entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
-        assert (
-            entry and entry["validated"] == 1
-        ), "This Jira account request has not been verified by the requester yet."
+        assert entry, "Could not find the pending account request. It may have already been reviewed."
+        assert entry["validated"] == 1, "This Jira account request has not been verified by the requester yet."
         # Only project committers (and infra) can review requests for a project
         assert (
             entry["project"] in session.projects or session.root
