@@ -175,9 +175,9 @@ async def process(form_data):
                 message=f"Testing, testing, https://{quart.app.request.host}/jira-validate.html?{token}",
             )
 
-            return {"success": True, "message": "bleep blorp"}
+            return {"success": True, "message": "Your email address has been validated."}
         else:
-            return {"success": False, "message": "Blooorp :("}
+            return {"success": False, "message": "Unknown or already validated token sent."}
 
 
 app = quart.current_app
