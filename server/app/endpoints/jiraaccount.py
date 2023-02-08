@@ -145,12 +145,8 @@ async def process(form_data):
         )
 
         # Send the verification email
-        asfpy.messaging.mail(
-            sender=config.messaging.sender,
-            recipient=email_address,
-            subject="Please verify your email address",
-            message=f"Bla bla bla, https://{quart.app.request.host}/jira-account-verify.html?{token}",
-        )
+        verify_url = f"https://{quart.app.request.host}/jira-account-verify.html?{token}"
+        email.from_template("jira_account_verify.txt", recipient=email_address, variables={"verify_url": verify_url})
 
         # All done for now
         return {
@@ -167,13 +163,11 @@ async def process(form_data):
             JIRA_DB.update("pending", {"validated": 1}, token=token)
 
             # Notify project
-            project = record["project"]
-            userid = record["userid"]
-            asfpy.messaging.mail(
-                sender=config.messaging.sender,
-                recipient=f"private@{project}.apache.org",
-                subject=f"New Jira account requested: {userid}",
-                message=f"Testing, testing, https://{quart.app.request.host}/jira-account-review.html?token={token}",
+            record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
+            email.from_template(
+                "jira_account_pending_review.txt",
+                recipient=email.project_to_private(record["project"]),
+                variables=record,
             )
 
             return {"success": True, "message": "Your email address has been validated."}
@@ -216,7 +210,6 @@ async def process_review(form_data):
         action = form_data.get("action")
         if action == "approve":
             try:
-                email.from_template("jira_account_welcome.txt", recipient=entry["email"], variables=entry)
                 proc = await asyncio.create_subprocess_exec(
                     "/opt/latest-cli/acli.sh",
                     *(
