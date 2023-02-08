@@ -117,6 +117,12 @@ async def process(form_data):
             assert (
                 JIRA_DB.fetchone("pending", userid=desired_username) is None
             ), "The username you selected is already in use"
+
+            # Check that the requester does not already have a pending request
+            assert (
+                    JIRA_DB.fetchone("pending", email=email_address) is None
+            ), "There is already a pending Jira account request associated with this email address. Please wait for it to be processed"
+
         except AssertionError as e:
             return {"success": False, "message": str(e)}
 
