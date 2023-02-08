@@ -193,3 +193,35 @@ async function jira_verify_email(token) {
     toast(result.message);
   }
 }
+
+async function jira_account_review(prefs, qs) {
+  const token = qs.get("token");
+  const resp = await GET(`/api/jira-account-review?token=${token}`);
+  const result = await resp.json();
+  if (!result.success) {
+    toast(result.message);
+  } else {
+    const username = document.getElementById('username');
+    username.value = result.entry.userid;
+    const realname = document.getElementById('realname');
+    realname.value = result.entry.realname;
+    const why = document.getElementById('why');
+    why.value = result.entry.why;
+    const toktxt = document.getElementById('token');
+    toktxt.value = token;
+  }
+}
+
+async function jira_account_approve(form, verdict = "deny") {
+  // Approve or deny a jira account request
+  const data = new FormData(form)
+  data.set("action", verdict);
+  const resp = await POST("/api/jira-account-review", {data: data})
+  const result = await resp.json();
+  if (result.success) {
+    const container = document.getElementById('contents');
+    container.innerText = result.message;
+  } else {
+    toast(result.message);
+  }
+}
