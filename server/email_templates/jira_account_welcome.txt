@@ -1,7 +1,9 @@
-New Jira account created: {userid}
+Jira account created: {userid}
 --
 Hi there,
-As requested by the {project} project, a new Jira user account, {userid}, has been created for you.
-You will need to go to https://issues.apache.org/jira/secure/ForgotLoginDetails.jspa
+As requested by the {project} project, we have created a Jira user account, {userid}, for you to use when reporting issues related to The Apache Software Foundation's projects or products.
+
+Go to https://issues.apache.org/jira/secure/ForgotLoginDetails.jspa
 and select to have your password emailed to you.
-Any problems please email root@apache.org with any details you can provide.
+
+If you encounter any problems, please email root@apache.org with any details you can provide.
