@@ -1,0 +1,4 @@
+Jira account request denied by {approver}: {userid}
+--
+Hi there,
+The request for a new Jira account, {userid}, was denied by {approver}, and the request has been deleted.
