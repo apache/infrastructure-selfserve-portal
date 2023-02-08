@@ -172,7 +172,7 @@ async def process(form_data):
                 sender=config.messaging.sender,
                 recipient=f"private@{project}.apache.org",
                 subject=f"New Jira account requested: {userid}",
-                message=f"Testing, testing, https://{quart.app.request.host}/jira-validate.html?{token}",
+                message=f"Testing, testing, https://{quart.app.request.host}/jira-account.html?{token}",
             )
 
             return {"success": True, "message": "Your email address has been validated."}
