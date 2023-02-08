@@ -1,9 +1,8 @@
 Jira account request denied: {userid}
 --
 Hi there,
-We regret to inform you that, upon reviewing your request for a new Jira account,
-the {project} project has chosen to deny you the request. As such, a Jira account
-will not be created.
+We regret to inform you that, upon reviewing your request for a new Jira account connected with The Apache Software Foundation,
+the {project} project has chosen to deny the request. We therefore will not create the Jira account.
 
 The following reason was given:
 {reason}
