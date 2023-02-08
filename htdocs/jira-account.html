@@ -40,14 +40,6 @@
 
 <script>
     document.body.onload = () => {
-        // Check for token verification
-        const token = location.search.substring(1);
-        if (token && token.length == 36) {
-            jira_verify_email(token);
-        }
-        // No token, cue the form
-        else {
-            jira_seed_project_list();
-        }
+        jira_seed_project_list();
     }
 </script>

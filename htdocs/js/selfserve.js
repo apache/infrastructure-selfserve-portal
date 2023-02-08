@@ -185,9 +185,11 @@ async function jira_account_request_submit(form) {
 async function jira_verify_email(token) {
   const resp = await GET(`/api/jira-account?token=${token}`);
   const result = await resp.json();
+  const container = document.getElementById('verify_response');
   if (result.success) {
-    location.href = "/jira-account-verified.html";
+    container.innerText = "Your Jira account request has been successfully verified, and will be reviewed by the project you indicated. Please allow up to a few days for the project to review this request.";
   } else {
+    container.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
     toast(result.message);
   }
 }

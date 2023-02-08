@@ -148,7 +148,7 @@ async def process(form_data):
             sender=config.messaging.sender,
             recipient=email_address,
             subject="Please verify your email address",
-            message=f"Bla bla bla, https://{quart.app.request.host}/jira-account.html?{token}",
+            message=f"Bla bla bla, https://{quart.app.request.host}/jira-account-verify.html?{token}",
         )
 
         # All done for now
