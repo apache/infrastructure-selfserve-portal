@@ -104,7 +104,7 @@ async function OAuthGate(callback) {
       }
     } else {
       // Something went wrong. For now, just spit out the response as an alert.
-      alert(await OAuthResponse.text());
+      toast(await OAuthResponse.text());
     }
   }
   const session = await GET('/api/session');
@@ -120,7 +120,7 @@ async function OAuthGate(callback) {
     const preferences = await session.json();
     if (callback) callback(preferences, QSDict);
   } else { // Something went wrong on the backend, spit out the error msg
-    alert(await session.text());
+    toast(await session.text());
   }
 }
 
@@ -137,6 +137,7 @@ function blur_bg(blur= true) {
 }
 
 function toast(message, type="danger") {
+  // Displays a message/alert as a toast if possible, falling back to alert() otherwise
   const toastdiv = document.getElementById('liveToast');
   if (toastdiv) {
     const toastobj = new bootstrap.Toast(toastdiv);
