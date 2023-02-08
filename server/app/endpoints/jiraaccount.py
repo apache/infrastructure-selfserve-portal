@@ -18,7 +18,7 @@
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for jira account creation"""
 
-from ..lib import middleware, config
+from ..lib import middleware, config, asfuid, email
 import quart
 import uuid
 import time
@@ -26,6 +26,7 @@ import asfpy.messaging
 import asfpy.sqlite
 import os
 import re
+import asyncio
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
@@ -120,7 +121,7 @@ async def process(form_data):
 
             # Check that the requester does not already have a pending request
             assert (
-                    JIRA_DB.fetchone("pending", email=email_address) is None
+                JIRA_DB.fetchone("pending", email=email_address) is None
             ), "There is already a pending Jira account request associated with this email address. Please wait for it to be processed"
 
         except AssertionError as e:
@@ -172,7 +173,7 @@ async def process(form_data):
                 sender=config.messaging.sender,
                 recipient=f"private@{project}.apache.org",
                 subject=f"New Jira account requested: {userid}",
-                message=f"Testing, testing, https://{quart.app.request.host}/jira-validate.html?{token}",
+                message=f"Testing, testing, https://{quart.app.request.host}/jira-account-review.html?token={token}",
             )
 
             return {"success": True, "message": "Your email address has been validated."}
@@ -180,11 +181,98 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
+async def process_review(form_data):
+    """Review and/or approve/deny a request for a new jira account"""
+    try:
+        session = asfuid.Credentials()  # Must be logged in via ASF OAuth
+        token = form_data.get("token")  # Must have a valid token
+        assert isinstance(token, str) and len(token) == 36, "Invalid token format"
+        entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
+        assert (
+            entry and entry["validated"] == 1
+        ), "This Jira account request has not been verified by the requester yet."
+        # Only project committers (and infra) can review requests for a project
+        assert (
+            entry["project"] in session.projects or session.root
+        ), "You can only review account requests related to the projects you are on"
+    except AssertionError as e:
+        return {"success": False, "message": str(e)}
+
+    # Review application
+    if quart.request.method == "GET":
+        public_keys = (
+            "created",
+            "project",
+            "userid",
+            "realname",
+            "userip",
+            "why",
+        )
+        public_entry = {k: entry[k] for k in public_keys}
+        return {"success": True, "entry": public_entry}
+
+    # Approve/deny application
+    if quart.request.method == "POST":
+        action = form_data.get("action")
+        if action == "approve":
+            try:
+                email.from_template("jira_account_welcome.txt", recipient=entry["email"], variables=entry)
+                proc = await asyncio.create_subprocess_exec(
+                    "/opt/latest-cli/acli.sh",
+                    *(
+                        "jira",
+                        "-v",
+                        "--action",
+                        "addUser",
+                        "--userId",
+                        entry["userid"],
+                        "--userFullName",
+                        entry["realname"],
+                        "--userEmail",
+                        entry["email"],
+                        "--continue",
+                    ),
+                )
+                await proc.wait()
+                assert proc.returncode == 0, "Jira account creation failed due to an internal server error."
+            except (AssertionError, FileNotFoundError) as e:
+                return {"success": False, "message": str(e)}
+
+            # Remove entry from pending db, append username to list of active jira users
+            JIRA_DB.delete("pending", token=token)
+            JIRA_DB.insert("users", {"userid": entry["userid"]})
+
+            # Send welcome email
+            email.from_template("jira_account_welcome.txt", recipient=entry["email"], variables=entry)
+
+            # Notify project via private list
+            private_list = email.project_to_private(entry["project"])
+            entry["approver"] = session.uid
+            email.from_template("jira_account_welcome_pmc.txt", recipient=private_list, variables=entry)
+
+            return {"success": True, "message": "Account created, welcome email has been dispatched."}
+
+        elif action == "deny":
+            # Remove entry from pending db
+            JIRA_DB.delete("pending", token=token)
+
+            # Inform requester
+            email.from_template("jira_account_denied.txt", recipient=entry["email"], variables=entry)
+
+            # Notify project via private list
+            private_list = email.project_to_private(entry["project"])
+            entry["approver"] = session.uid
+            email.from_template("jira_account_denied_pmc.txt", recipient=private_list, variables=entry)
+
+            return {"success": True, "message": "Account denied, notification dispatched."}
+
+
 app = quart.current_app
 
 
 jira_process_middlewared = middleware.middleware(process)
 jira_check_user_middlewared = middleware.middleware(check_user_exists)
+jira_account_review_middlewared = middleware.middleware(process_review)
 
 
 @app.route(
@@ -192,8 +280,6 @@ jira_check_user_middlewared = middleware.middleware(check_user_exists)
     methods=[
         "GET",  # Token verification (email validation)
         "POST",  # User submits request
-        "PATCH",  # PMC verifying a request
-        "DELETE",  # PMC denying a request
     ],
 )
 async def run_jiraaccount(**kwargs):
@@ -208,3 +294,14 @@ async def run_jiraaccount(**kwargs):
 )
 async def run_jira_check_user(**kwargs):
     return await jira_check_user_middlewared(**kwargs)
+
+
+@app.route(
+    "/api/jira-account-review",
+    methods=[
+        "GET",  # View account request
+        "POST",  # Action account request (approve/deny)
+    ],
+)
+async def run_jiraaccount_review(**kwargs):
+    return await jira_account_review_middlewared(**kwargs)
