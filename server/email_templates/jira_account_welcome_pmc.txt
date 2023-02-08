@@ -1,0 +1,6 @@
+New Jira account created: {userid}
+--
+Hi there,
+As approved by {approver}@apache.org, a new Jira user account, {userid}, has been created.
+An email has been sent to the email address provided and this new user will
+need to reset their password before logging in for the time.

@@ -24,3 +24,4 @@ storage:
 
 messaging:
   sender: "ASF Self-serve Portal <no-reply@apache.org>"
+  template_dir: "/opt/selfserve-portal/server/email_templates"

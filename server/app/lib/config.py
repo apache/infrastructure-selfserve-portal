@@ -95,6 +95,7 @@ class StorageConfiguration:
 class MessagingConfiguration:
     def __init__(self, yml: dict):
         self.sender = yml["sender"]
+        self.template_dir = yml["template_dir"]
 
 
 async def get_projects_from_ldap():
