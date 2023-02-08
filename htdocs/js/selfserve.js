@@ -216,8 +216,12 @@ async function jira_account_approve(form, verdict = "deny") {
   // Approve or deny a jira account request
   const data = new FormData(form)
   data.set("action", verdict);
+  // Hide deny details panel and buttons
+  const deny_details = document.getElementById('deny_details');
+  deny_details.style.display = "none";
   const btns = document.getElementById('buttons_real');
   btns.style.display = "none";
+  // Show spinner
   const spin = document.getElementById('buttons_spin');
   spin.style.display = "block";
   const resp = await POST("/api/jira-account-review", {data: data})
@@ -227,7 +231,15 @@ async function jira_account_approve(form, verdict = "deny") {
     container.innerText = result.message;
   } else {
     toast(result.message);
+    // Put back buttons, hide spinner
+    btns.style.display = "block";
+    spin.style.display = "none";
   }
-  btns.style.display = "block";
-  spin.style.display = "none";
+}
+
+function jira_account_deny_details() {
+  const real_buttons = document.getElementById('buttons_real');
+  real_buttons.style.display = "none";
+  const deny_details = document.getElementById('deny_details');
+  deny_details.style.display = "block";
 }

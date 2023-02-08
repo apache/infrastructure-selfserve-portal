@@ -248,6 +248,9 @@ async def process_review(form_data):
             # Remove entry from pending db
             JIRA_DB.delete("pending", token=token)
 
+            # Add optional reason for denying
+            entry["reason"] = form_data.get("reason") or "No reason given."
+
             # Inform requester
             email.from_template("jira_account_denied.txt", recipient=entry["email"], variables=entry)
 

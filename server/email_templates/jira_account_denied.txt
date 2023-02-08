@@ -5,6 +5,9 @@ We regret to inform you that, upon reviewing your request for a new Jira account
 the {project} project has chosen to deny you the request. As such, a Jira account
 will not be created.
 
+The following reason was given:
+{reason}
+
 If you wish to appeal this decision, you may do so either directly with the
 {project} project, or by contacting the ASF Infrastructure team at:
 users@infra.apache.org

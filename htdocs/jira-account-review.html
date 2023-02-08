@@ -13,12 +13,20 @@
     </div>
     <div class="mb-3">
         <label for="why" class="form-label">Reason for wanting a Jira account</label>
-        <input type="text" class="form-control" id="why" readonly name="why"aria-describedby="whyHelp">
+        <input type="text" class="form-control" id="why" readonly name="why" aria-describedby="whyHelp">
         <div id="whyHelp" class="form-text">Please review this reason, and only approve the account if the reason is sound.</div>
     </div>
     <input type="hidden" id="token" name="token">
     <div id="buttons_real">
         <button type="button" onclick="jira_account_approve(this.form, 'approve');" class="btn btn-primary">Approve request</button>
+        <button type="button" onclick="jira_account_deny_details();" class="btn btn-danger">Deny request</button>
+    </div>
+    <div id="deny_details" style="display: none;">
+        <div class="mb-3">
+            <label for="reason" class="form-label">Optional reason for denying the request</label>
+            <input type="text" class="form-control" id="reason" name="reason" aria-describedby="reasonHelp">
+            <div id="reasonHelp" class="form-text">If you wish to supply a reason for denying this request, please do so here. This will be sent to both the project and the requester.</div>
+        </div>
         <button type="button" onclick="jira_account_approve(this.form, 'deny');"  class="btn btn-danger">Deny request</button>
     </div>
     <div id="buttons_spin" style="display: none;">
