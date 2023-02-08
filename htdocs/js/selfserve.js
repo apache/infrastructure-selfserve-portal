@@ -216,6 +216,10 @@ async function jira_account_approve(form, verdict = "deny") {
   // Approve or deny a jira account request
   const data = new FormData(form)
   data.set("action", verdict);
+  const btns = document.getElementById('buttons_real');
+  btns.style.display = "none";
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
   const resp = await POST("/api/jira-account-review", {data: data})
   const result = await resp.json();
   if (result.success) {
@@ -224,4 +228,6 @@ async function jira_account_approve(form, verdict = "deny") {
   } else {
     toast(result.message);
   }
+  btns.style.display = "block";
+  spin.style.display = "none";
 }

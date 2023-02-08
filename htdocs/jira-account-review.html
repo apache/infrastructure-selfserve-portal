@@ -17,8 +17,16 @@
         <div id="whyHelp" class="form-text">Please review this reason, and only approve the account if the reason is sound.</div>
     </div>
     <input type="hidden" id="token" name="token">
-    <button type="button" onclick="jira_account_approve(this.form, 'approve');" class="btn btn-primary">Approve request</button>
-    <button type="button" onclick="jira_account_approve(this.form, 'deny');"  class="btn btn-danger">Deny request</button>
+    <div id="buttons_real">
+        <button type="button" onclick="jira_account_approve(this.form, 'approve');" class="btn btn-primary">Approve request</button>
+        <button type="button" onclick="jira_account_approve(this.form, 'deny');"  class="btn btn-danger">Deny request</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
 </form>
 
 
