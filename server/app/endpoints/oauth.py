@@ -65,15 +65,10 @@ async def process(form_data):
 
 app = quart.current_app
 
-
-oauth_middlewared = middleware.middleware(process)
-
-
-@app.route(
+app.add_url_rule(
     "/api/oauth",
     methods=[
         "GET",
     ],
+    view_func=middleware.glued(process)
 )
-async def run_oauth(**kwargs):
-    return await oauth_middlewared(**kwargs)

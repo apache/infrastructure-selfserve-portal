@@ -264,38 +264,27 @@ async def process_review(form_data, session):
 app = quart.current_app
 
 
-jira_process_middlewared = middleware.middleware(process)
-jira_check_user_middlewared = middleware.middleware(check_user_exists)
-jira_account_review_middlewared = middleware.middleware(process_review)
-
-
-@app.route(
+app.add_url_rule(
     "/api/jira-account",
     methods=[
         "GET",  # Token verification (email validation)
         "POST",  # User submits request
     ],
+    view_func=middleware.glued(process)
 )
-async def run_jiraaccount(**kwargs):
-    return await jira_process_middlewared(**kwargs)
-
-
-@app.route(
+app.add_url_rule(
     "/api/jira-exists",
     methods=[
         "GET",
     ],
+    view_func=middleware.glued(check_user_exists)
 )
-async def run_jira_check_user(**kwargs):
-    return await jira_check_user_middlewared(**kwargs)
 
-
-@app.route(
+app.add_url_rule(
     "/api/jira-account-review",
     methods=[
         "GET",  # View account request
         "POST",  # Action account request (approve/deny)
     ],
+    view_func=middleware.glued(process_review)
 )
-async def run_jiraaccount_review(**kwargs):
-    return await jira_account_review_middlewared(**kwargs)

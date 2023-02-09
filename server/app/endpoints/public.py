@@ -27,16 +27,10 @@ async def process(form_data):
     }
 
 app = quart.current_app
-
-
-public_middlewared = middleware.middleware(process)
-
-
-@app.route(
+app.add_url_rule(
     "/api/public",
     methods=[
         "GET",
     ],
+    view_func=middleware.glued(process)
 )
-async def run_public(**kwargs):
-    return await public_middlewared(**kwargs)

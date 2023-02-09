@@ -21,6 +21,7 @@ import quart
 from ..lib import middleware, asfuid, config
 
 
+
 async def process(form_data):
     action = form_data.get("action")
     if action == "logout":  # Clear the session
@@ -43,14 +44,10 @@ async def process(form_data):
 app = quart.current_app
 
 
-session_middlewared = middleware.middleware(process)
-
-
-@app.route(
+app.add_url_rule(
     "/api/session",
     methods=[
         "GET",
     ],
+    view_func=middleware.glued(process)
 )
-async def run_session(**kwargs):
-    return await session_middlewared(**kwargs)
