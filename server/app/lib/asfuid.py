@@ -127,6 +127,6 @@ def session_required(func):
         try:
             session = Credentials()  # Must be logged in via ASF OAuth
         except AssertionError as e:
-            return {"success": False, "message": str(e)}
+            return {"success": False, "message": str(e)}, 403
         return await func(form_data, session)
     return session_wrapper

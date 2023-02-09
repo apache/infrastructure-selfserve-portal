@@ -108,7 +108,7 @@ async function OAuthGate(callback) {
     }
   }
   const session = await GET('/api/session');
-  if (session.status === 404) { // No session set for this client yet, run the oauth process
+  if (session.status === 403) { // No session set for this client yet, run the oauth process
     if (sessionStorageSupported()) {
       window.sessionStorage.setItem('asp_origin', document.location.href); // Store where we came from
     }
