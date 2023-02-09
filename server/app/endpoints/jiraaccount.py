@@ -22,7 +22,6 @@ from ..lib import middleware, config, asfuid, email
 import quart
 import uuid
 import time
-import asfpy.messaging
 import asfpy.sqlite
 import os
 import re
