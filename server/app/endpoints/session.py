@@ -21,25 +21,20 @@ import quart
 from ..lib import middleware, asfuid, config
 
 
-
-async def process(form_data):
+@asfuid.session_required
+async def process(form_data, session):
     action = form_data.get("action")
     if action == "logout":  # Clear the session
         quart.session.clear()
         return "Logged out!"
-    try:
-        session = asfuid.Credentials()
-        return {
-            "uid": session.uid,
-            "name": session.name,
-            "projects": session.projects,
-            "pmcs": session.pmcs,
-            "root": session.root,
-            "all_projects": config.projects,
-        }
-    except AssertionError:
-        return quart.Response(status=404, response="No active session or session expired. Please authenticate.")
-
+    return {
+        "uid": session.uid,
+        "name": session.name,
+        "projects": session.projects,
+        "pmcs": session.pmcs,
+        "root": session.root,
+        "all_projects": config.projects,
+    }
 
 app = quart.current_app
 
