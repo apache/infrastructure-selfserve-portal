@@ -27,10 +27,12 @@ import os
 from . import log
 import uuid
 import asfpy.clitools
+import aiohttp
+import json
 
 
 CONFIG_FILE = "config.yaml"
-
+WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
 
 def text_to_int(size):
     """Convert shorthand size notation to integer (kb,mb,gb)"""
@@ -96,6 +98,7 @@ class MessagingConfiguration:
     def __init__(self, yml: dict):
         self.sender = yml["sender"]
         self.template_dir = yml["template_dir"]
+        self.mailing_lists = []
 
 
 async def get_projects_from_ldap():
@@ -130,6 +133,22 @@ def is_rate_limited(request: quart.Request):
         return True
     rate_limits[ip] = usage
     return False
+
+
+async def fetch_valid_lists():
+    """Fetches the current list of active mailing lists"""
+    while True:
+        async with aiohttp.ClientSession() as client:
+            async with client.get(WEBMOD_MAILING_LIST_URL) as resp:
+                if resp.status == 200:
+                    try:
+                        messaging.mailing_lists = await resp.json()
+                    except json.JSONDecodeError as e:
+                        print(f"Could not decode JSON from webmod: {e}")
+                else:
+                    txt = await resp.text()
+                    print(f"Could not fetch mailing lists from webmod.apache.org: {txt}")
+        await asyncio.sleep(3600)  # Wait an hour
 
 
 cfg_yaml = yaml.safe_load(open(CONFIG_FILE, "r"))
