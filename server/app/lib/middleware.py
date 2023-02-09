@@ -33,7 +33,7 @@ async def consume_body():
         pass
 
 
-def middleware(func: typing.Callable) -> typing.Callable:
+def glued(func: typing.Callable) -> typing.Callable:
     """Middleware that collects all form data (except file uploads!) and joins as one dict"""
 
     async def call(**args):
@@ -93,7 +93,12 @@ def middleware(func: typing.Callable) -> typing.Callable:
             await consume_body()
 
         return resp
-
+    # Quart will, if no rule name is specified, default to calling the rule "call" here,
+    # which leads to carps about duplicate rule definitions. So, given the fact that call()
+    # is dynamically made from within this function, we simply adjust its internal name to
+    # refer to the calling module and function, thus providing Quart with a much better
+    # name for the rule, which will also aid in debugging.
+    call.__name__ = func.__module__ + "." + func.__name__
     return call
 
 
