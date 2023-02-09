@@ -112,3 +112,21 @@ class Credentials:
             self.root = True
         else:
             raise AssertionError("User not logged in via Web UI")
+
+def session_required(func):
+    """Decorator for calls that require the user to be authenticated against OAuth.
+       Calls will be checked for an active, valid session, and if found, it will
+       add the session to the list of arguments for the originator. Otherwise, it
+       will return the standard no-auth JSON reply.
+       Thus, calls that require a session can use:
+       @asfuid.session_required
+       async def foo(form_data, session):
+         ...
+    """
+    async def session_wrapper(form_data):
+        try:
+            session = Credentials()  # Must be logged in via ASF OAuth
+        except AssertionError as e:
+            return {"success": False, "message": str(e)}
+        return await func(form_data, session)
+    return session_wrapper
