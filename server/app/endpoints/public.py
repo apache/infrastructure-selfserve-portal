@@ -26,8 +26,7 @@ async def process(form_data):
         "projects": config.projects,
     }
 
-app = quart.current_app
-app.add_url_rule(
+quart.current_app.add_url_rule(
     "/api/public",
     methods=[
         "GET",

@@ -261,10 +261,7 @@ async def process_review(form_data, session):
             return {"success": True, "message": "Account denied, notification dispatched."}
 
 
-app = quart.current_app
-
-
-app.add_url_rule(
+quart.current_app.add_url_rule(
     "/api/jira-account",
     methods=[
         "GET",  # Token verification (email validation)
@@ -272,7 +269,7 @@ app.add_url_rule(
     ],
     view_func=middleware.glued(process)
 )
-app.add_url_rule(
+quart.current_app.add_url_rule(
     "/api/jira-exists",
     methods=[
         "GET",
@@ -280,7 +277,7 @@ app.add_url_rule(
     view_func=middleware.glued(check_user_exists)
 )
 
-app.add_url_rule(
+quart.current_app.add_url_rule(
     "/api/jira-account-review",
     methods=[
         "GET",  # View account request
