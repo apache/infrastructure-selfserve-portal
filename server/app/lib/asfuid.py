@@ -23,6 +23,7 @@ import re
 import asfpy.aioldap
 import quart
 import time
+import functools
 
 UID_RE = re.compile(r"^(?:uid=)?([^,]+)")
 SESSION_TIMEOUT = 86400  # Time out user sessions after 1 day.
@@ -123,6 +124,7 @@ def session_required(func):
        async def foo(form_data, session):
          ...
     """
+    @functools.wraps(func)
     async def session_wrapper(form_data):
         try:
             session = Credentials()  # Must be logged in via ASF OAuth
