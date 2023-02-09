@@ -174,10 +174,10 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
-async def process_review(form_data):
+@asfuid.session_required
+async def process_review(form_data, session):
     """Review and/or approve/deny a request for a new jira account"""
     try:
-        session = asfuid.Credentials()  # Must be logged in via ASF OAuth
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
         entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
