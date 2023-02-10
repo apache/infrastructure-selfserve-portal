@@ -73,7 +73,9 @@ async def membership(project: str):
         if config.server.debug_mode is True and quart.request.authorization.username == config.server.debug_user:
             return True, True
         try:
-            lc = LDAPClient(username=quart.request.authorization.username, password=quart.request.authorization.password)
+            lc = LDAPClient(
+                username=quart.request.authorization.username, password=quart.request.authorization.password
+            )
             m, o = await lc.get_members(project)
             return lc.userid in m, lc.userid in o  # committer, pmc
         except asfpy.aioldap.errors.AuthenticationError as e:  # Auth error
@@ -93,7 +95,9 @@ class Credentials:
     def __init__(self):
         if quart.session and "uid" in quart.session:
             # Assert that the oauth session is not too old
-            assert quart.session.get("timestamp", 0) > int(time.time() - SESSION_TIMEOUT), "Session timeout, please authenticate again"
+            assert quart.session.get("timestamp", 0) > int(
+                time.time() - SESSION_TIMEOUT
+            ), "Session timeout, please authenticate again"
             self.uid = quart.session["uid"]
             self.name = quart.session["fullname"]
             self.projects = quart.session["projects"]
@@ -114,16 +118,18 @@ class Credentials:
         else:
             raise AssertionError("User not logged in via Web UI")
 
+
 def session_required(func):
     """Decorator for calls that require the user to be authenticated against OAuth.
-       Calls will be checked for an active, valid session, and if found, it will
-       add the session to the list of arguments for the originator. Otherwise, it
-       will return the standard no-auth JSON reply.
-       Thus, calls that require a session can use:
-       @asfuid.session_required
-       async def foo(form_data, session):
-         ...
+    Calls will be checked for an active, valid session, and if found, it will
+    add the session to the list of arguments for the originator. Otherwise, it
+    will return the standard no-auth JSON reply.
+    Thus, calls that require a session can use:
+    @asfuid.session_required
+    async def foo(form_data, session):
+      ...
     """
+
     @functools.wraps(func)
     async def session_wrapper(form_data):
         try:
@@ -131,4 +137,5 @@ def session_required(func):
         except AssertionError as e:
             return {"success": False, "message": str(e)}, 403
         return await func(form_data, session)
+
     return session_wrapper

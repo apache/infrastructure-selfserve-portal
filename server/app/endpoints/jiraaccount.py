@@ -267,14 +267,14 @@ quart.current_app.add_url_rule(
         "GET",  # Token verification (email validation)
         "POST",  # User submits request
     ],
-    view_func=middleware.glued(process)
+    view_func=middleware.glued(process),
 )
 quart.current_app.add_url_rule(
     "/api/jira-exists",
     methods=[
         "GET",
     ],
-    view_func=middleware.glued(check_user_exists)
+    view_func=middleware.glued(check_user_exists),
 )
 
 quart.current_app.add_url_rule(
@@ -283,5 +283,5 @@ quart.current_app.add_url_rule(
         "GET",  # View account request
         "POST",  # Action account request (approve/deny)
     ],
-    view_func=middleware.glued(process_review)
+    view_func=middleware.glued(process_review),
 )

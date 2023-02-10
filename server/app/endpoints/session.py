@@ -36,10 +36,11 @@ async def process(form_data, session):
         "all_projects": config.projects,
     }
 
+
 quart.current_app.add_url_rule(
     "/api/session",
     methods=[
         "GET",
     ],
-    view_func=middleware.glued(process)
+    view_func=middleware.glued(process),
 )

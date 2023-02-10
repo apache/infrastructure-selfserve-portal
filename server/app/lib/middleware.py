@@ -93,6 +93,7 @@ def glued(func: typing.Callable) -> typing.Callable:
             await consume_body()
 
         return resp
+
     # Quart will, if no rule name is specified, default to calling the rule "call" here,
     # which leads to carps about duplicate rule definitions. So, given the fact that call()
     # is dynamically made from within this function, we simply adjust its internal name to

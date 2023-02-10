@@ -34,6 +34,7 @@ import json
 CONFIG_FILE = "config.yaml"
 WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
 
+
 def text_to_int(size):
     """Convert shorthand size notation to integer (kb,mb,gb)"""
     if isinstance(size, int):
@@ -107,7 +108,9 @@ async def get_projects_from_ldap():
     while True:
         ldap_base = ldap.groupbase.replace("cn=%s,", "")
         try:
-            ldap_data = await asyncio.wait_for(asfpy.clitools.ldapsearch_cli_async(ldap_base, "children", "cn=*"), ldap_search_timeout)
+            ldap_data = await asyncio.wait_for(
+                asfpy.clitools.ldapsearch_cli_async(ldap_base, "children", "cn=*"), ldap_search_timeout
+            )
             if ldap_data and len(ldap_data) > 100:
                 project_list = set([x["cn"][0] for x in ldap_data])
             projects.clear()

@@ -26,10 +26,11 @@ async def process(form_data):
         "projects": config.projects,
     }
 
+
 quart.current_app.add_url_rule(
     "/api/public",
     methods=[
         "GET",
     ],
-    view_func=middleware.glued(process)
+    view_func=middleware.glued(process),
 )
