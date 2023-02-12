@@ -24,6 +24,7 @@ from ..lib import middleware, config
 async def process(form_data):
     return {
         "projects": config.projects,
+        "mail_domains": config.messaging.mail_mappings
     }
 
 
