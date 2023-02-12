@@ -17,6 +17,7 @@ ldap:
   groupbase: cn=%s,ou=project,ou=groups,dc=apache,dc=org
   servicebase: cn=%s,ou=groups,ou=services,dc=apache,dc=org
   ldapbase: dc=apache,dc=org
+  roleaccounts: /opt/selfserve-portal/roleaccounts.txt
 
 storage:
   queue_dir:  "/x1/selfserve-queue/"  # Where to store queued requests for external services

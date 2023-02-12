@@ -103,6 +103,7 @@ class Credentials:
             self.projects = quart.session["projects"]
             self.pmcs = quart.session["pmcs"]
             self.root = quart.session["isRoot"]
+            self.roleaccount = False
 
         elif (
             config.server.debug_mode is True
@@ -115,6 +116,20 @@ class Credentials:
             self.projects = []
             self.pmcs = []
             self.root = True
+            self.roleaccount = False
+        # Role account?
+        elif quart.request.authorization:
+            username = quart.request.authorization.username
+            if (
+                username in config.ldap.roleaccounts
+                and config.ldap.roleaccounts[username] == quart.request.authorization.password
+            ):
+                self.uid = username
+                self.name = "API Role Account"
+                self.root = False
+                self.pmcs = []
+                self.projects = []
+                self.roleaccount = True
         else:
             raise AssertionError("User not logged in via Web UI")
 

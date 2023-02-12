@@ -87,6 +87,16 @@ class LDAPConfiguration:
         self.userbase = yml["userbase"]
         self.ldapbase = yml["ldapbase"]
         self.servicebase = yml["servicebase"]
+        self.roleaccounts = {}
+        # API role accounts for external services in a file
+        # user:pwd, one per line, use # for comment lines
+        ra_path = yml.get("roleaccounts")
+        if ra_path and os.path.isfile(ra_path):
+            with open(ra_path) as f:
+                for line in f.readlines():
+                    if ":" in line and not line.startswith("#"):
+                        user, pwd = line.strip().split(":", maxsplit=1)
+                        self.roleaccounts[user] = pwd
 
 
 class StorageConfiguration:
