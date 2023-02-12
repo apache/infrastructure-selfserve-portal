@@ -136,7 +136,7 @@ function blur_bg(blur= true) {
   }
 }
 
-function toast(message, type="danger") {
+function toast(message, type="danger", redirect_on_close=null) {
   // Displays a message/alert as a toast if possible, falling back to alert() otherwise
   const toastdiv = document.getElementById('liveToast');
   if (toastdiv) {
@@ -144,7 +144,12 @@ function toast(message, type="danger") {
     toastdiv.querySelector('.toast-header').setAttribute('class', `toast-header text-white bg-${type}`);
     toastdiv.querySelector('.toast-body').innerText = message;
     toastobj.show();
-    toastdiv.addEventListener('hide.bs.toast', () => blur_bg(false))
+    toastdiv.addEventListener('hide.bs.toast', () => {
+      blur_bg(false);
+      if (redirect_on_close) {
+        location.href = redirect_on_close;
+      }
+    });
     blur_bg();
   } else {
     alert(message);
@@ -306,7 +311,7 @@ async function mailinglist_new_submit(form) {
   });
   const result = await resp.json();
   if (result.success) {
-    toast(result.message);
+    toast(result.message, type="success", redirect_on_close="/");
   } else {
     toast(result.message);
   }
