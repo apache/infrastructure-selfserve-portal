@@ -1,1 +1,1 @@
-from . import oauth, session, jiraaccount, public, mailinglist
+from . import oauth, session, jiraaccount, public, mailinglist, queue
