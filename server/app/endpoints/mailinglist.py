@@ -109,14 +109,10 @@ async def process(form_data, session):
             json.dump(payload, f)
 
         # Notify of pending request
-        if is_private:
-            await log.slack(
-                f"A new private mailing list, `{listpart}@{domainpart}` has been queued for creation, as requested by {session.uid}@apache.org."
-            )
-        else:
-            await log.slack(
-                f"A new public mailing list, `{listpart}@{domainpart}` has been queued for creation, as requested by {session.uid}@apache.org."
-            )
+        visitype = "private" if is_private else "public"
+        await log.slack(
+            f"A new {visitype} mailing list, `{listpart}@{domainpart}` has been queued for creation, as requested by {session.uid}@apache.org."
+        )
 
         email.from_template(
             "mailinglist_create.txt",
