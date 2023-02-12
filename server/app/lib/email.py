@@ -20,12 +20,11 @@
 from . import config
 import asfpy.messaging
 import os
-import requests
 
 """Simple lib for sending emails based on templates"""
 
-# Grab whimsy's mail mappings
-WHIMSY_PUBDATA = requests.get("https://whimsy.apache.org/public/committee-info.json").json()["committees"]
+# If a domain/project cannot be found, we redirect mail to infra
+DEFAULT_MAIL_HOST = "infra.apache.org"
 
 
 def from_template(template_filename: str, recipient: str, variables: dict):
@@ -43,6 +42,7 @@ def from_template(template_filename: str, recipient: str, variables: dict):
 
 def project_to_private(project: str):
     """Convert a project name to a private mailing list target"""
-    if project in WHIMSY_PUBDATA:
-        project = WHIMSY_PUBDATA[project].get("mail_list", project)
-    return f"private@{project}.apache.org"
+    project_hostname = config.messaging.mail_mappings.get(project)
+    if not project_hostname:  # If hostname wasn't found, alert private@infra instead.
+        project_hostname = DEFAULT_MAIL_HOST
+    return f"private@{project_hostname}"

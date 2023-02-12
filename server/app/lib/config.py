@@ -33,6 +33,7 @@ import json
 
 CONFIG_FILE = "config.yaml"
 WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
+WHIMSY_COMMITTEE_URL = "https://whimsy.apache.org/public/committee-info.json"
 
 
 def text_to_int(size):
@@ -100,6 +101,7 @@ class MessagingConfiguration:
         self.sender = yml["sender"]
         self.template_dir = yml["template_dir"]
         self.mailing_lists = []
+        self.mail_mappings = {}
 
 
 async def get_projects_from_ldap():
@@ -116,7 +118,8 @@ async def get_projects_from_ldap():
             projects.clear()
             project_list.add("infra")  # Add infra for testing
             projects.extend(sorted(project_list))
-
+            # Grab the mailing list hostname mappings for our projects
+            await fetch_committee_mappings()
         except asyncio.exceptions.TimeoutError:
             print("LDAP lookup for list of projects timed out, retrying in 10 minutes")
         await asyncio.sleep(600)
@@ -152,6 +155,30 @@ async def fetch_valid_lists():
                     txt = await resp.text()
                     print(f"Could not fetch mailing lists from webmod.apache.org: {txt}")
         await asyncio.sleep(3600)  # Wait an hour
+
+
+async def fetch_committee_mappings():
+    """Fetches the committee info from Whimsy, in order to create project-to-hostname mappings"""
+    async with aiohttp.ClientSession() as client:
+        async with client.get(WHIMSY_COMMITTEE_URL) as resp:
+            if resp.status == 200:
+                try:
+                    committee_json = await resp.json()
+                    if "committees" in committee_json:
+                        committees = committee_json["committees"]
+                        mail_mappings = {}
+                        for project in projects:
+                            if project in committees:
+                                project_domain = committees[project].get("mail_list", project)
+                            else:
+                                project_domain = project
+                            mail_mappings[project] = f"{project_domain}.apache.org"
+                        messaging.mail_mappings = mail_mappings
+                except json.JSONDecodeError as e:
+                    print(f"Could not decode JSON from whimsy: {e}")
+            else:
+                txt = await resp.text()
+                print(f"Could not fetch committee info from whimsy.apache.org: {txt}")
 
 
 cfg_yaml = yaml.safe_load(open(CONFIG_FILE, "r"))
