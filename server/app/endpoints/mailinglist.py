@@ -70,6 +70,7 @@ async def process(form_data, session):
             assert can_manage_domain(
                 session, domainpart
             ), "You are not authorized to create mailing lists for this domain"
+            assert isinstance(moderators, list) and moderators, "You need to provide a list of moderators"
             assert all(
                 VALID_EMAIL_RE.match(moderator) for moderator in moderators
             ), "Invalid moderator list provided. Please use valid email addresses only"
