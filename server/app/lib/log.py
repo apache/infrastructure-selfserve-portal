@@ -19,5 +19,19 @@
 """generic logging for the portal"""
 
 import asfpy.syslog
+import aiohttp
+from . import config
 
 log = asfpy.syslog.Printer(stdout=True, identity="selfserve-platform")
+
+
+async def slack(message: str):
+    """Logs a message to #asfinfra in slack"""
+    payload = {
+        "text": message
+    }
+    if config.messaging.slack_url:
+        async with aiohttp.ClientSession() as client:
+            await client.post(config.messaging.slack_url, json=payload)
+    else:
+        print(message)

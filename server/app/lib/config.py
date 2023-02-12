@@ -108,6 +108,7 @@ class MessagingConfiguration:
         self.template_dir = yml["template_dir"]
         self.mailing_lists = []
         self.mail_mappings = {}
+        self.slack_url = yml.get("slack_url")
 
 
 async def get_projects_from_ldap():
