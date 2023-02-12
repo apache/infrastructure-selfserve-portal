@@ -243,3 +243,71 @@ function jira_account_deny_details() {
   const deny_details = document.getElementById('deny_details');
   deny_details.style.display = "block";
 }
+
+
+async function mailinglist_seed_domain_list() {
+  // Seeds the dropdown with current mailing list domains
+  const domainlist = document.getElementById('domainpart');
+  const pubresp = await GET("/api/public");
+  const pubdata = await pubresp.json();
+  for (const [project, domain] of Object.entries(pubdata.mail_domains)) {
+    const opt = document.createElement("option");
+    opt.text = domain;
+    opt.value = domain;
+    domainlist.appendChild(opt);
+  }
+}
+
+
+function mailinglist_update_privacy(listpart, privatetick = false) {
+  const span = document.getElementById('privacy_note');
+  if (listpart == "private" || listpart == "security" || privatetick === true) {
+    span.innerText = "This list will be PRIVATE";
+    span.style.color = "maroon";
+  } else {
+    span.innerText = "This list will be PUBLIC.";
+    span.style.color = "darkgreen";
+  }
+}
+
+
+async function mailinglist_new(prefs) {
+  await mailinglist_seed_domain_list();
+  if (prefs.root) {
+    const admindiv = document.getElementById('admin_div');
+    admindiv.style.display = "block";
+  }
+}
+
+async function mailinglist_new_submit(form) {
+  const data = new FormData(form);
+  const moderators = new Array();
+  for (const modemail of data.get("moderators").split("\n")) {
+    const email_trimmed = modemail.trim();
+    if (email_trimmed.length > 4) {
+      moderators.push(email_trimmed);
+    }
+  }
+  const listpart = data.get("listpart");
+  let is_private = data.get("private") === "yes";
+  if (listpart == "private" || listpart == "security") {
+    is_private = true;
+  }
+  const resp = await POST("/api/mailinglist", {
+    json: {
+      listpart: listpart,
+      domainpart: data.get("domainpart"),
+      moderators: moderators,
+      muopts: data.get("muopts"),
+      private: is_private,
+      trailer: data.get("trailer") === "yes",
+      expedited: data.get("expedited") === "yes"
+    }
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message);
+  } else {
+    toast(result.message);
+  }
+}

@@ -1,0 +1,67 @@
+<h1>Create a new mailing list</h1>
+
+<form onsubmit="mailinglist_new_submit(this); return false;">
+    <div class="mb-3">
+        <label for="domainpart" class="form-label" style="display: block;">New mailing list address</label>
+        <input onkeyup="mailinglist_update_privacy(this.value);" type="text" class="form-control" id="listpart" name="listpart" style="display: inline-block; width: auto;"> @
+        <select class="form-control" id="domainpart"  name="domainpart"aria-describedby="domainpartHelp" style="display: inline-block; width: auto;">
+            <option selected disabled value="">--- Select a domain ---</option>
+        </select>
+        <span id="privacy_note"></span>
+        <div id="domainpartHelp" class="form-text">This is the new mailing list address. It consists of a list part (for instance, dev, users, private, etc) and a domain part (httpd.apache.org, apachecon.com, etc). If you are requesting a new mailing list for your project, be sure to pick the appropriate domain.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="moderators" class="form-label">Moderator list</label>
+        <textarea id="moderators" name="moderators" class="form-control" style="max-width: 400px; line-height: 1.1em; height: 6.6em;"></textarea>
+        <div id="moderatorsHelp" class="form-text">Please list the email addresses of the people that will be moderating this list, one email address per line.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="muopts" class="form-label">Moderation preset</label>
+
+        <select class="form-control" id="muopts" name="muopts">
+            <option value="mu">Allow subscribers to post, moderate all others</option>
+            <option value="Mu">Allow subscribers to post, reject all others</option>
+            <option value="mU">Moderate all posts</option>
+        </select>
+        <div id="muoptshelp" class="form-text">This controls the behaviour of all emails arriving at the list. Certain list names will have individually hardcoded overrides for these presets.</div>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" name="trailer" id="trailer" value="yes">
+        <label class="form-check-label" for="trailer">Add standard unsubscribe footer to all emails on the list.</label>
+    </div>
+
+
+    <div class="mb-3" id="admin_div" style="display: none;">
+        <input type="checkbox" class="form-check-input" name="private" id="private" value="yes" onchange="mailinglist_update_privacy(null, this.checked);">
+        <label class="form-check-label" for="private">Make this list <b>private</b>.</label>
+        <br/>
+        <input type="checkbox" class="form-check-input" name="expedited" id="expedited" value="yes">
+        <label class="form-check-label" for="expedited">Expedite creation of list (within the next two hours instead of 12).</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <br/>
+    <hr/>
+    <p>
+        NB:
+        Reply-To headers will be set to the same list, except for commit and notification
+        lists, which will defer to dev@$project for replies. For special configurations,
+        please file an Infra Jira ticket.
+    </p>
+    <p>
+        Any <b><kbd>private@</kbd></b>, and <b><kbd>security@</kbd></b> lists created will always be private.
+        Any other private list creation must be submitted as an Infra Jira ticket with PMC-supported justification for the private list.
+    </p>
+    <p><b>DO NOTE:</b> Being a moderator does not equal being subscribed to a list. If you want to receive emails from a newly created list, it is not enough to be listed as a moderator, you will have to subscribe to the list manually.</p>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(mailinglist_new);
+        //mailinglist_new({});
+    }
+</script>
