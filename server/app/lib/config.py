@@ -35,6 +35,12 @@ CONFIG_FILE = "config.yaml"
 WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
 WHIMSY_COMMITTEE_URL = "https://whimsy.apache.org/public/committee-info.json"
 
+# The two mail domain bases - apache.org for the foundation, apachecon.com for apachecon
+BASE_MAIL_DOMAINS = {
+    "foundation": "apache.org",
+    "apachecon": "apachecon.com",
+}
+
 
 def text_to_int(size):
     """Convert shorthand size notation to integer (kb,mb,gb)"""
@@ -166,7 +172,7 @@ async def fetch_committee_mappings():
                     committee_json = await resp.json()
                     if "committees" in committee_json:
                         committees = committee_json["committees"]
-                        mail_mappings = {}
+                        mail_mappings = BASE_MAIL_DOMAINS.copy()
                         for project in projects:
                             if project in committees:
                                 project_domain = committees[project].get("mail_list", project)
