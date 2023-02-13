@@ -1,0 +1,6 @@
+Confluence space created: {spacename}
+--
+Hi there,
+As requested by {requester}, the following confluence space has been created:
+https://cwiki.apache.org/confluence/display/{spacename}
+
