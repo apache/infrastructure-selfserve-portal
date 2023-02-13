@@ -22,9 +22,14 @@ from ..lib import middleware, asfuid, email, log, config
 import quart
 import re
 import asyncio
+import os
+import json
 
 RE_VALID_PROJECT_KEY = re.compile(r"^[A-Z0-9]+$")
 ACLI_CMD = "/opt/latest-cli/acli.sh"
+JIRA_SCHEME_FILES = {
+    "workflow": "/x1/acli/site/js/jiraworkflowschemes.json",
+}
 
 
 async def jira_user_exists(username: str):
@@ -192,10 +197,33 @@ async def process(form_data, session):
         "message": "Jira project created",
     }
 
+@asfuid.session_required
+async def list_schemes(form_data, session):
+    """Lists current valid schemes for Jira"""
+    scheme_dict = {}
+    for key, filepath in JIRA_SCHEME_FILES.items():
+        if os.path.isfile(filepath):
+            try:
+                js = json.load(open(filepath))
+                scheme_dict[key] = js
+            except json.JSONDecodeError:  # Bad JSON file? :/
+                scheme_dict[key] = {}
+    return quart.jsonify(scheme_dict)
+
+
 quart.current_app.add_url_rule(
     "/api/jira-project-create",
     methods=[
         "POST",  # Create a new jira project
     ],
     view_func=middleware.glued(process),
+)
+
+
+quart.current_app.add_url_rule(
+    "/api/jira-project-schemes",
+    methods=[
+        "GET",  # List valid schemes
+    ],
+    view_func=middleware.glued(list_schemes),
 )
