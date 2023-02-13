@@ -102,7 +102,9 @@ class Credentials:
             self.name = quart.session["fullname"]
             self.projects = quart.session["projects"]
             self.pmcs = quart.session["pmcs"]
-            self.root = quart.session["isRoot"]
+            self.root = bool(quart.session["isRoot"])
+            self.member = bool(quart.session["isMember"])
+            self.chair = bool(quart.session["isChair"])
             self.roleaccount = False
 
         elif (
@@ -117,6 +119,8 @@ class Credentials:
             self.pmcs = []
             self.root = True
             self.roleaccount = False
+            self.member = False
+            self.chair = False
         # Role account?
         elif quart.request.authorization:
             username = quart.request.authorization.username
@@ -127,6 +131,8 @@ class Credentials:
                 self.uid = username
                 self.name = "API Role Account"
                 self.root = False
+                self.member = False
+                self.chair = False
                 self.pmcs = []
                 self.projects = []
                 self.roleaccount = True
