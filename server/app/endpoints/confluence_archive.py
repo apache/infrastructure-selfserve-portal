@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 """Selfserve Portal for the Apache Software Foundation"""
-"""Handler for mailing list creation"""
+"""Handler for archiving a confluence space"""
 
 from ..lib import middleware, asfuid, email, log
 import quart
