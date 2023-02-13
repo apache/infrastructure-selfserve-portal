@@ -27,9 +27,18 @@ log = asfpy.syslog.Printer(stdout=True, identity="selfserve-platform")
 
 async def slack(message: str):
     """Logs a message to #asfinfra in slack"""
-    payload = {"text": message}
+    # Incoming webhook style
     if config.messaging.slack_url:
         async with aiohttp.ClientSession() as client:
-            await client.post(config.messaging.slack_url, json=payload)
+            await client.post(config.messaging.slack_url, json={"text": message})
+    # Token style
+    elif config.messaging.slack_token and config.messaging.slack_channel:
+        async with aiohttp.ClientSession() as client:
+            resp = await client.post(
+                "https://slack.com/api/chat.postMessage",
+                headers={"Authorization": f"Bearer {config.messaging.slack_token}"},
+                json={"channel": config.messaging.slack_channel, "text": message},
+            )
+    # Nothing defined? just print
     else:
         print(message)
