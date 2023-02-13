@@ -316,3 +316,35 @@ async function mailinglist_new_submit(form) {
     toast(result.message);
   }
 }
+
+async function confluence_archive(form) {
+  // Archive a confluence space
+  const data = new FormData(form);
+  const spacename = data.get("spacename");
+  if (!spacename.match(/^[A-Z0-9][A-Z0-9]+$/)) {
+    toast("Please enter a valid confluence space name");
+    return
+  }
+
+  // Set spinner, hide real button
+  const buttons = document.getElementById('buttons_real');
+  buttons.style.display = "none";
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  // Send off request
+  const resp = await POST("/api/confluence-archive", {
+    json: {
+      space: spacename
+    }
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    // hide spinner, put button back
+    buttons.style.display = "block";
+    spin.style.display = "none";
+  }
+}

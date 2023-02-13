@@ -1,0 +1,39 @@
+<h1>Archive a confluence space</h1>
+
+<form onsubmit="confluence_archive(this); return false;">
+    <div class="mb-3">
+        <label for="spacename" class="form-label" style="display: block;">Space name to archive</label>
+        <input required pattern="[A-Z0-9]+" type="text" class="form-control" id="spacename" name="spacename" style="display: inline-block; width: auto;">
+        <div id="spacenameHelp" class="form-text">Enter the name of the space to archive. Must be uppercase alphanumerical characters only, for instance, INFRATEST.</div>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Archive space</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+    <p>
+        NB:
+        Reply-To headers will be set to the same list, except for commit and notification
+        lists, which will defer to dev@$project for replies. For special configurations,
+        please file an Infra Jira ticket.
+    </p>
+    <p>
+        Any <b><kbd>private@</kbd></b>, and <b><kbd>security@</kbd></b> lists created will always be private.
+        Any other private list creation must be submitted as an Infra Jira ticket with PMC-supported justification for the private list.
+    </p>
+    <p><b>DO NOTE:</b> Being a moderator does not equal being subscribed to a list. If you want to receive emails from a newly created list, it is not enough to be listed as a moderator, you will have to subscribe to the list manually.</p>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate();
+    }
+</script>
