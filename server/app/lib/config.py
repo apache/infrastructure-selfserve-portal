@@ -30,8 +30,9 @@ import asfpy.clitools
 import aiohttp
 import json
 
-
-CONFIG_FILE = "config.yaml"
+# If pipservice, we may use the pipservice module to define a config. Use if found.
+PIPSERVICE_CONFIG = os.path.join(os.path.realpath(".."), "selfserve-portal.yaml")
+CONFIG_FILE = PIPSERVICE_CONFIG if os.path.isfile(PIPSERVICE_CONFIG) else "config.yaml"
 WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
 WHIMSY_COMMITTEE_URL = "https://whimsy.apache.org/public/committee-info.json"
 
@@ -196,7 +197,6 @@ async def fetch_committee_mappings():
             else:
                 txt = await resp.text()
                 print(f"Could not fetch committee info from whimsy.apache.org: {txt}")
-
 
 cfg_yaml = yaml.safe_load(open(CONFIG_FILE, "r"))
 server = ServerConfiguration(cfg_yaml.get("server", {}))
