@@ -20,7 +20,6 @@
 
 from ..lib import middleware, asfuid, email, log
 import quart
-import json
 import re
 import asyncio
 
