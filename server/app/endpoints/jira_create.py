@@ -145,6 +145,8 @@ async def process(form_data, session):
         assert (
             ldap_project in config.projects
         ), "Please specify a valid, current apache project to assign this Jira project to"
+        if not session.root:
+            assert ldap_project in session.pmcs, "You can only create a Jira project for an Apache project you are on the PMC of"
         assert isinstance(issue_scheme, str) and issue_scheme, "Please specify a valid issue scheme this project"
         assert (
             isinstance(workflow_scheme, str) and workflow_scheme
@@ -158,6 +160,7 @@ async def process(form_data, session):
         await create_jira_project(
             project_key=project_key,
             project_name=project_name,
+            project_lead=project_lead,
             description=description,
             issue_scheme=issue_scheme,
             workflow_scheme=workflow_scheme,
@@ -188,7 +191,6 @@ async def process(form_data, session):
         "success": True,
         "message": "Jira project created",
     }
-
 
 quart.current_app.add_url_rule(
     "/api/jira-project-create",
