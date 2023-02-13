@@ -1,0 +1,39 @@
+<h1>Create a confluence space</h1>
+
+<form onsubmit="confluence_create(this); return false;">
+    <div class="mb-3">
+        <label for="spacename" class="form-label" style="display: block;">Name of the new space</label>
+        <input required pattern="[A-Z0-9]+" type="text" class="form-control" id="spacename" name="spacename" style="display: inline-block; width: auto;">
+        <div id="spacenameHelp" class="form-text">Enter the name of the space to create. Must be uppercase alphanumerical characters only, for instance, FOOBAR.</div>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label" style="display: block;">Description of the new space</label>
+        <input type="text" class="form-control" id="description" name="description">
+        <div id="descriptionHelp" class="form-text">Enter a short description of what this space will be for.</div>
+    </div>
+    <div class="mb-3">
+        <label for="admin" class="form-label" style="display: block;">Initial confluence space admin</label>
+        <input required pattern="[-a-zA-Z0-9]+" type="text" class="form-control" id="admin" name="admin" style="display: inline-block; width: auto;">
+        <div id="adminHelp" class="form-text">Enter the username of the initial administrator for this space. This should usually be your LDAP username.</div>
+    </div>
+
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Create confluence space</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate();
+    }
+</script>
