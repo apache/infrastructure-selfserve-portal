@@ -144,7 +144,7 @@ async def set_default_space_access(space: str, admin: str):
 
 @asfuid.session_required
 async def process(form_data, session):
-    # Archive a confluence space
+    # Create a confluence space
     spacename = form_data.get("space")
     admin = form_data.get("admin")
     description = form_data.get("description")
