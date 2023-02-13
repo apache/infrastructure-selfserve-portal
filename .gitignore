@@ -194,3 +194,7 @@ Pipfile*
 # Generated documentation
 htdocs/docs/*
 htdocs/compiled/*
+
+# Local test files
+roleaccounts.txt
+selfserve-portal.yaml
