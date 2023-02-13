@@ -217,8 +217,7 @@ async def process(form_data, session):
 quart.current_app.add_url_rule(
     "/api/confluence-archive",
     methods=[
-        "GET",
-        "POST",  # Create a new mailing list
+        "POST",  # Archive a space
     ],
     view_func=middleware.glued(process),
 )
