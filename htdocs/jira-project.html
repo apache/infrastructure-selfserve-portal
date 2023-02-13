@@ -1,0 +1,74 @@
+<h1>Create a Jira project</h1>
+
+<form onsubmit="jira_create(this); return false;">
+    <div class="mb-3">
+        <label for="project_key" class="form-label" style="display: block;">Slug (project key) for the new Jira project</label>
+        <input required pattern="[A-Z0-9]+" type="text" class="form-control" id="project_key" name="project_key" style="display: inline-block; width: auto;">
+        <div id="project_keyHelp" class="form-text">This is the short name identifier for the new project. It must be uppercase alphanumerical characters only, e.g. FOOBAR or PONY2.</div>
+    </div>
+    <div class="mb-3">
+        <label for="project_name" class="form-label" style="display: block;">Full name of the new Jira project</label>
+        <input required type="text" class="form-control" id="project_name" name="project_name" style="display: inline-block; width: auto;">
+        <div id="project_nameHelp" class="form-text">A full title for the new Jira project, for instance, Apache Foobar</div>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label" style="display: block;">Description of the new Jira project</label>
+        <input type="text" class="form-control" id="description" name="description">
+        <div id="descriptionHelp" class="form-text">Enter a short description of what this Jira project will be used for.</div>
+    </div>
+    <div class="mb-3">
+        <label for="project_lead" class="form-label" style="display: block;">Initial Jira project lead</label>
+        <input required pattern="[-.a-zA-Z0-9]+" type="text" class="form-control" id="project_lead" name="project_lead" style="display: inline-block; width: auto;">
+        <div id="project_leadHelp" class="form-text">Enter the username of the initial project lead for this project. This should usually be your LDAP username.</div>
+    </div>
+    <div class="mb-3">
+        <label for="homepage_url" class="form-label" style="display: block;">Homepage URL for this Jira project</label>
+        <input required pattern="https://.+" type="text" class="form-control" id="homepage_url" name="homepage_url">
+        <div id="homepage_urlHelp" class="form-text">This will typically be your project's website at https://projectname.apache.org/</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="project" class="form-label">Responsible Apache project</label>
+        <select required class="form-control" id="project"  name="ldap_project" aria-describedby="ldap_projectHelp">
+            <option selected disabled value="">--- Select a project ---</option>
+        </select>
+        <div id="ldap_projectHelp" class="form-text">Select the ASF project that will be in charge of this project.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="issue_scheme" class="form-label">Issue type scheme</label>
+        <select required class="form-control" id="issue_scheme"  name="issue_scheme" aria-describedby="issue_schemeHelp">
+            <option selected value="Apache Default Issue Type Scheme">Apache Default Issue Type Scheme</option>
+        </select>
+        <div id="issue_schemeHelp" class="form-text">The issue type scheme to use. Currently, there is only one.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="workflow_scheme" class="form-label">Workflow scheme</label>
+        <select required class="form-control" id="workflow_scheme"  name="workflow_scheme" aria-describedby="workflow_schemeHelp">
+            <option selected value="Default workflow, editable Closed issues">Default workflow, editable Closed issues</option>
+        </select>
+        <div id="workflow_schemeHelp" class="form-text">The workflow scheme to use. The default is generally advised unless you have specific needs.</div>
+    </div>
+
+
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Create Jira project</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(jira_create_prime);
+    }
+</script>

@@ -385,3 +385,52 @@ async function confluence_create(form) {
     spin.style.display = "none";
   }
 }
+
+
+async function jira_seed_schemes() {
+  // Seeds the appropriate dropdowns with current schemes
+  const pubresp = await GET("/api/jira-project-schemes");
+  const pubdata = await pubresp.json();
+
+  for (const [schemename, schemelist] of Object.entries(pubdata)) {
+    const scheme_obj = document.getElementById(`${schemename}_scheme`);
+    if (scheme_obj) {
+      for (const entry of schemelist) {
+        const opt = document.createElement("option");
+        opt.text = entry;
+        opt.value = entry;
+        scheme_obj.appendChild(opt);
+      }
+    }
+  }
+}
+
+async function jira_create(form) {
+  // Create a new jira project
+  const data = new FormData(form);
+
+  // Set spinner, hide real button
+  const buttons = document.getElementById('buttons_real');
+  buttons.style.display = "none";
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  // Send off request
+  const resp = await POST("/api/jira-project-create", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    // hide spinner, put button back
+    buttons.style.display = "block";
+    spin.style.display = "none";
+  }
+}
+
+async function jira_create_prime() {
+  await jira_seed_project_list();
+  await jira_seed_schemes();
+}
