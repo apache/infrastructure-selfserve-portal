@@ -119,7 +119,9 @@ class MessagingConfiguration:
         self.template_dir = yml["template_dir"]
         self.mailing_lists = []
         self.mail_mappings = {}
-        self.slack_url = yml.get("slack_url")
+        self.slack_url = yml.get("slack_url")  # Incoming webhook style
+        self.slack_token = yml.get("slack_token")  # restricted token style
+        self.slack_channel = yml.get("slack_channel")  # token style, cont'd.
 
 
 async def get_projects_from_ldap():
