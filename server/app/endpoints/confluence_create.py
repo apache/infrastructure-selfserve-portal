@@ -151,7 +151,7 @@ async def process(form_data, session):
 
     try:
         assert (
-            session.member or session.chair or session.roleaccount
+            session.member or session.chair or session.root
         ), "Only officers or foundation members can use this feature"
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert (
