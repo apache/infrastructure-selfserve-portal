@@ -29,7 +29,7 @@ import werkzeug.routing
 async def consume_body():
     """Consumes the request body, punting it to dev-null. This is required for httpd to not throw 502 at error"""
     # See: https://bz.apache.org/bugzilla/show_bug.cgi?id=55433
-    async for data in quart.request.body:
+    async for _data in quart.request.body:
         pass
 
 
