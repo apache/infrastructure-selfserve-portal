@@ -108,7 +108,7 @@ async def process(form_data):
             ), "Please select a valid project"
             assert (
                 isinstance(why, str) and len(why) > 10
-            ), "Please write a valid reason why you need to create a Jira account. Make sure it contains enough information for reviewers to properly assess your request."
+            ), "Please write a valid reason why you want a Jira account. Make sure it contains enough information for reviewers to properly assess your request."
 
             # Check that username ain't taken
             assert (
