@@ -34,10 +34,12 @@ PROTECTED_SPACES = (
     "COMDEV",
 )
 
+CONFLUENCE_ERROR = "Confluence action failed due to an internal server error."
+INVALID_NAME = "Invalid space name!"
 
 async def set_archived_status(space: str):
     """Mark a confluence space as archived"""
-    assert RE_VALID_SPACE.match(space), "Invalid space name!"
+    assert RE_VALID_SPACE.match(space), INVALID_NAME
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
         *(
@@ -52,12 +54,12 @@ async def set_archived_status(space: str):
         ),
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
 async def get_space_owners(space: str):
     """Gets the list of users and groups with access to a confluence space"""
-    assert RE_VALID_SPACE.match(space), "Invalid space name!"
+    assert RE_VALID_SPACE.match(space), INVALID_NAME
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
         *(
@@ -73,7 +75,7 @@ async def get_space_owners(space: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    stdout, _stderr = await proc.communicate()
     assert stdout, "Could not find this confluence space"
     js = json.loads(stdout)
     users = set()
@@ -84,13 +86,13 @@ async def get_space_owners(space: str):
         elif entry["idType"] == "group":
             groups.add(entry["id"])
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
     return users, groups
 
 
 async def remove_space_access(space: str, userlist=None, grouplist=None):
     """Removes space access to a list of one or more users"""
-    assert RE_VALID_SPACE.match(space), "Invalid space name!"
+    assert RE_VALID_SPACE.match(space), INVALID_NAME
     if userlist:
         if isinstance(userlist, list) or isinstance(userlist, set):
             userlist = ",".join(userlist)
@@ -110,7 +112,7 @@ async def remove_space_access(space: str, userlist=None, grouplist=None):
             ),
         )
         await proc.wait()
-        assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+        assert proc.returncode == 0, CONFLUENCE_ERROR
     if grouplist:
         if isinstance(grouplist, list) or isinstance(grouplist, set):
             grouplist = ",".join(grouplist)
@@ -130,12 +132,12 @@ async def remove_space_access(space: str, userlist=None, grouplist=None):
             ),
         )
         await proc.wait()
-        assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+        assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
 async def read_only_access(space: str):
     """Adds read-only access to a space"""
-    assert RE_VALID_SPACE.match(space), "Invalid space name!"
+    assert RE_VALID_SPACE.match(space), INVALID_NAME
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
         *(
@@ -153,7 +155,7 @@ async def read_only_access(space: str):
         stderr=asyncio.subprocess.PIPE,
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
@@ -172,7 +174,7 @@ async def read_only_access(space: str):
         stderr=asyncio.subprocess.PIPE,
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
 @asfuid.session_required

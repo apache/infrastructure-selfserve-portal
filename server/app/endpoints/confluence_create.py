@@ -33,6 +33,8 @@ PROTECTED_SPACES = (
     "COMDEV",
 )
 
+CONFLUENCE_ERROR = "Confluence action failed due to an internal server error."
+INVALID_NAME = "Invalid space name!"
 
 async def confluence_user_exists(username: str):
     """Checks if a confluence user exists"""
@@ -46,7 +48,7 @@ async def confluence_user_exists(username: str):
 
 async def create_space(space: str, description: str):
     """Creates a new, blank confluence space"""
-    assert RE_VALID_SPACE.match(space), "Invalid space name!"
+    assert RE_VALID_SPACE.match(space), INVALID_NAME
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
         *(
@@ -66,7 +68,7 @@ async def create_space(space: str, description: str):
 
 async def set_default_space_access(space: str, admin: str):
     """Sets up default permissions for a space"""
-    assert RE_VALID_SPACE.match(space), "Invalid space name!"
+    assert RE_VALID_SPACE.match(space), INVALID_NAME
     assert isinstance(admin, str) and admin, "Please specify a valid admin user"
 
     # All permissions for admin
@@ -85,7 +87,7 @@ async def set_default_space_access(space: str, admin: str):
         ),
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
     # Anonymous read access
     proc = await asyncio.create_subprocess_exec(
@@ -103,7 +105,7 @@ async def set_default_space_access(space: str, admin: str):
         ),
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
     # View+export rights for logged-in users
     proc = await asyncio.create_subprocess_exec(
@@ -121,7 +123,7 @@ async def set_default_space_access(space: str, admin: str):
         ),
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
     # Remove infrabot, tut tut
     proc = await asyncio.create_subprocess_exec(
@@ -139,7 +141,7 @@ async def set_default_space_access(space: str, admin: str):
         ),
     )
     await proc.wait()
-    assert proc.returncode == 0, "Confluence action failed due to an internal server error."
+    assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
 @asfuid.session_required
