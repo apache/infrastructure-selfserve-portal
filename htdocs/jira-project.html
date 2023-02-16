@@ -4,7 +4,7 @@
     <div class="mb-3">
         <label for="project_key" class="form-label" style="display: block;">Slug (project key) for the new Jira project</label>
         <input required pattern="[A-Z0-9]+" type="text" class="form-control" id="project_key" name="project_key" style="display: inline-block; width: auto;">
-        <div id="project_keyHelp" class="form-text">This is the short name identifier for the new project. It must be uppercase alphanumerical characters only, e.g. FOOBAR or PONY2.</div>
+        <div id="project_keyHelp" class="form-text">This is the short name identifier for the new project. It must be uppercase alphanumeric characters only, e.g. FOOBAR or PONY2.</div>
     </div>
     <div class="mb-3">
         <label for="project_name" class="form-label" style="display: block;">Full name of the new Jira project</label>
@@ -19,7 +19,7 @@
     <div class="mb-3">
         <label for="project_lead" class="form-label" style="display: block;">Initial Jira project lead</label>
         <input required pattern="[-.a-zA-Z0-9]+" type="text" class="form-control" id="project_lead" name="project_lead" style="display: inline-block; width: auto;">
-        <div id="project_leadHelp" class="form-text">Enter the username of the initial project lead for this project. This should usually be your LDAP username.</div>
+        <div id="project_leadHelp" class="form-text">Enter the username of the initial project lead for this project. This should usually be the person's LDAP username.</div>
     </div>
     <div class="mb-3">
         <label for="homepage_url" class="form-label" style="display: block;">Homepage URL for this Jira project</label>
@@ -32,7 +32,7 @@
         <select required class="form-control" id="project"  name="ldap_project" aria-describedby="ldap_projectHelp">
             <option selected disabled value="">--- Select a project ---</option>
         </select>
-        <div id="ldap_projectHelp" class="form-text">Select the ASF project that will be in charge of this project.</div>
+        <div id="ldap_projectHelp" class="form-text">Select the ASF project that will be in charge of this Jira project.</div>
     </div>
 
     <div class="mb-3">
@@ -48,7 +48,7 @@
         <select required class="form-control" id="workflow_scheme"  name="workflow_scheme" aria-describedby="workflow_schemeHelp">
             <option selected value="Default workflow, editable Closed issues">Default workflow, editable Closed issues</option>
         </select>
-        <div id="workflow_schemeHelp" class="form-text">The workflow scheme to use. The default is generally advised unless you have specific needs.</div>
+        <div id="workflow_schemeHelp" class="form-text">The workflow scheme to use. We advised using the default unless your project has specific needs.</div>
     </div>
 
 
