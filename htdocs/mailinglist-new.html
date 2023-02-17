@@ -1,4 +1,4 @@
-<h1>Create a new mailing list</h1>
+<h1>Create a mailing list</h1>
 
 <form onsubmit="mailinglist_new_submit(this); return false;">
     <div class="mb-3">
@@ -8,13 +8,13 @@
             <option selected disabled value="">--- Select a domain ---</option>
         </select>
         <span id="privacy_note"></span>
-        <div id="domainpartHelp" class="form-text">This is the new mailing list address. It consists of a list part (for instance, dev, users, private, etc) and a domain part (httpd.apache.org, apachecon.com, etc). If you are requesting a new mailing list for your project, be sure to pick the appropriate domain.</div>
+        <div id="domainpartHelp" class="form-text">This is the new mailing list address. It consists of a list part (for instance, dev, users, private) and a domain part (httpd.apache.org, apachecon.com, etc.). If you are requesting a new mailing list for your project, be sure to pick the appropriate domain.</div>
     </div>
 
     <div class="mb-3">
         <label for="moderators" class="form-label">Moderator list</label>
         <textarea id="moderators" name="moderators" class="form-control" style="max-width: 400px; line-height: 1.1em; height: 6.6em;"></textarea>
-        <div id="moderatorsHelp" class="form-text">Please list the email addresses of the people that will be moderating this list, one email address per line.</div>
+        <div id="moderatorsHelp" class="form-text">List the email addresses of the people who will be moderating this list, one email address per line.</div>
     </div>
 
     <div class="mb-3">
@@ -30,7 +30,7 @@
 
     <div class="mb-3 form-check">
         <input type="checkbox" class="form-check-input" name="trailer" id="trailer" value="yes">
-        <label class="form-check-label" for="trailer">Add standard unsubscribe footer to all emails on the list.</label>
+        <label class="form-check-label" for="trailer">Add standard 'unsubscribe' footer to all emails on the list.</label>
     </div>
 
 
@@ -54,9 +54,9 @@
     </p>
     <p>
         Any <b><kbd>private@</kbd></b>, and <b><kbd>security@</kbd></b> lists created will always be private.
-        Any other private list creation must be submitted as an Infra Jira ticket with PMC-supported justification for the private list.
+        For any other private list creation, submit your request in an Infra Jira ticket, with PMC-supported justification for the private list.
     </p>
-    <p><b>DO NOTE:</b> Being a moderator does not equal being subscribed to a list. If you want to receive emails from a newly created list, it is not enough to be listed as a moderator, you will have to subscribe to the list manually.</p>
+    <p><b>NOTE:</b> Being a moderator does not equal being subscribed to a list. If you want to receive emails from a newly-created list, it is not enough to be listed as a moderator: you have to subscribe to the list manually.</p>
 </form>
 
 
