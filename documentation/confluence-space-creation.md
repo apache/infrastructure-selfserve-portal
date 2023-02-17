@@ -17,5 +17,5 @@ Full access to this feature is granted to chairs of projects and all Foundation 
 Committers and PMC members who are not Foundation members or a chairs of a project cannot use this feature.
 
 ## Notification scheme
-Creating a Confluence Wiki space will notify the infrastructure team via email and Slack for provenance and audit reasons.
+Creating a Confluence Wiki space will notify the Infrastructure team via email and Slack for provenance and audit reasons.
 The requestor (the chair/member requesting the new space) will also receive a receipt of the action performed.
