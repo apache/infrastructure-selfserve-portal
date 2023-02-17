@@ -16,17 +16,18 @@ https://selfserve.apache.org/jira-acct.html
 This feature is intended for contributors of both top-level projects and podlings.
 
 ## Access level(s) required
-Contributors can request an account anonymously
+Contributors can request an account anonymously.
+
 Full access to accepting/denying account requests is granted to anyone on a PMC or PPMC.
 
 ## Data gathered
 - Public name
 - Email address
 - The project that the account request relates to
-- A short description of the intention with the account
+- A short description of the intended use of the account
 
-Only the description and the contributor's username will be relayed to projects for assessment,
-the email address and public name will not be passed on.
+Only the description and the contributor's username will be relayed to projects for assessment.
+The email address and public name will not be passed on.
 
 ## Notification scheme
 Account creations will notify [private@$project.apache.org] for provenance and audit reasons.
