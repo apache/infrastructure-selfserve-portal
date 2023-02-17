@@ -32,3 +32,5 @@ The email address and public name will not be passed on.
 ## Notification scheme
 Account creations will notify [private@$project.apache.org] for provenance and audit reasons.
 The original account requestor will also be notified via email with a detailed description of how to proceed with the new account.
+
+If the request is not approved, notification goes to the project PMC involved and to the requestor.
