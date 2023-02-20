@@ -250,16 +250,19 @@ function jira_account_deny_details() {
 }
 
 
-async function mailinglist_seed_domain_list() {
+async function mailinglist_seed_domain_list(prefs) {
   // Seeds the dropdown with current mailing list domains
   const domainlist = document.getElementById('domainpart');
   const pubresp = await GET("/api/public");
   const pubdata = await pubresp.json();
   for (const [project, domain] of Object.entries(pubdata.mail_domains)) {
-    const opt = document.createElement("option");
-    opt.text = domain;
-    opt.value = domain;
-    domainlist.appendChild(opt);
+    // Only add domain if user can request lists for it. Either by being root, or by being on a PMC
+    if (prefs.root || prefs.pmcs.includes(project)) {
+      const opt = document.createElement("option");
+      opt.text = domain;
+      opt.value = domain;
+      domainlist.appendChild(opt);
+    }
   }
 }
 
@@ -277,7 +280,7 @@ function mailinglist_update_privacy(listpart, privatetick = false) {
 
 
 async function mailinglist_new(prefs) {
-  await mailinglist_seed_domain_list();
+  await mailinglist_seed_domain_list(prefs);
   if (prefs.root) {
     const admindiv = document.getElementById('admin_div');
     admindiv.style.display = "block";
