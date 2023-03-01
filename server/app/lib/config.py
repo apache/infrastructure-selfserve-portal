@@ -96,7 +96,7 @@ class LDAPConfiguration:
             with open(ra_path) as f:
                 for line in f.readlines():
                     if ":" in line and not line.startswith("#"):
-                        user, pwd = line.strip().split(":", maxsplit=1)
+                        user, pwd = line.strip().split(":", 1)
                         self.roleaccounts[user] = pwd
 
 
