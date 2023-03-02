@@ -7,7 +7,7 @@ Jira issue tracker for development purposes. As public signup for Jira accounts 
 and new contributors will now need to use this tool to set up accounts for new users.
 
 ## Canonical URL
-https://selfserve.apache.org/jira-acct.html
+https://selfserve.apache.org/jira-account.html
 
 ## Service managed by this feature
 - Jira issue tracking platform, https://issues.apache.org/jira/
