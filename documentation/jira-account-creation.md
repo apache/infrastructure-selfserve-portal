@@ -26,8 +26,8 @@ Full access to accepting/denying account requests is granted to anyone on a PMC 
 - The project that the account request relates to
 - A short description of the intended use of the account
 
-Only the description and the contributor's username will be relayed to projects for assessment.
-The email address and public name will not be passed on.
+Only the description and the contributor's username/display-name will be relayed to projects for assessment.
+The email address will not be passed on.
 
 ## Notification scheme
 Account creations will notify [private@$project.apache.org] for provenance and audit reasons.
