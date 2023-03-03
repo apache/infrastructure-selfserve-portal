@@ -16,15 +16,25 @@
 # specific language governing permissions and limitations
 # under the License.
 """Selfserve Portal for the Apache Software Foundation"""
-
+import re
 import secrets
 import quart
 from .lib import config, log, middleware
 import os
+import hashlib
+import base64
 
 STATIC_DIR = os.path.join(os.path.realpath(".."), "htdocs")  # File location of static assets
 TEMPLATES_DIR = os.path.join(STATIC_DIR, "templates")  # HTML master templates
 COMPILED_DIR = os.path.join(STATIC_DIR, "compiled")    # Compiled HTML (template + content)
+
+
+def file_to_sri(filepath: str):
+    """Generates a sub-resource integrity value for a file - https://www.w3.org/TR/SRI/"""
+    with open(filepath, "rb") as f:
+        digest = hashlib.sha384(f.read()).digest()
+        b64_digest = base64.b64encode(digest).decode('us-ascii')
+        return f"sha384-{b64_digest}"
 
 
 def main():
@@ -47,6 +57,15 @@ def main():
     async def compile_html():
         """Compiles HTML files in htdocs/ using a master template"""
         master_template = open(os.path.join(TEMPLATES_DIR, "master.html")).read()
+        # Add sub-resource integrity to all scripts
+        for script_src in re.finditer(r'(src="(.+?\.js)")', master_template):
+            script_name = script_src.group(2).lstrip("/")
+            script_path = os.path.join(STATIC_DIR, script_name)
+            if os.path.isfile(script_path):
+                sri = file_to_sri(script_path)
+                orig_src = script_src.group(1)
+                new_src = f"{orig_src} integrity=\"{sri}\""
+                master_template = master_template.replace(orig_src, new_src)
         if not os.path.isdir(COMPILED_DIR):
             log.log(f"Compiled HTML directory {COMPILED_DIR} does not exist, will attempt to create it")
             os.makedirs(COMPILED_DIR, exist_ok=True, mode=0o700)
