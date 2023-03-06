@@ -27,7 +27,8 @@ import os
 DEFAULT_MAIL_HOST = "infra.apache.org"
 
 
-def from_template(template_filename: str, recipient: str, variables: dict):
+def from_template(template_filename: str, recipient: str, variables: dict, thread_start: bool=False, thread_key: str=None):
+    """generate and send email from template"""
     template_path = os.path.join(config.messaging.template_dir, template_filename)
     assert os.path.isfile(template_path), f"Could not find template {template_path}"
     template_data = open(template_path).read()
@@ -37,6 +38,8 @@ def from_template(template_filename: str, recipient: str, variables: dict):
         recipient=recipient,
         subject=subject.strip().format(**variables),
         message=body.strip().format(**variables),
+        thread_start=thread_start,
+        thread_key=thread_key,
     )
 
 
