@@ -220,7 +220,6 @@ async def process_review(form_data, session):
                     "/opt/latest-cli/acli.sh",
                     *(
                         "jira",
-                        "-v",
                         "--action",
                         "addUser",
                         "--userId",
