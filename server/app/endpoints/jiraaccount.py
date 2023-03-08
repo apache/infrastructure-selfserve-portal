@@ -31,11 +31,19 @@ VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
+# It is expensive to use the Jira CLI to check for existing user ids
+# This table is pre-populated with existing ids and the app adds new ids on creation
 JIRA_CREATE_USERS_STATEMENT = """
 CREATE TABLE IF NOT EXISTS users (
      userid text COLLATE NOCASE PRIMARY KEY
     );
 """
+
+# This table holds pending requests
+# The validated column can have the values:
+# - 0: email has not yet been validated
+# - 1: email has been validated, and email sent to PMC
+# The entry is deleted when the request is completed (approved or denied) 
 JIRA_CREATE_PENDING_STATEMENT = """
 CREATE TABLE IF NOT EXISTS pending (
      userid text COLLATE NOCASE PRIMARY KEY,
