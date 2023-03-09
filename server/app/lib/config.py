@@ -42,6 +42,24 @@ BASE_MAIL_DOMAINS = {
     "apachecon": "apachecon.com",
 }
 
+# These projects don't use Jira
+# TODO: derive this list dynamically somehow
+NON_JIRA_PROJECTS = [
+  "accumulo",
+  "annotator",
+  "celix",
+  "cordova",
+  "couchdb",
+  "fluo",
+  "kibble",
+  "linkis",
+  "lucene",
+  "netbeans",
+  "skywalking",
+  "trafficcontrol",
+  "trafficserver",
+  
+]
 
 def text_to_int(size):
     """Convert shorthand size notation to integer (kb,mb,gb)"""
@@ -138,6 +156,9 @@ async def get_projects_from_ldap():
             projects.clear()
             project_list.add("infra")  # Add infra for testing
             projects.extend(sorted(project_list))
+            # create list of Jira projects (i.e. exclude non-Jira)
+            jiraprojects.clear()
+            jiraprojects.extend([item for item in projects if item not in NON_JIRA_PROJECTS])
             # Grab the mailing list hostname mappings for our projects
             await fetch_committee_mappings()
         except asyncio.exceptions.TimeoutError:
@@ -206,4 +227,5 @@ ldap = LDAPConfiguration(cfg_yaml.get("ldap", {}))
 storage = StorageConfiguration(cfg_yaml.get("storage", {}))
 messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
 projects = []  # Filled every 10 min by get_projects_from_ldap
+jiraprojects = [] # As projects, but excluding non-Jira projects
 rate_limits = {}  # Tracks IPs and their usage, resets every day

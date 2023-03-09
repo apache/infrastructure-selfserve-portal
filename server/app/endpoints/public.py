@@ -22,8 +22,13 @@ from ..lib import middleware, config
 
 
 async def process(form_data):
+    print(form_data)
+    if 'jiraprojects' in form_data:
+      projects = config.jiraprojects
+    else:
+      projects = config.projects
     return {
-        "projects": config.projects,
+        "projects": projects,
         "mail_domains": config.messaging.mail_mappings
     }
 

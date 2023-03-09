@@ -157,12 +157,18 @@ function toast(message, type="danger", redirect_on_close=null) {
 }
 
 /********* JIRA ACCOUNT FUNCTIONS *********/
-async function jira_seed_project_list() {
+async function jira_seed_project_list(option) {
   // Seeds the dropdown with current projects
   const projectlist = document.getElementById('project');
-  const pubresp = await GET("/api/public");
+  let uri;
+  if (option == 'jiraprojects') {
+    uri = "/api/public?jiraprojects";
+  } else {
+    uri = "/api/public";
+  }
+  const pubresp = await GET(uri);
   const pubdata = await pubresp.json();
-  for (project of pubdata.projects) {
+  for (const project of pubdata.projects) {
     const opt = document.createElement("option");
     opt.text = project;
     opt.value = project;
