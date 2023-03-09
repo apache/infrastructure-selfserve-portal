@@ -136,6 +136,8 @@ class Credentials:
                 self.pmcs = []
                 self.projects = []
                 self.roleaccount = True
+            else:
+                raise AssertionError("Invalid authorization provided. If you are a committer, please log in via oauth")
         else:
             raise AssertionError("User not logged in via Web UI")
 
