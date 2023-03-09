@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS pending (
     );
 """
 
+# Table for blocked projects (no Jira accounts should be made for them)
+JIRA_CREATE_BLOCKED_STATEMENT = """
+CREATE TABLE IF NOT EXISTS blocked (
+     project text COLLATE NOCASE PRIMARY KEY
+    );
+"""
+
 JIRA_USER_DB = os.path.join(config.storage.db_dir, "jira.db")
 
 JIRA_DB = asfpy.sqlite.db(JIRA_USER_DB)
@@ -71,6 +78,10 @@ if not JIRA_DB.table_exists("users"):
 if not JIRA_DB.table_exists("pending"):
     print(f"Creating Jira pending database")
     JIRA_DB.runc(JIRA_CREATE_PENDING_STATEMENT)
+
+if not JIRA_DB.table_exists("blocked"):
+    print(f"Creating Jira blocked projects database")
+    JIRA_DB.runc(JIRA_CREATE_BLOCKED_STATEMENT)
 
 
 async def check_user_exists(form_data):
@@ -130,6 +141,11 @@ async def process(form_data):
             assert (
                 JIRA_DB.fetchone("pending", email=email_address) is None
             ), "There is already a pending Jira account request associated with this email address. Please wait for it to be processed"
+
+            # Ensure the project isn't blocking jira account creations
+            assert (
+                    JIRA_DB.fetchone("blocked", project=contact_project) is None
+            ), "The project you have selected does not use Jira for issue tracking. Please contact the project to find out where to submit issues."
 
         except AssertionError as e:
             return {"success": False, "message": str(e)}
