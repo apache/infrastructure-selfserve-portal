@@ -69,6 +69,10 @@ JIRA_USER_DB = os.path.join(config.storage.db_dir, "jira.db")
 
 JIRA_DB = asfpy.sqlite.db(JIRA_USER_DB)
 
+# Prefixes used the distinguish user and pmc threads
+# include 'jiraaccount-' as well to avoid possible clash with other modules
+JIRA_USER_THREAD_PREFIX = 'jiraaccount-user'
+JIRA_PMC_THREAD_PREFIX = 'jiraaccount-pmc'
 
 if not JIRA_DB.table_exists("users"):
     print(f"Creating Jira users database")
@@ -169,7 +173,11 @@ async def process(form_data):
 
         # Send the verification email
         verify_url = f"https://{quart.app.request.host}/jira-account-verify.html?{token}"
-        email.from_template("jira_account_verify.txt", recipient=email_address, variables={"verify_url": verify_url})
+        email.from_template("jira_account_verify.txt",
+                            recipient=email_address,
+                            variables={"verify_url": verify_url},
+                            thread_start=True, thread_key=f"{JIRA_USER_THREAD_PREFIX}-{token}"
+                            )
 
         # All done for now
         return {
@@ -187,11 +195,11 @@ async def process(form_data):
 
             # Notify project
             record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
-            email.from_template(
-                "jira_account_pending_review.txt",
-                recipient=email.project_to_private(record["project"]),
-                variables=record,
-            )
+            email.from_template("jira_account_pending_review.txt",
+                                recipient=email.project_to_private(record["project"]),
+                                variables=record,
+                                thread_start=True, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
+                                )
 
             return {"success": True, "message": "Your email address has been validated."}
         else:
@@ -258,12 +266,20 @@ async def process_review(form_data, session):
             JIRA_DB.insert("users", {"userid": entry["userid"]})
 
             # Send welcome email
-            email.from_template("jira_account_welcome.txt", recipient=entry["email"], variables=entry)
+            email.from_template("jira_account_welcome.txt",
+                                recipient=entry["email"],
+                                variables=entry,
+                                thread_start=False, thread_key=f"{JIRA_USER_THREAD_PREFIX}-{token}"
+                                )
 
             # Notify project via private list
             private_list = email.project_to_private(entry["project"])
             entry["approver"] = session.uid
-            email.from_template("jira_account_welcome_pmc.txt", recipient=private_list, variables=entry)
+            email.from_template("jira_account_welcome_pmc.txt",
+                                recipient=private_list,
+                                variables=entry,
+                                thread_start=False, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
+                                )
 
             return {"success": True, "message": "Account created, welcome email has been dispatched."}
 
@@ -275,12 +291,19 @@ async def process_review(form_data, session):
             entry["reason"] = form_data.get("reason") or "No reason given."
 
             # Inform requester
-            email.from_template("jira_account_denied.txt", recipient=entry["email"], variables=entry)
-
+            email.from_template("jira_account_denied.txt",
+                                recipient=entry["email"],
+                                variables=entry,
+                                thread_start=False, thread_key=f"{JIRA_USER_THREAD_PREFIX}-{token}"
+                                )
             # Notify project via private list
             private_list = email.project_to_private(entry["project"])
             entry["approver"] = session.uid
-            email.from_template("jira_account_denied_pmc.txt", recipient=private_list, variables=entry)
+            email.from_template("jira_account_denied_pmc.txt",
+                                recipient=private_list,
+                                variables=entry,
+                                thread_start=False, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
+                                )
 
             return {"success": True, "message": "Account denied, notification dispatched."}
 
