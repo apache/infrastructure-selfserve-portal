@@ -45,17 +45,19 @@ BASE_MAIL_DOMAINS = {
 # These projects don't use Jira
 # TODO: derive this list dynamically somehow
 NON_JIRA_PROJECTS = [
-  "accumulo",
   "annotator",
   "celix",
   "cordova",
   "couchdb",
   "fluo",
+  "httpd",
   "kibble",
   "linkis",
   "lucene",
   "netbeans",
+  "openoffice",
   "skywalking",
+  "tomcat",
   "trafficcontrol",
   "trafficserver",
   
