@@ -40,6 +40,7 @@ def from_template(template_filename: str, recipient: str, variables: dict, threa
         message=body.strip().format(**variables),
         thread_start=thread_start,
         thread_key=thread_key,
+        headers={},
     )
 
 
