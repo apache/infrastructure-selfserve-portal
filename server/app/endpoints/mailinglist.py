@@ -81,12 +81,16 @@ async def process(form_data, session):
     except AssertionError as e:
         return {"success": False, "message": str(e)}
 
+    # This filename is also the ID of the request.
+    filename = f"mailinglist-{listpart}-{domainpart}.json"
+
     # Generate the payload for mailreq
     request_time = now
     if expedited:  # If expedited request, for backwards compat, we pretend it came in a day earlier.
         request_time -= 86400
     payload = {
         "type": "mailinglist",
+        "id": filename,
         "requester": session.uid,
         "requested": request_time,
         "domain": domainpart,
@@ -99,7 +103,6 @@ async def process(form_data, session):
     }
 
     # Save payload file
-    filename = f"mailinglist-{listpart}-{domainpart}.json"
     filepath = os.path.join(config.storage.queue_dir, filename)
     with open(filepath, "w") as f:
         json.dump(payload, f)
