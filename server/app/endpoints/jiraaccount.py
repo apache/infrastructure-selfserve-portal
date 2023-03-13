@@ -75,16 +75,16 @@ JIRA_USER_THREAD_PREFIX = 'jiraaccount-user'
 JIRA_PMC_THREAD_PREFIX = 'jiraaccount-pmc'
 
 if not JIRA_DB.table_exists("users"):
-    print(f"Creating Jira users database")
+    print("Creating Jira users database")
     JIRA_DB.runc(JIRA_CREATE_USERS_STATEMENT)
 
 
 if not JIRA_DB.table_exists("pending"):
-    print(f"Creating Jira pending database")
+    print("Creating Jira pending database")
     JIRA_DB.runc(JIRA_CREATE_PENDING_STATEMENT)
 
 if not JIRA_DB.table_exists("blocked"):
-    print(f"Creating Jira blocked projects database")
+    print("Creating Jira blocked projects database")
     JIRA_DB.runc(JIRA_CREATE_BLOCKED_STATEMENT)
 
 
