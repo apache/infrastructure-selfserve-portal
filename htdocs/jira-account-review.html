@@ -24,7 +24,7 @@
     <div id="deny_details" style="display: none;">
         <div class="mb-3">
             <label for="reason" class="form-label">Optional reason for denying the request</label>
-            <input type="text" class="form-control" id="reason" name="reason" aria-describedby="reasonHelp">
+            <textarea class="form-control" id="reason" name="reason" aria-describedby="reasonHelp"></textarea>
             <div id="reasonHelp" class="form-text">If you wish to supply a reason for denying this request, do so here. We will send the reason to both the project and the requester.</div>
         </div>
         <button type="button" onclick="jira_account_approve(this.form, 'deny');"  class="btn btn-danger">Deny request</button>
