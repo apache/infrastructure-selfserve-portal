@@ -17,6 +17,10 @@
 # under the License.
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for queues for external services"""
+
+if not __debug__:
+  raise RuntimeError("This code requires assert statements to be enabled")
+
 import quart
 from ..lib import middleware, asfuid, config
 import os

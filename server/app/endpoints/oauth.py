@@ -18,6 +18,9 @@
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for oauth operations"""
 
+if not __debug__:
+  raise RuntimeError("This code requires assert statements to be enabled")
+
 from ..lib import middleware
 import quart
 import aiohttp

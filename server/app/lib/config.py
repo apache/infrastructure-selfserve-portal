@@ -16,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 """SelfServe Platform for the Apache Software Foundation"""
+
+if not __debug__:
+  raise RuntimeError("This code requires assert statements to be enabled")
+
 import asyncio
 
 import quart
