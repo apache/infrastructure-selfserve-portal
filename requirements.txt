@@ -1,6 +1,6 @@
 aiofiles
 aiohttp
-asfpy[aioldap] >= 0.45  # For aioldap and clitools
+asfpy[aioldap] >= 0.47  # For aioldap and clitools
 async-timeout
 bonsai  # NOTE: This requires libsasl2-dev installed first!
 hypercorn
