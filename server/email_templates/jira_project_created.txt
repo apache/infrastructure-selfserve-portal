@@ -4,3 +4,9 @@ Hi there,
 As requested by {requester}, the following Jira project has been created:
 https://issues.apache.org/jira/browse/{project_key}
 
+N.B. the notification scheme defaults to Empty, i.e. no emails will be sent
+to any project list.
+
+Please raise an INFRA Jira to get a suitable scheme set up:
+https://issues.apache.org/jira/projects/INFRA
+
