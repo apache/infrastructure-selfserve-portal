@@ -1,0 +1,26 @@
+<h1 id="mailing-list-creation">Mailing List Creation</h1>
+<h2 id="summary">Summary</h2>
+<p>This feature allows projects or Foundation officers to create mailing lists under the 
+apache.org namespace.</p>
+<h2 id="canonical-url">Canonical URL</h2>
+<p><a href="https://selfserve.apache.org/mail.html">https://selfserve.apache.org/mail.html</a></p>
+<h2 id="services-managed-by-this-feature">Services managed by this feature</h2>
+<ul>
+<li>Mailing list service (mailgw)</li>
+<li>Mailing list archives, <a href="https://lists.apache.org/">https://lists.apache.org/</a></li>
+</ul>
+<h2 id="intended-audience">Intended audience</h2>
+<p>This feature is intended for top-level projects and podlings, and Foundation officers.</p>
+<h2 id="access-level-s-required">Access level(s) required</h2>
+<p>Access to this feature is as follows:</p>
+<ul>
+<li>PMC chairs: May request new mailing lists for the subdomain that corresponds to the project they are the chair of (for instance, the chair of the httpd project may create lists for <code>httpd.apache.org</code>)</li>
+<li>Foundation members: May request new mailing lists for the entire <code>*.apache.org</code> namespace</li>
+</ul>
+<p>Creation of mailing lists is delayed by 24 hours by design, to allow for human audit of the request, if needed.
+This process may be expedited by Infrastructure if deemed necessary.</p>
+<h2 id="notification-scheme">Notification scheme</h2>
+<p>When a new mailing list is requested, a receipt of the request is sent to the requestor and to the Infrastructure private list.
+Once the list has been created (after the delay mentioned earlier), a notification will be sent to both 
+<a href="https://lists.apache.org/list.html?notifications@infra.apache.org">notifications@infra.apache.org</a> and, 
+if the mailing list belongs to a project, the private list of said project.</p>
