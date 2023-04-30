@@ -214,6 +214,8 @@ async function jira_account_review(prefs, qs) {
     why.value = result.entry.why;
     const toktxt = document.getElementById('token');
     toktxt.value = token;
+    const projecttxt = document.getElementById('project');
+    projecttxt.value = result.entry.project;
   }
 }
 

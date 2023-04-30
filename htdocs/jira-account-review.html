@@ -2,6 +2,11 @@
 
 <form onsubmit="jira_account_request_submit(this); return false;">
     <div class="mb-3">
+        <label for="project" class="form-label">Project</label>
+        <input type="text" class="form-control" id="project"  readonly name="project" aria-describedby="projectHelp">
+        <div id="projectHelp" class="form-text">This is the ASF project the user is wanting to register an account for</div>
+    </div>
+    <div class="mb-3">
         <label for="username" class="form-label">Desired User name</label>
         <input type="text" class="form-control" id="username"  readonly name="username"aria-describedby="usernameHelp">
         <div id="usernameHelp" class="form-text">The user name must be between 4 and 20 characters long.</div>
