@@ -258,8 +258,13 @@ async def process_review(form_data, session):
                         entry["email"],
                         "--continue",
                     ),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
                 )
-                await proc.wait()
+                stdout, stderr = await proc.communicate()
+                # Check for known error messages in stderr:
+                assert b"A user with that username already exists" not in stderr, "An account with this username already exists in Jira"
+                # Check that call was okay (exit code 0)
                 assert proc.returncode == 0, "Jira account creation failed due to an internal server error."
             except (AssertionError, FileNotFoundError) as e:
                 return {"success": False, "message": str(e)}
