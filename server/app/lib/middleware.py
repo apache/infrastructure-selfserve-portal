@@ -27,7 +27,8 @@ import uuid
 import quart
 from . import config
 import werkzeug.routing
-
+import asyncio
+import functools
 
 async def consume_body():
     """Consumes the request body, punting it to dev-null. This is required for httpd to not throw 502 at error"""
@@ -127,3 +128,28 @@ class FilenameConverter(werkzeug.routing.BaseConverter):
         if "." in filename[1:]:
             filename, extension = filename.split(".", maxsplit=1)
         return filename, extension
+
+
+async def reset_rate_limits():
+    """Reset daily rate limits for lookups"""
+    while True:
+        await asyncio.sleep(86400)
+        config.rate_limits.clear()
+
+
+def rate_limited(func):
+    """Decorator for calls that are rate-limited for anonymous users.
+    Once the number of requests per day has been exceeded, this decorator
+    will return a 429 HTTP response to the client instead.
+    """
+
+    @functools.wraps(func)
+    async def session_wrapper(*args):
+        ip = quart.request.headers.get("X-Forwarded-For", quart.request.remote_addr).split(",")[-1].strip()
+        usage = config.rate_limits.get(ip, 0) + 1
+        if config.server.rate_limit_per_ip and usage > config.server.rate_limit_per_ip:
+            return quart.Response(status=429, response="Your request has been rate-limited. Please check back tomorrow!")
+        config.rate_limits[ip] = usage
+        print(ip, usage)
+        return await func(*args)
+    return session_wrapper

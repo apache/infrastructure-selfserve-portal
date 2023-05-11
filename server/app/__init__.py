@@ -84,7 +84,7 @@ def main():
             # Regularly update the list of projects from LDAP
             app.add_background_task(config.get_projects_from_ldap)
             # Reset rate limits daily
-            app.add_background_task(config.reset_rate_limits)
+            app.add_background_task(middleware.reset_rate_limits)
             # Fetch mailing lists hourly
             app.add_background_task(config.fetch_valid_lists)
 

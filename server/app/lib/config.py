@@ -22,7 +22,6 @@ if not __debug__:
 
 import asyncio
 
-import quart
 
 """Configuration classes for the platform"""
 
@@ -147,22 +146,6 @@ async def get_projects_from_ldap():
         except asyncio.exceptions.TimeoutError:
             print("LDAP lookup for list of projects timed out, retrying in 10 minutes")
         await asyncio.sleep(600)
-
-
-async def reset_rate_limits():
-    """Reset daily rate limits for lookups"""
-    while True:
-        await asyncio.sleep(86400)
-        rate_limits.clear()
-
-
-def is_rate_limited(request: quart.Request):
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr).split(",")[-1].strip()
-    usage = rate_limits.get(ip, 0) + 1
-    if server.rate_limit_per_ip and usage > server.rate_limit_per_ip:
-        return True
-    rate_limits[ip] = usage
-    return False
 
 
 async def fetch_valid_lists():
