@@ -8,4 +8,5 @@ from . import (
     confluence_archive,
     confluence_create,
     jira_create,
+    jira_activate_account,
 )
