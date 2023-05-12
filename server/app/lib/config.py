@@ -127,6 +127,14 @@ class MessagingConfiguration:
         self.slack_channel = yml.get("slack_channel")  # token style, cont'd.
 
 
+class JiraPSQLConfiguration:
+    def __init__(self, yml: dict):
+        if yml:
+            # TODO: More verbosity here. We only need the raw dict to pass to the DSN constructor.
+            assert all(key in yml for key in ("host", "user", "password", "dbname",)), "Jira PSQL config is missing information!"
+            self.yaml = yml
+
+
 async def get_projects_from_ldap():
     """Reads and sets the current list of projects from LDAP"""
     ldap_search_timeout = 30  # Wait no more than 30 sec for ldap data...
@@ -192,5 +200,6 @@ server = ServerConfiguration(cfg_yaml.get("server", {}))
 ldap = LDAPConfiguration(cfg_yaml.get("ldap", {}))
 storage = StorageConfiguration(cfg_yaml.get("storage", {}))
 messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
+jirapsql = JiraPSQLConfiguration(cfg_yaml.get("jirapsql", {}))
 projects = []  # Filled every 10 min by get_projects_from_ldap
 rate_limits = {}  # Tracks IPs and their usage, resets every day
