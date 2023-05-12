@@ -9,4 +9,5 @@ quart
 rfc3339
 pytest-asyncio
 cmarkgfm
+psycopg[binary]
 
