@@ -98,7 +98,7 @@ async def process_reactivation_request(formdata):
     jira_username = formdata.get("username")
     jira_email = formdata.get("email")
     if jira_username and jira_username in JIRA_EMAIL_MAPPINGS:
-        if JIRA_EMAIL_MAPPINGS[jira_username] == jira_email:  # We have a match!
+        if JIRA_EMAIL_MAPPINGS[jira_username].lower() == jira_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
             verify_url = f"https://{quart.app.request.host}/jira-account-reactivate.html?{token}"
