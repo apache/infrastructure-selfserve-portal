@@ -55,7 +55,8 @@ async def update_jira_email_map():
                 async with conn.cursor() as cur:
                     await cur.execute("SELECT lower_user_name, email_address from cwd_user WHERE directory_id != 10000")
                     async for row in cur:
-                        tmp_dict[row[0]] = row[1]
+                        if all(x and isinstance(x, str) for x in row):  # Ensure we have actual (non-empty) strings here
+                            tmp_dict[row[0]] = row[1]
 
             # Clear and refresh mappings
             JIRA_EMAIL_MAPPINGS.clear()
