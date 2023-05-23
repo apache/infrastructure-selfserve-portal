@@ -456,7 +456,7 @@ async function jira_account_reactivate_submit(form) {
 
 async function jira_account_reactivate_verify_email(token) {
   const jform = document.getElementById('form_submit');
-  jform.style.display = "block";
+  jform.style.display = "none";
   const spinner = document.getElementById('process_spin');
   spinner.style.display = "block";
   const resp = await GET(`/api/jira-account-activate-confirm?token=${token}`);
