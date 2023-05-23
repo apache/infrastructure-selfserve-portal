@@ -439,3 +439,36 @@ async function jira_create_prime() {
   await jira_seed_project_list();
   await jira_seed_schemes();
 }
+
+
+async function jira_account_reactivate_submit(form) {
+  const formdata = new FormData(form);
+  const resp = await POST("/api/jira-account-activate", {data: formdata});
+  const result = await resp.json();
+  if (!result.success) {
+    toast(result.message);
+    return false
+  }
+  const container = document.getElementById('contents');
+  container.innerText = "Your request to re-activate your Jira account has been logged. Please check your email addresss for a confirmation email, and confirm your identity by clicking on the link provided in the email."
+  return false
+}
+
+async function jira_account_reactivate_verify_email(token) {
+  const jform = document.getElementById('form_submit');
+  jform.style.display = "block";
+  const spinner = document.getElementById('process_spin');
+  spinner.style.display = "block";
+  const resp = await GET(`/api/jira-account-activate-confirm?token=${token}`);
+  const result = await resp.json();
+  if (result.success) {
+    spinner.innerText = "Your Jira account has been successfully re-activated, enjoy!";
+  } else {
+    if (result.error) {
+      spinner.innerText = result.error;
+    } else {
+      spinner.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
+    }
+    toast(result.error);
+  }
+}

@@ -1,0 +1,35 @@
+<h1>Re-activate a Jira account</h1>
+<p>If you have an existing Jira account that has been deactivated due to prolonged inactivity, you can request it be
+re-activated by filling in the username of your account, and its associated email address.</p>
+
+<form onsubmit="jira_account_reactivate_submit(this); return false;">
+    <div id="form_submit">
+    <div class="mb-3">
+        <label for="username" class="form-label">Jira account username</label>
+        <input type="text" class="form-control" id="username"  name="username"aria-describedby="usernameHelp">
+        <div id="usernameHelp" class="form-text">This is the username of the deactivated account you wish to re-activate.</div>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Jira account email address</label>
+        <input type="email" class="form-control" id="email"  name="email"aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">This is the email address you signed up for the account with. It must match the email address currently associated with the account, and will receive a confirmation email when you have successfully submitted your request.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit re-activation request</button>
+    </div>
+    <div id="process_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing re-activation request...
+        </button>
+    </div>
+</form>
+
+<script>
+    document.body.onload = () => {
+        // Check for token verification
+        const token = location.search.substring(1);
+        if (token && token.length == 36) {
+            jira_account_reactivate_verify_email(token);
+        }
+    }
+</script>
