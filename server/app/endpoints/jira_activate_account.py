@@ -115,7 +115,7 @@ async def process_reactivation_request(formdata):
             # Store marker in our temp dict
             JIRA_REACTIVATION_QUEUE[token] = jira_username
             return {"success": True}
-    return {"success": False}
+    return {"success": False, "message": "We were unable to find the account based on the information provided. Either your Jira account username, or the email address you registered it with, is incorrect."}
 
 
 @middleware.rate_limited
