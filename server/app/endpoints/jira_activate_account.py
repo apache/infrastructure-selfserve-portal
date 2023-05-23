@@ -114,8 +114,8 @@ async def process_reactivation_request(formdata):
             )
             # Store marker in our temp dict
             JIRA_REACTIVATION_QUEUE[token] = jira_username
-            return {"found": True}
-    return {"found": False}
+            return {"success": True}
+    return {"success": False}
 
 
 @middleware.rate_limited
@@ -128,10 +128,10 @@ async def process_confirm_reactivation(formdata):
         try:
             await activate_account(username)
         except AssertionError as e:
-            return {"found": True, "activated": False, "error": str(e)}
-        return {"found": True, "activated": True}
+            return {"success": False, "activated": False, "error": str(e)}
+        return {"success": True, "activated": True}
     else:
-        return {"found": False}
+        return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
 
 quart.current_app.add_url_rule(
