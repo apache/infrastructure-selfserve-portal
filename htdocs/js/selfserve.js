@@ -449,7 +449,7 @@ async function jira_account_reactivate_submit(form) {
     toast(result.message);
     return false
   }
-  const container = document.getElementById('contents');
+  const container = document.getElementById('form_submit');
   container.innerText = "Your request to re-activate your Jira account has been logged. Please check your email addresss for a confirmation email, and confirm your identity by clicking on the link provided in the email."
   return false
 }
