@@ -69,6 +69,7 @@ async def update_jira_email_map():
 
 async def activate_account(username: str):
     """Activates an account through ACLI"""
+    email_address = JIRA_EMAIL_MAPPINGS[username]
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
         *(
@@ -78,6 +79,8 @@ async def activate_account(username: str):
             "updateUser",
             "--userId",
             username,
+            "--userEmail",
+            email_address,
             "--activate",
         ),
         stdout=asyncio.subprocess.PIPE,
@@ -85,6 +88,10 @@ async def activate_account(username: str):
     )
     stdout, stderr = await proc.communicate()
     if proc.returncode != 0:  # If any errors show up in acli, bork
+        # Test for ACLI whining but having done the job
+        good_bit = '"active":true'
+        if good_bit in stdout or good_bit in stderr:
+            return  # all good, ignore!
         print(f"Could not reactivate Jira account '{username}': {stderr}")
         raise AssertionError("Jira account reactivation failed due to an internal server error.")
 
@@ -125,11 +132,12 @@ async def process_confirm_reactivation(formdata):
     if token and token in JIRA_REACTIVATION_QUEUE:  # Verify token
         username = JIRA_REACTIVATION_QUEUE[token]
         del JIRA_REACTIVATION_QUEUE[token]  # Remove right away, before entering the async wait
-        try:
-            await activate_account(username)
-        except AssertionError as e:
-            return {"success": False, "activated": False, "error": str(e)}
-        return {"success": True, "activated": True}
+        if username in JIRA_EMAIL_MAPPINGS:
+            try:
+                await activate_account(username)
+            except AssertionError as e:
+                return {"success": False, "activated": False, "error": str(e)}
+            return {"success": True, "activated": True}
     else:
         return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
