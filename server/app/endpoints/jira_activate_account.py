@@ -89,7 +89,7 @@ async def activate_account(username: str):
     stdout, stderr = await proc.communicate()
     if proc.returncode != 0:  # If any errors show up in acli, bork
         # Test for ACLI whining but having done the job
-        good_bit = '"active":true'
+        good_bit = '"active":true'  # If the ACLI JSON output has this, it means the update worked, despite ACLI complaining.
         if good_bit in stdout or good_bit in stderr:
             return  # all good, ignore!
         print(f"Could not reactivate Jira account '{username}': {stderr}")
