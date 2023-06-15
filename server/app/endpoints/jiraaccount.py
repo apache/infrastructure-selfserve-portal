@@ -72,6 +72,9 @@ JIRA_USER_DB = os.path.join(config.storage.db_dir, "jira.db")
 
 JIRA_DB = asfpy.sqlite.db(JIRA_USER_DB)
 
+# Log file for ACLI operations
+JIRA_ACLI_LOG = os.path.join(config.storage.db_dir, "acli.log")
+
 # Prefixes used the distinguish user and pmc threads
 # include 'jiraaccount-' as well to avoid possible clash with other modules
 JIRA_USER_THREAD_PREFIX = 'jiraaccount-user'
@@ -241,25 +244,33 @@ async def process_review(form_data, session):
         action = form_data.get("action")
         if action == "approve":
             try:
+                acli_arguments = (
+                    "jira",
+                    "-v", # for debugging (output goes to a journal)
+                    "--action",
+                    "addUser",
+                    "--userId",
+                    entry["userid"],
+                    "--userFullName",
+                    entry["realname"],
+                    "--userEmail",
+                    entry["email"],
+                    "--continue",
+                )
                 proc = await asyncio.create_subprocess_exec(
                     "/opt/latest-cli/acli.sh",
-                    *(
-                        "jira",
-                        "-v", # for debugging (output goes to a journal)
-                        "--action",
-                        "addUser",
-                        "--userId",
-                        entry["userid"],
-                        "--userFullName",
-                        entry["realname"],
-                        "--userEmail",
-                        entry["email"],
-                        "--continue",
-                    ),
+                    *acli_arguments,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                 )
                 stdout, stderr = await proc.communicate()
+                # Log things for debug purposes
+                with open(JIRA_ACLI_LOG, "a") as aclilog:
+                    aclilog.write(f"Ran ACLI with arguments: {' '.join(acli_arguments)}\n")
+                    aclilog.write(f"Process returned code {proc.returncode}\n")
+                    aclilog.write(f"stdout was: \n{stdout.decode()}\n")
+                    aclilog.write(f"stderr was: \n{stderr.decode()}\n")
+                    aclilog.write(f"---------------------------------------------\n\n")
                 # Check for known error messages in stderr:
                 assert b"A user with that username already exists" not in stderr, "An account with this username already exists in Jira"
                 # Check that call was okay (exit code 0)
