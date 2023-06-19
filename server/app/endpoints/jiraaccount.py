@@ -319,7 +319,7 @@ async def process_review(form_data, session):
             private_list = email.project_to_private(entry["project"])
             entry["approver"] = session.uid
             email.from_template("jira_account_denied_pmc.txt",
-                                recipient=[ NOTIFICATION_TARGET, private_list ],
+                                recipient=[NOTIFICATION_TARGET, private_list ],
                                 variables=entry,
                                 thread_start=False, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
                                 )
