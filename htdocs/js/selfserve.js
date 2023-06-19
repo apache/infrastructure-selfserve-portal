@@ -192,7 +192,11 @@ async function jira_verify_email(token) {
   const result = await resp.json();
   const container = document.getElementById('verify_response');
   if (result.success) {
-    container.innerText = "Your Jira account request has been successfully verified, and will be reviewed by the project you indicated. Please allow up to a few days for the project to review this request.";
+    container.innerText = `Your Jira account request has been successfully verified, and will be reviewed by the project you indicated. \
+                           Please allow up to a few days for the project to review this request.\
+                           If you do not receive a reply from the project within seven days, you can contact the project management committee \
+                           privately at ${result.ppl}. If the project is still unable to respond, you can then escalate the matter to the \
+                           ASF Infrastructure team at users@infra.apache.org`;
   } else {
     container.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
     toast(result.message);
