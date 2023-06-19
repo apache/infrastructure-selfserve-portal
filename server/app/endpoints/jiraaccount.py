@@ -30,7 +30,7 @@ import os
 import re
 import asyncio
 
-NOTIFICATION_TARGET = "notifications@infra.apache.org"
+NOTIFICATION_TARGET = "notifications@infra.apache.org"  # This is to notify infra as well as projects about pending requests
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
@@ -202,7 +202,7 @@ async def process(form_data):
             # Notify project
             record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
             email.from_template("jira_account_pending_review.txt",
-                                recipient=[ NOTIFICATION_TARGET, email.project_to_private(record["project"])],
+                                recipient=[NOTIFICATION_TARGET, email.project_to_private(record["project"])],
                                 variables=record,
                                 thread_start=True, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
                                 )
@@ -295,7 +295,7 @@ async def process_review(form_data, session):
             private_list = email.project_to_private(entry["project"])
             entry["approver"] = session.uid
             email.from_template("jira_account_welcome_pmc.txt",
-                                recipient=[ NOTIFICATION_TARGET, private_list ],
+                                recipient=[NOTIFICATION_TARGET, private_list ],
                                 variables=entry,
                                 thread_start=False, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
                                 )
