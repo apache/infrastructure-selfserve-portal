@@ -201,13 +201,14 @@ async def process(form_data):
 
             # Notify project
             record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
+            project_private_list = email.project_to_private(record["project"])
             email.from_template("jira_account_pending_review.txt",
-                                recipient=[NOTIFICATION_TARGET, email.project_to_private(record["project"])],
+                                recipient=[NOTIFICATION_TARGET, project_private_list],
                                 variables=record,
                                 thread_start=True, thread_key=f"{JIRA_PMC_THREAD_PREFIX}-{token}"
                                 )
 
-            return {"success": True, "message": "Your email address has been validated."}
+            return {"success": True, "message": "Your email address has been validated.", "ppl": project_private_list}
         else:
             return {"success": False, "message": "Unknown or already validated token sent."}
 
