@@ -1,6 +1,7 @@
 <h1>Request a Jira account</h1>
 <p>Jira is a powerful tool for reporting, tracking, and resolving issues with products ASF projects develop and support. Its value becomes less when spammers and automated tools flood the feed with bogus reports. The ASF therefore does not permit submitting anonymous Jira tickets.</p>
 <p>If you are a committer to an ASF project, use your ASF id and password to login to Jira and create tickets. If not, use this form to request an account that will let you submit tickets to ASF projects.</p>
+<p><b>You do not need a Jira account to view existing Jira issues</b></p>
 
 <form onsubmit="jira_account_request_submit(this); return false;">
     <div class="mb-3">
@@ -26,7 +27,9 @@
         <div id="projectHelp" class="form-text">Select the ASF project you will initially be contributing to with this account. Make sure you have selected the correct project, and that they are using Jira for issue management, as the project will be reviewing your account request. Once your account is approved, you can use it to submit Jira tickets for other ASF projects and the Infrastructure team as well.</div>
     </div>
     <div class="mb-3">
-        <label for="why" class="form-label">Tell us a little about what you intend to use this account for.</label>
+        <label for="why" class="form-label">Tell us a little about what you intend to use this account for.
+            <br>N.B. You do NOT need an account to view existing Jira issues.
+        </label>
         <input type="text" class="form-control" id="why" name="why" aria-describedby="whyHelp">
         <div id="whyHelp" class="form-text">Adding a proper description of your intended use for this account will assist the project in reviewing this request.</div>
     </div>
