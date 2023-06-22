@@ -43,24 +43,28 @@ BASE_MAIL_DOMAINS = {
 }
 
 # These projects don't use Jira
+# They use BZ or GH
 # TODO: derive this list dynamically somehow
 NON_JIRA_PROJECTS = [
+  "ant",
+  "apr",
   "annotator",
   "celix",
   "cordova",
   "couchdb",
   "fluo",
   "httpd",
+  "jmeter",
   "kibble",
   "linkis",
   "lucene",
   "netbeans",
   "openoffice",
+  "poi",
   "skywalking",
   "tomcat",
   "trafficcontrol",
   "trafficserver",
-  
 ]
 
 def text_to_int(size):
