@@ -1,9 +1,9 @@
 # Jira Account Creation
 
 ## Summary
-This feature helps projects create Jira accounts for users wishing to interact with projects using the 
-Jira issue tracker for development purposes. As public signup for Jira accounts has been disabled 
-(as per [this thread](https://lists.apache.org/thread/jx9d7sp690ro660pjpttwtg209w3m39w)), projects 
+This feature helps projects create Jira accounts for users wishing to interact with projects using the
+Jira issue tracker for development purposes. As public signup for Jira accounts has been disabled
+(as per [this thread](https://lists.apache.org/thread/jx9d7sp690ro660pjpttwtg209w3m39w)), projects
 and new contributors will now need to use this tool to set up accounts for new users.
 
 ## Canonical URL

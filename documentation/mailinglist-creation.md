@@ -1,7 +1,7 @@
 # Mailing List Creation
 
 ## Summary
-This feature allows projects or Foundation officers to create mailing lists under the 
+This feature allows projects or Foundation officers to create mailing lists under the
 apache.org namespace.
 
 ## Canonical URL
@@ -24,6 +24,6 @@ This process may be expedited by Infrastructure if deemed necessary.
 
 ## Notification scheme
 When a new mailing list is requested, a receipt of the request is sent to the requestor and to the Infrastructure private list.
-Once the list has been created (after the delay mentioned earlier), a notification will be sent to both 
-[notifications@infra.apache.org](https://lists.apache.org/list.html?notifications@infra.apache.org) and, 
+Once the list has been created (after the delay mentioned earlier), a notification will be sent to both
+[notifications@infra.apache.org](https://lists.apache.org/list.html?notifications@infra.apache.org) and,
 if the mailing list belongs to a project, the private list of said project.

@@ -1,7 +1,7 @@
 
 [Unit]
 Description=ASF Selfserve Portal
- 
+
 [Service]
 Type=simple
 WorkingDirectory=/opt/selfserve-portal/server/

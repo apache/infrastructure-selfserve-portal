@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
 # The validated column can have the values:
 # - 0: email has not yet been validated
 # - 1: email has been validated, and email sent to PMC
-# The entry is deleted when the request is completed (approved or denied) 
+# The entry is deleted when the request is completed (approved or denied)
 JIRA_CREATE_PENDING_STATEMENT = """
 CREATE TABLE IF NOT EXISTS pending (
      userid text COLLATE NOCASE PRIMARY KEY,
