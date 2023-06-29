@@ -135,6 +135,10 @@ async def process(form_data):
             assert (
                 isinstance(contact_project, str) and contact_project in config.projects
             ), "Please select a valid project"
+            # Ensure the project isn't blocking jira account creations
+            assert (
+                    JIRA_DB.fetchone("blocked", project=contact_project) is None
+            ), "The project you have selected does not use Jira for issue tracking. Please contact the project to find out where to submit issues."
             assert (
                 isinstance(why, str) and len(why) > 10
             ), "Please write a valid reason why you want a Jira account. Make sure it contains enough information for reviewers to properly assess your request."
@@ -151,11 +155,6 @@ async def process(form_data):
             assert (
                 JIRA_DB.fetchone("pending", email=email_address) is None
             ), "There is already a pending Jira account request associated with this email address. Please wait for it to be processed"
-
-            # Ensure the project isn't blocking jira account creations
-            assert (
-                    JIRA_DB.fetchone("blocked", project=contact_project) is None
-            ), "The project you have selected does not use Jira for issue tracking. Please contact the project to find out where to submit issues."
 
         except AssertionError as e:
             return {"success": False, "message": str(e)}
