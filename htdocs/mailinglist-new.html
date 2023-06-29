@@ -21,9 +21,14 @@
         <label for="muopts" class="form-label">Moderation preset</label>
 
         <select class="form-control" id="muopts" name="muopts">
-            <option value="mu">Allow subscribers to post, moderate all others</option>
-            <option value="Mu">Allow subscribers to post, reject all others</option>
-            <option value="mU">Moderate all posts</option>
+            <optgroup label="Standard options">
+                <option value="mu">Allow subscribers to post, moderate all others</option>
+                <option value="Mu">Allow subscribers to post, reject all others</option>
+                <option value="mU">Moderate all posts</option>
+            </optgroup>
+            <optgroup label="Options restricted to infrastructure staff">
+                <option value="MU">Allow anyone to post</option>
+            </optgroup>
         </select>
         <div id="muoptshelp" class="form-text">This controls the behaviour of all emails arriving at the list. Certain list names will have individually hardcoded overrides for these presets.</div>
     </div>
