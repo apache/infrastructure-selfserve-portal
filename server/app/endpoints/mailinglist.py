@@ -29,7 +29,7 @@ import os
 import re
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-VALID_LISTPART_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)?$")
+VALID_LISTPART_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 # These lists are accepted as private (and MUST be private). All other lists should be public unless root.
 PRIVATE_LISTS = (
     "private",
@@ -37,6 +37,10 @@ PRIVATE_LISTS = (
 )
 # Valid moderator options that ezmlm-make accepts
 VALID_MUOPTS = ("mu", "Mu", "mU")
+VALID_MUOPTS_INFRA = ("mu", "mU", "Mu", "MU")  # Infra can use MU as well
+
+# List parts cannot end in -default or -owner
+INVALID_ENDINGS = ( "-default", "-owner", )
 
 
 def can_manage_domain(session: dict, domain: str):
@@ -77,10 +81,11 @@ async def process(form_data, session):
             listpart in PRIVATE_LISTS or session.root is True
         ), "Only private@ or security@ can be made private by default. Please file a ticket with Infrastructure for non-standard private lists"
         assert is_private or listpart not in PRIVATE_LISTS, "private@ and security@ lists MUST be marked as private"
-        assert muopts in VALID_MUOPTS, "Invalid moderation options given"
+        assert muopts in VALID_MUOPTS or (session.root is True and muopts in VALID_MUOPTS_INFRA), "Invalid moderation options given"
         assert isinstance(trailer, bool), "Trailer option must be a boolean value"
         assert not expedited or session.root, "Only infrastructure can expedite mailing list requests"
         assert f"{listpart}@{domainpart}" not in config.messaging.mailing_lists, "This mailing already exists"
+        assert not any(listpart.endswith(bad_ending) for bad_ending in INVALID_ENDINGS), "Invalid list name. Cannot end in a restricted ezmlm keyword"
     except AssertionError as e:
         return {"success": False, "message": str(e)}
 
