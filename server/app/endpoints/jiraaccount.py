@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
 # The validated column can have the values:
 # - 0: email has not yet been validated
 # - 1: email has been validated, and email sent to PMC
-# The entry is deleted when the request is completed (approved or denied)
+# The entry is deleted when the request is approved, or 24 hours after it has been denied if so (denied_ts timestamp)
 JIRA_CREATE_PENDING_STATEMENT = """
 CREATE TABLE IF NOT EXISTS pending (
      userid text COLLATE NOCASE PRIMARY KEY,
@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS pending (
      why text NOT NULL,
      created integer NOT NULL,
      userip text NOT NULL,
-     validated integer NOT NULL
+     validated integer NOT NULL,
+     denied_ts integer DEFAULT 0,
     );
 """
 
@@ -94,6 +95,21 @@ if not JIRA_DB.table_exists("pending"):
 if not JIRA_DB.table_exists("blocked"):
     print("Creating Jira blocked projects database")
     JIRA_DB.runc(JIRA_CREATE_BLOCKED_STATEMENT)
+
+
+async def prune_stale_requests():
+    """Runs through pending requests, removing them if stale"""
+    while True:  # Loop, sleep for two hours when done processing
+        pending_requests = list([x for x in JIRA_DB.fetch("pending", limit=1000)])  # Fetch up to 1000 docs at once
+        now = int(time.time())
+        for req in pending_requests:
+            if req["denied_ts"] and req["denied_ts"] < (now-86400):  # denied, 24 hours elapsed, delete!
+                print(f"Removing stale account request {req['token']} - denied >24h ago")
+                JIRA_DB.delete("pending", token=req["token"])
+            elif req["created"] < (now-86400*90):  # Too old (> 90 days), delete
+                print(f"Removing stale account request {req['token']} - created >90d ago")
+                JIRA_DB.delete("pending", token=req["token"])
+        await asyncio.sleep(7200)  # Sleep for two hours, why not
 
 
 @middleware.rate_limited
@@ -302,8 +318,8 @@ async def process_review(form_data, session):
             return {"success": True, "message": "Account created, welcome email has been dispatched."}
 
         elif action == "deny":
-            # Remove entry from pending db
-            JIRA_DB.delete("pending", token=token)
+            entry["denied_ts"] = int(time.time())  # Mark when denied, for db pruning loop
+            JIRA_DB.update("pending", entry, token=entry["token"])
 
             # Add optional reason for denying
             entry["reason"] = form_data.get("reason") or "No reason given."
@@ -351,3 +367,5 @@ quart.current_app.add_url_rule(
     view_func=middleware.glued(process_review),
 )
 
+# Add background loop for pruning pending requests db
+quart.current_app.add_background_task(prune_stale_requests)
