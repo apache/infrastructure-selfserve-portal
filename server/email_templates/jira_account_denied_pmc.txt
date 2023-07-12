@@ -1,7 +1,12 @@
 Jira account request denied by {approver}: {userid}
 --
 Hi there,
-The request for a new Jira account, {userid}, was denied by {approver}, and the request has been deleted.
+The request for a new Jira account, {userid}, was denied by {approver}.
+The request will automatically be removed from the database in 24 hour from now.
+
+If this decision appears to have been a mistake, you can still revisit the application
+and approve it by visiting the original review URL from the initial account request
+email within 24 hours from now.
 
 The following reason was given for denying the request:
 {reason}
