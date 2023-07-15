@@ -72,7 +72,7 @@ async function GET(url, params, method = 'GET') {
     headers,
     body: data,
   });
-  log(`[${xhrID}] Server responded to ${method} ${url} with status: ${response.status}`);
+  log(`[${xhrID}] Server responded to ${method} ${url} with status: ${response.status} ${response.statusText}`);
   return response;
 }
 
