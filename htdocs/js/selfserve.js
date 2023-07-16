@@ -73,7 +73,7 @@ async function GET(url, params, method = 'GET') {
     body: data,
   });
   log(`[${xhrID}] Server responded to ${method} ${url} with status: ${response.status} ${response.statusText}`);
-  if (response.status === 502) { // Proxy error??
+  if (response.status >= 502) { // Proxy error??
       toast(response.statusText);
   }
   return response;
