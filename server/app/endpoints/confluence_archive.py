@@ -157,7 +157,7 @@ async def read_only_access(space: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    await proc.wait()
+    stdout, stderr = await proc.communicate()
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
     proc = await asyncio.create_subprocess_exec(
@@ -176,7 +176,7 @@ async def read_only_access(space: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    await proc.wait()
+    stdout, stderr = await proc.communicate()
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
