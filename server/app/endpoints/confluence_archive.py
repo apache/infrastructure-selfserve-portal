@@ -19,7 +19,7 @@
 """Handler for archiving a confluence space"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, asfuid, email, log
 import quart
@@ -157,7 +157,7 @@ async def read_only_access(space: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    _stdout, _stderr = await proc.communicate()
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
     proc = await asyncio.create_subprocess_exec(
@@ -176,7 +176,7 @@ async def read_only_access(space: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    _stdout, _stderr = await proc.communicate()
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
