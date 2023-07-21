@@ -74,7 +74,8 @@ async function GET(url, params, method = 'GET') {
   });
   log(`[${xhrID}] Server responded to ${method} ${url} with status: ${response.status} ${response.statusText}`);
   if (response.status >= 502) { // Proxy error??
-      toast(response.statusText);
+      // convert error response to JSON for easier handling
+      return Response.json({"success": false, "message": response.statusText});
   }
   return response;
 }
