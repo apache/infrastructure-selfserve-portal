@@ -66,7 +66,7 @@ class ServerConfiguration:
         assert yml, f"No server configuration directives could be found in {CONFIG_FILE}!"
         self.bind = yml["bind"]
         self.port = int(yml["port"])
-        self.error_reporting = yml.get("error_reporting", "json")
+        self.error_reporting = yml.get("error_reporting", "show")
         self.upload_timeout = int(yml.get("upload_timeout", 3600))
         self.debug_mode = bool(yml.get("debug_mode", False))
         self.debug_user = yml.get("debug_user", "testuser")
