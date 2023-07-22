@@ -72,12 +72,12 @@ def glued(func: typing.Callable) -> typing.Callable:
             err = "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
             headers = {
                 "Server": "ASF Selfserve Platform",
-                "Content-Type": "text/plain",
+                "Content-Type": "application/json",
             }
             # By default, we print the traceback to the user, for easy debugging.
-            if config.server.error_reporting == "json":
+            if config.server.error_reporting == "show":
                 error_text = "API error occurred: \n" + err
-                return quart.Response(headers=headers, status=500, response=error_text)
+                return {"success": False, "message": error_text}, 500, headers
             # If client traceback is disabled, we print it to stderr instead, but leave an
             # error ID for the client to report back to the admin. Every line of the traceback
             # will have this error ID at the beginning of the line, for easy grepping.
@@ -87,11 +87,7 @@ def glued(func: typing.Callable) -> typing.Callable:
                 sys.stderr.write("API Endpoint %s got into trouble (%s): \n" % (quart.request.path, eid))
                 for line in err.split("\n"):
                     sys.stderr.write("%s: %s\n" % (eid, line))
-                return quart.Response(
-                    headers=headers,
-                    status=500,
-                    response="API error occurred. The application journal will have information. Error ID: %s" % eid,
-                )
+                return {"success": False, "message": f"API error occurred. The application journal will have information. Error ID: {eid}"}, 500, headers
         # If an error is thrown before the request body has been consumed, eat it quietly.
         if not quart.request.body._complete.is_set():
             await consume_body()
