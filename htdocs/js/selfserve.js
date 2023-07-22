@@ -161,6 +161,8 @@ function toast(message, type="danger", redirect_on_close=null) {
 
 /********* JIRA ACCOUNT FUNCTIONS *********/
 async function jira_seed_project_list() {
+  // get project name from url parameters
+  const qsProject = new URLSearchParams(document.location.search).get('project')
   // Seeds the dropdown with current projects
   const projectlist = document.getElementById('project');
   const pubresp = await GET("/api/public");
@@ -169,6 +171,7 @@ async function jira_seed_project_list() {
     const opt = document.createElement("option");
     opt.text = project;
     opt.value = project;
+    opt.selected = project == qsProject;
     projectlist.appendChild(opt);
   }
 }
