@@ -3,7 +3,7 @@
 server:
   bind: 127.0.0.1
   port: 8000
-  error_reporting: show   #show: output to client in text, hide: output an incident ID only, show incident in stderr
+  error_reporting: show   #show: include error traceback in json response, else: output an incident ID only, show incident in stderr
   max_form_size: 5mb # largest form data payload.
   debug_mode: false  # If set to true, adds a test account for trying out features.
   debug_password: ~ # Sets the debug superuser password, if debug_mode is true.
