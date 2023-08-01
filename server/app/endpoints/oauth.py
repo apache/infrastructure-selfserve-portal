@@ -28,8 +28,8 @@ import uuid
 import urllib.parse
 import time
 
-OAUTH_URL_INIT = "https://oauth.apache.org/auth?state=%s&redirect_uri=%s"
-OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
+OAUTH_URL_INIT = "https://oauth.apache.org/auth-oidc?state=%s&redirect_uri=%s"
+OAUTH_URL_CALLBACK = "https://oauth.apache.org/token-oidc?code=%s"
 
 
 async def process(form_data):
