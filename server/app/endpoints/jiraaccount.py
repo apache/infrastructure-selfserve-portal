@@ -290,6 +290,7 @@ async def process_review(form_data, session):
                     aclilog.write(f"---------------------------------------------\n\n")
                 # Check for known error messages in stderr:
                 assert b"A user with that username already exists" not in stderr, "An account with this username already exists in Jira"
+                assert not re.search(b"Client error: User '.+?' is already defined.", stderr or b""), "The Jira backend was unable to create this account due to a naming conflict. Please contact infrastructure and have them create the account."
                 # Check that call was okay (exit code 0)
                 assert proc.returncode == 0, "Jira account creation failed due to an internal server error."
             except (AssertionError, FileNotFoundError) as e:
