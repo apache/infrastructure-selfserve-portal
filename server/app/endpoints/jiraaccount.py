@@ -273,6 +273,7 @@ async def process_review(form_data, session):
                     entry["realname"],
                     "--userEmail",
                     entry["email"],
+                    "--continue",
                 )
                 proc = await asyncio.create_subprocess_exec(
                     "/opt/latest-cli/acli.sh",
