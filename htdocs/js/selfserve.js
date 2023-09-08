@@ -177,6 +177,28 @@ async function jira_seed_project_list() {
   }
 }
 
+async function jira_check_project(project_name) {
+  const apiresp = await GET("/api/jira-project-blocked", {"project": project_name});
+  const apidata = await apiresp.json();
+  if (apidata.blocked === "True") {
+    toast("The project you have selected does not use Jira for issue tracking. Please contact the project to find out where to submit issues.");
+    jira_account_inputs_state("disabled");
+  } else {
+    jira_account_inputs_state("enabled");
+  }
+}
+
+function jira_account_inputs_state(desiredState) {
+  const form_elements = document.getElementsByClassName("project-dependent");
+  for (e of form_elements) {
+    if (desiredState === "disabled") {
+      e.disabled = true;
+    } else {
+      e.disabled = false;
+    }
+  }
+}
+
 async function jira_account_request_submit(form) {
   const formdata = new FormData(form);
   if (formdata.get("verify") !== "agree") {
