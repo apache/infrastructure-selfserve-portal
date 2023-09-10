@@ -371,7 +371,7 @@ quart.current_app.add_url_rule(
 quart.current_app.add_url_rule(
     "/api/jira-project-blocked",
     methods=[
-        "GET",
+        "POST",
     ],
     view_func=middleware.glued(check_project_blocked),
 )
