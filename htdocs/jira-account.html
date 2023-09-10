@@ -11,41 +11,41 @@
 
 <form onsubmit="jira_account_request_submit(this); return false;">
     <div class="mb-3">
-        <label for="email" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
-        <div id="emailHelp" class="form-text">We'll never share your email with anyone else. Please ensure this email address is correct, as we will use it to verify your request.</div>
-    </div>
-    <div class="mb-3">
-        <label for="username" class="form-label">Desired user name</label>
-        <input type="text" class="form-control" id="username" name="username" aria-describedby="usernameHelp">
-        <div id="usernameHelp" class="form-text">Your user name must be between 4 and 20 characters long.</div>
-    </div>
-    <div class="mb-3">
-        <label for="realname" class="form-label">Your real (public) name</label>
-        <input type="text" class="form-control" id="realname" name="realname" aria-describedby="realnameHelp">
-        <div id="realnameHelp" class="form-text">This is your actual name, as it will appear on Jira tickets you submit.</div>
-    </div>
-    <div class="mb-3">
         <label for="project" class="form-label">For which ASF project do you want to file a ticket?</label>
-        <select class="form-control" id="project" name="project" aria-describedby="projectHelp">
+        <select class="form-control" id="project" name="project" aria-describedby="projectHelp" onchange="jira_check_project(this.value)">
             <option selected disabled value="">--- Select a project ---</option>
         </select>
         <div id="projectHelp" class="form-text">Select the ASF project you will initially be contributing to with this account. Make sure you have selected the correct project, and that they are using Jira for issue management, as the project will be reviewing your account request. Once your account is approved, you can use it to submit Jira tickets for other ASF projects and the Infrastructure team as well.</div>
     </div>
     <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control project-dependent" id="email" name="email" aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">We'll never share your email with anyone else. Please ensure this email address is correct, as we will use it to verify your request.</div>
+    </div>
+    <div class="mb-3">
+        <label for="username" class="form-label">Desired user name</label>
+        <input type="text" class="form-control project-dependent" id="username" name="username" aria-describedby="usernameHelp">
+        <div id="usernameHelp" class="form-text">Your user name must be between 4 and 20 characters long.</div>
+    </div>
+    <div class="mb-3">
+        <label for="realname" class="form-label">Your real (public) name</label>
+        <input type="text" class="form-control project-dependent" id="realname" name="realname" aria-describedby="realnameHelp">
+        <div id="realnameHelp" class="form-text">This is your actual name, as it will appear on Jira tickets you submit.</div>
+    </div>
+    <div class="mb-3">
         <label for="why" class="form-label">Tell us a little about what you intend to use this account for.
             <br>N.B. You do NOT need an account to view existing Jira issues.
         </label>
-        <textarea class="form-control" id="why" name="why" aria-describedby="whyHelp"></textarea>
+        <textarea class="form-control project-dependent" id="why" name="why" aria-describedby="whyHelp"></textarea>
         <div id="whyHelp" class="form-text">Adding a proper description of your intended use for this account will assist the project in reviewing this request.</div>
     </div>
 
     <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" name="verify" id="verify" value="agree">
+        <input type="checkbox" class="form-check-input project-dependent" name="verify" id="verify" value="agree">
         <label class="form-check-label" for="verify">I agree to let the project for which I am requesting an account review my public data.</label>
         <div id="verifyHelp" class="form-text">We will share your user name, public name, and reason for requesting an account with the project you specify, but will <em>not</em> share your email address.</div>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary project-dependent">Submit</button>
 </form>
 
 

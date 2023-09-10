@@ -122,6 +122,16 @@ async def check_user_exists(form_data):
         return {"found": False}
 
 
+@middleware.rate_limited
+async def check_project_blocked(form_data):
+    """Checks if a project is 'blocked', meaning it doesn't use JIRA"""
+    project = form_data.get("project")
+    if project and JIRA_DB.fetchone("blocked", project=project):
+        return {"blocked": True}
+    else:
+        return {"blocked": False}
+
+
 async def process(form_data):
 
     # Submit application
@@ -358,7 +368,13 @@ quart.current_app.add_url_rule(
     ],
     view_func=middleware.glued(check_user_exists),
 )
-
+quart.current_app.add_url_rule(
+    "/api/jira-project-blocked",
+    methods=[
+        "GET",
+    ],
+    view_func=middleware.glued(check_project_blocked),
+)
 quart.current_app.add_url_rule(
     "/api/jira-account-review",
     methods=[
