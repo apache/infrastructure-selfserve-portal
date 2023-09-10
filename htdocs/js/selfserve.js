@@ -180,7 +180,7 @@ async function jira_seed_project_list() {
 async function jira_check_project(project_name) {
   const apiresp = await POST("/api/jira-project-blocked", {json: {"project": project_name}});
   const apidata = await apiresp.json();
-  if (apidata.blocked === "True") {
+  if (apidata.blocked === true) {
     toast("The project you have selected does not use Jira for issue tracking. Please contact the project to find out where to submit issues.");
     jira_account_inputs_state("disabled");
   } else {
