@@ -181,7 +181,7 @@ async function jira_check_project(project_name) {
   const apiresp = await POST("/api/jira-project-blocked", {json: {"project": project_name}});
   const apidata = await apiresp.json();
   if (apidata.blocked === true) {
-    toast("The project you have selected does not use Jira for issue tracking. Please contact the project to find out where to submit issues.");
+    toast(`The project you have selected does not use Jira for issue tracking. Please contact the project at dev@${project_name}.apache.org to find out where to submit issues.`);
     jira_account_inputs_state("disabled");
   } else {
     jira_account_inputs_state("enabled");
