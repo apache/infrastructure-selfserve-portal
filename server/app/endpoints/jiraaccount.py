@@ -29,8 +29,12 @@ import asfpy.sqlite
 import os
 import re
 import asyncio
+import aiohttp
 
 NOTIFICATION_TARGET = "notifications@infra.apache.org"  # This is to notify infra as well as projects about pending requests
+
+# infra-reports' more extensive userid search which includes user IDs that are not necessarily present in crowd but would cause issues.
+INFRAREPORTS_USERID_CHECK = "https://infra-reports.apache.org/api/userid"
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
@@ -119,7 +123,14 @@ async def check_user_exists(form_data):
     if userid and JIRA_DB.fetchone("users", userid=userid):
         return {"found": True}
     else:
-        return {"found": False}
+        # INFRA-25324: Check infra-reports' userid db as well, but only if we couldn't the userid locally
+        async with aiohttp.ClientSession() as client:
+            async with client.get(INFRAREPORTS_USERID_CHECK, params={"id": userid}) as resp:
+                if resp.status == 200:
+                    result = await resp.json()
+                    return {"found": result.get("exists", True)}  # Default to True if the backend throws a gnome at us.
+                else:
+                    return {"success": False, "message": "Your query could not be completed at this point. Please retry later."}
 
 
 @middleware.rate_limited
