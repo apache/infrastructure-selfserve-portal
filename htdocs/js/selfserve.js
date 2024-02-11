@@ -284,6 +284,197 @@ function jira_account_deny_details() {
   deny_details.style.display = "block";
 }
 
+async function jira_account_reactivate_submit(form) {
+  const formdata = new FormData(form);
+  const resp = await POST("/api/jira-account-activate", {data: formdata});
+  const result = await resp.json();
+  if (!result.success) {
+    toast(result.message);
+    return false
+  }
+  const container = document.getElementById('form_submit');
+  container.innerText = "Your request to re-activate your Jira account has been logged. Please check your email addresss for a confirmation email, and confirm your identity by clicking on the link provided in the email."
+  return false
+}
+
+async function jira_account_reactivate_verify_email(token) {
+  const jform = document.getElementById('form_submit');
+  jform.style.display = "none";
+  const spinner = document.getElementById('process_spin');
+  spinner.style.display = "block";
+  const resp = await GET(`/api/jira-account-activate-confirm?token=${token}`);
+  const result = await resp.json();
+  if (result.success) {
+    spinner.innerText = "Your Jira account has been successfully re-activated, enjoy!";
+  } else {
+    if (result.error) {
+      spinner.innerText = result.error;
+    } else {
+      spinner.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
+    }
+    toast(result.error);
+  }
+}
+
+/********* END OF JIRA ACCOUNT FUNCTIONS *********/
+/********* CONFLUENCE ACCOUNT FUNCTIONS *********/
+
+async function confluence_seed_project_list() {
+  // get project name from url parameters
+  const qsProject = new URLSearchParams(document.location.search).get('project')
+  // Seeds the dropdown with current projects
+  const projectlist = document.getElementById('project');
+  const pubresp = await GET("/api/public");
+  const pubdata = await pubresp.json();
+  for (project of pubdata.projects) {
+    const opt = document.createElement("option");
+    opt.text = project;
+    opt.value = project;
+    opt.selected = project == qsProject;
+    projectlist.appendChild(opt);
+  }
+}
+
+async function confluence_check_project(project_name) {
+  const apiresp = await POST("/api/confluence-project-blocked", {json: {"project": project_name}});
+  const apidata = await apiresp.json();
+  if (apidata.blocked === true) {
+    toast(`The project you have selected does not use Confluence. Please contact the project at dev@${project_name}.apache.org to find out where thy use a wiki.`);
+    confluence_account_inputs_state("disabled");
+  } else {
+    confluence_account_inputs_state("enabled");
+  }
+}
+
+function confluence_account_inputs_state(desiredState) {
+  const form_elements = document.getElementsByClassName("project-dependent");
+  for (e of form_elements) {
+    if (desiredState === "disabled") {
+      e.disabled = true;
+    } else {
+      e.disabled = false;
+    }
+  }
+}
+
+async function confluence_account_request_submit(form) {
+  const formdata = new FormData(form);
+  if (formdata.get("verify") !== "agree") {
+    toast("Please agree to sharing your data before submitting your request.");
+    return false
+  }
+  const resp = await POST("/api/confluence-account", {data: formdata});
+  const result = await resp.json();
+  if (!result.success) {
+    toast(result.message);
+    return false
+  }
+  const container = document.getElementById('contents');
+  container.innerText = "Your request to create a Confluence account has been submitted. Please check your email inbox for further information, as you will need to verify your email address."
+  return false
+}
+
+async function confluence_verify_email(token) {
+  const resp = await GET(`/api/confluence-account?token=${token}`);
+  const result = await resp.json();
+  const container = document.getElementById('verify_response');
+  if (result.success) {
+    container.innerText = `Your Confluence account request has been successfully verified, and will be reviewed by the project you indicated. \
+                           Please allow up to a few days for the project to review this request.\
+                           If you do not receive a reply from the project within seven days, you can contact the project management committee \
+                           privately at ${result.ppl}. If the project is still unable to respond, you can then escalate the matter to the \
+                           ASF Infrastructure team at users@infra.apache.org`;
+  } else {
+    container.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
+    toast(result.message);
+  } 
+}   
+    
+async function confluence_account_review(prefs, qs) {
+  const token = qs.get("token");
+  const resp = await GET(`/api/confluence-account-review?token=${token}`);
+  const result = await resp.json();
+  if (!result.success) {
+    toast(result.message);
+  } else {
+    const username = document.getElementById('username');
+    username.value = result.entry.userid;
+    const realname = document.getElementById('realname');
+    realname.value = result.entry.realname;    
+    const why = document.getElementById('why');
+    why.value = result.entry.why;
+    const toktxt = document.getElementById('token');
+    toktxt.value = token;
+    const projecttxt = document.getElementById('project');
+    projecttxt.value = result.entry.project;
+  } 
+}     
+    
+async function confluence_account_approve(form, verdict = "deny") {
+  // Approve or deny a confluence account request
+  const data = new FormData(form)
+  data.set("action", verdict);
+  // Hide deny details panel and buttons
+  const deny_details = document.getElementById('deny_details');
+  deny_details.style.display = "none";
+  const btns = document.getElementById('buttons_real');
+  btns.style.display = "none";
+  // Show spinner
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+  const resp = await POST("/api/confluence-account-review", {data: data})
+  const result = await resp.json();
+  if (result.success) {
+    const container = document.getElementById('contents');
+    container.innerText = result.message;
+  } else {
+    toast(result.message);
+    // Put back buttons, hide spinner
+    btns.style.display = "block";
+    spin.style.display = "none";
+  }
+}
+
+function confluence_account_deny_details() {
+  const real_buttons = document.getElementById('buttons_real');
+  real_buttons.style.display = "none";
+  const deny_details = document.getElementById('deny_details');
+  deny_details.style.display = "block";
+}
+
+async function confluence_account_reactivate_submit(form) {
+  const formdata = new FormData(form);
+  const resp = await POST("/api/confluence-account-activate", {data: formdata});
+  const result = await resp.json();
+  if (!result.success) {
+    toast(result.message);
+    return false
+  }
+  const container = document.getElementById('form_submit');
+  container.innerText = "Your request to re-activate your Confluence account has been logged. Please check your email addresss for a confirmation email, and confirm your identity by clicking on the link provided in the email."
+  return false
+}
+
+async function confluence_account_reactivate_verify_email(token) {
+  const jform = document.getElementById('form_submit');
+  jform.style.display = "none";
+  const spinner = document.getElementById('process_spin');
+  spinner.style.display = "block";
+  const resp = await GET(`/api/confluence-account-activate-confirm?token=${token}`);
+  const result = await resp.json();
+  if (result.success) {
+    spinner.innerText = "Your Confluence account has been successfully re-activated, enjoy!";
+  } else {
+    if (result.error) {
+      spinner.innerText = result.error;
+    } else {
+      spinner.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
+    }
+    toast(result.error);
+  }
+}
+
+/********* END OF CONFLUENCE ACCOUNT FUNCTIONS *********/
 
 async function mailinglist_seed_domain_list(prefs) {
   // Seeds the dropdown with current mailing list domains
@@ -473,35 +664,3 @@ async function jira_create_prime() {
   await jira_seed_schemes();
 }
 
-
-async function jira_account_reactivate_submit(form) {
-  const formdata = new FormData(form);
-  const resp = await POST("/api/jira-account-activate", {data: formdata});
-  const result = await resp.json();
-  if (!result.success) {
-    toast(result.message);
-    return false
-  }
-  const container = document.getElementById('form_submit');
-  container.innerText = "Your request to re-activate your Jira account has been logged. Please check your email addresss for a confirmation email, and confirm your identity by clicking on the link provided in the email."
-  return false
-}
-
-async function jira_account_reactivate_verify_email(token) {
-  const jform = document.getElementById('form_submit');
-  jform.style.display = "none";
-  const spinner = document.getElementById('process_spin');
-  spinner.style.display = "block";
-  const resp = await GET(`/api/jira-account-activate-confirm?token=${token}`);
-  const result = await resp.json();
-  if (result.success) {
-    spinner.innerText = "Your Jira account has been successfully re-activated, enjoy!";
-  } else {
-    if (result.error) {
-      spinner.innerText = result.error;
-    } else {
-      spinner.innerText = "We were unable to verify your account token. If you feel this is in error, please let us know at: users@infra.apache.org."
-    }
-    toast(result.error);
-  }
-}
