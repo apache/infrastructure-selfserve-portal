@@ -24,7 +24,7 @@ from ..lib import middleware, config, email
 import quart
 import re
 import asyncio
-import psycopg
+import aiomysql
 
 ONE_DAY = 86400  # A day in seconds
 
@@ -32,8 +32,8 @@ VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_CONFLUENCE_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
-# Confluence PSQL DSN (same as Jira ?)
-CONFLUENCE_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
+# Confluence MYSQL DSN
+CONFLUENCE_MYSQL_DSN = aiomysql.create_pool(**config.cwikimysql.yaml)
 
 # Mappings dict for userid<->email
 CONFLUENCE_EMAIL_MAPPINGS = {}
@@ -44,14 +44,13 @@ CONFLUENCE_REACTIVATION_QUEUE = {}
 # ACLI command - TODO: Add to yaml??
 ACLI_CMD = "/opt/latest-cli/acli.sh"
 
-
 async def update_confluence_email_map():
-    """Updates the confluence userid<->email mappings from psql on a daily basis"""
+    """Updates the confluence userid<->email mappings from mysql on a daily basis"""
     while True:
         print("Updating Confluence email mappings dict")
         try:
             tmp_dict = {}
-            async with await psycopg.AsyncConnection.connect(CONFLUENCE_PGSQL_DSN) as conn:
+            async with CONFLUENCE_MYSQL_DSN.acquire() as conn:
                 async with conn.cursor() as cur:
                     await cur.execute("SELECT lower_user_name, email_address from cwd_user WHERE directory_id != 10000")
                     async for row in cur:
@@ -62,7 +61,7 @@ async def update_confluence_email_map():
             CONFLUENCE_EMAIL_MAPPINGS.clear()
             CONFLUENCE_EMAIL_MAPPINGS.update(tmp_dict)
         except psycopg.OperationalError as e:
-            print(f"Operational error while querying Jira/Confluence PSQL: {e}")
+            print(f"Operational error while querying Confluence MYSQL: {e}")
             print("Retrying later...")
         await asyncio.sleep(ONE_DAY)  # Wait a day...
 
