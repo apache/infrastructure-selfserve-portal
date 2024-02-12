@@ -60,7 +60,7 @@ async def update_confluence_email_map():
             # Clear and refresh mappings
             CONFLUENCE_EMAIL_MAPPINGS.clear()
             CONFLUENCE_EMAIL_MAPPINGS.update(tmp_dict)
-        except psycopg.OperationalError as e:
+        except aiomysql.OperationalError as e:
             print(f"Operational error while querying Confluence MYSQL: {e}")
             print("Retrying later...")
         await asyncio.sleep(ONE_DAY)  # Wait a day...
