@@ -7,6 +7,4 @@ the {project} project has chosen to deny the request. We therefore will not crea
 The following reason was given:
 {reason}
 
-If you wish to appeal this decision, you may do so either directly with the
-{project} project, or by contacting the ASF Infrastructure team at:
-users@infra.apache.org
+If you wish to appeal this decision, contact the {project} project directly.
