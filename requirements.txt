@@ -1,5 +1,6 @@
 aiofiles
 aiohttp
+aiomysql
 asfpy[aioldap] >= 0.47  # For aioldap and clitools
 async-timeout
 bonsai  # NOTE: This requires libsasl2-dev installed first!
