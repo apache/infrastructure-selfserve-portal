@@ -2,7 +2,7 @@ New {project} Jira account requested: {userid}
 --
 Hi, there.
 
-A new Jira user account, {userid}, has been requested so that user can contribute to 
+A new Jira user account, {userid}, has been requested so that the user can contribute to 
 Apache {project}.
 
 The request comes from {realname}, who gives the following reason for needing the
