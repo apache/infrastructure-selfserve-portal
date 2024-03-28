@@ -1,6 +1,7 @@
 Confluence space archived: {spacename}
 --
-Hi there,
-As requested by {requester}, the following confluence space has been archived:
+Hi, there.
+
+As requested by {requester}, the following Confluence space has been archived:
 https://cwiki.apache.org/confluence/display/{spacename}
 
