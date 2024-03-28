@@ -340,6 +340,8 @@ async def process_review(form_data, session):
             return {"success": True, "message": "Account created, welcome email has been dispatched."}
 
         elif action == "deny":
+            if entry.get("denied_ts", 0):  # If already denied, the denied_ts entry is > 0. Only deny once
+              return {"success": False, "message": "This account request has already been denied. Nothing to do."}
             entry["denied_ts"] = int(time.time())  # Mark when denied, for db pruning loop
             JIRA_DB.update("pending", entry, token=entry["token"])
 
