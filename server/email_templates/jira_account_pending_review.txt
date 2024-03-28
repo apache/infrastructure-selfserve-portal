@@ -14,4 +14,4 @@ Anyone on the {project} project may review this request and approve or deny it a
 Note: If your project no longer uses Jira for issue tracking, you can have your 
       project removed from the dropdown list, preventing more requests like this 
       one. Create an INFRA jira, email users@infra.a.o or contact us in the #asfinfra
-      channel in the-asf Slack instance.
+      channel in the ASF Slack instance.
