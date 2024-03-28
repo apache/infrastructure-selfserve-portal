@@ -1,6 +1,7 @@
 Jira project created: {project_key}
 --
-Hi there,
+Hi, there.
+
 As requested by {requester}, the following Jira project has been created:
 https://issues.apache.org/jira/browse/{project_key}
 
@@ -9,4 +10,3 @@ to any project list.
 
 Please raise an INFRA Jira to get a suitable scheme set up:
 https://issues.apache.org/jira/projects/INFRA
-

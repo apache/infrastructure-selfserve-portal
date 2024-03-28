@@ -1,6 +1,7 @@
 New Jira account created: {userid}
 --
-Hi there,
+Hi, there.
+
 As approved by {approver}@apache.org, a new Jira user account, {userid}, has been created.
 
 They provided the public name: {realname}
