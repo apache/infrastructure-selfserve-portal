@@ -1,6 +1,7 @@
 Jira account created: {userid}
 --
-Hi there,
+Hi, there.
+
 As requested by the {project} project, we have created a Jira user account, {userid}, for you to use when reporting issues related to The Apache Software Foundation's projects or products.
 
 Go to https://issues.apache.org/jira/secure/ForgotLoginDetails.jspa
