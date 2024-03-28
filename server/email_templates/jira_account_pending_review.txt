@@ -1,10 +1,11 @@
 New {project} Jira account requested: {userid}
 --
-Hi there,
-A new Jira user account, {userid}, has been requested in order to contribute to 
+Hi, there.
+
+A new Jira user account, {userid}, has been requested so that user can contribute to 
 Apache {project}.
 
-The request comes from {realname} who gives the following reason for needing the
+The request comes from {realname}, who gives the following reason for needing the
 account:
 {why}
 
@@ -13,5 +14,5 @@ Anyone on the {project} project may review this request and approve or deny it a
 
 Note: If your project no longer uses Jira for issue tracking, you can have your 
       project removed from the dropdown list, preventing more requests like this 
-      one. Create an INFRA jira, email users@infra.a.o or contact us in the #asfinfra
+      one. Create an INFRA Jira ticket, email users@infra.a.o, or contact us in the #asfinfra
       channel in the-asf Slack instance.
