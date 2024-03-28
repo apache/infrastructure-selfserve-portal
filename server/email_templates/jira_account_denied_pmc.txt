@@ -1,6 +1,7 @@
 Jira account request denied by {approver}: {userid}
 --
-Hi, there,
+Hi, there.
+
 The request for a new Jira account, {userid}, was denied by {approver}.
 The request will automatically be removed from the database 24 hours from now.
 
