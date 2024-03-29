@@ -1,6 +1,7 @@
 New mailing list queued for creation: {listpart}@{domainpart}
 --
-Hi there,
+Hi, there.
+
 As requested by {requester}, a new mailing list has been queued for creation:
 {listpart}@{domainpart}
 
