@@ -9,7 +9,5 @@ If this decision appears to have been a mistake, you can revisit the application
 and approve it by visiting the original review URL from the initial account request
 email within the next 24 hours.
 
-Note: You must wait 24 hours before submitting a new request for this Jira account.
-
 The following reason was given for denying the request:
 {reason}
