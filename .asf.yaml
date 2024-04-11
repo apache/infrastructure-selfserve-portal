@@ -3,3 +3,8 @@ notifications:
   pullrequests:         commits@infra.apache.org
   issues:               issues@infra.apache.org
   discussions:          issues@infra.apache.org
+
+github:
+  features:
+    # Enable issue management
+    issues: true
