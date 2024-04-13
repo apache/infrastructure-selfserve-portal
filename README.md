@@ -5,7 +5,7 @@ It is constructed as a [PipService](https://cwiki.apache.org/confluence/display/
 and houses the static site elements, documentation, and scripts required to perform self-serve
 actions.
 
-The layout iss:
+The layout is:
 
 - `htdocs/`: The static site files
 - `documentation/`: The documentation for the self-serve processes
