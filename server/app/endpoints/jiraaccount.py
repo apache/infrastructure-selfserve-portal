@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS pending (
      created integer NOT NULL,
      userip text NOT NULL,
      validated integer NOT NULL,
-     denied_ts integer DEFAULT 0,
+     denied_ts integer DEFAULT 0
     );
 """
 
