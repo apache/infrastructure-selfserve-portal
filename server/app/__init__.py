@@ -19,6 +19,7 @@
 import re
 import secrets
 import asfquart
+import quart
 from .lib import config, log, middleware
 import os
 import hashlib
@@ -50,8 +51,8 @@ def main():
         if path.endswith("/"):
             path += "index.html"
         if path.endswith(".html"):  # Serve HTML from the compiled output dir
-            return await asfquart.APP.send_from_directory(COMPILED_DIR, path)
-        return await asfquart.APP.send_from_directory(STATIC_DIR, path)
+            return await quart.send_from_directory(COMPILED_DIR, path)
+        return await quart.send_from_directory(STATIC_DIR, path)
 
     @asfquart.APP.before_serving
     async def compile_html():
