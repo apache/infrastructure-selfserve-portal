@@ -17,7 +17,7 @@
 # under the License.
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for public data feeds"""
-import quart
+import asfquart
 from ..lib import middleware, config
 
 
@@ -28,7 +28,7 @@ async def process(form_data):
     }
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/public",
     methods=[
         "GET",

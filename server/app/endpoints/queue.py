@@ -21,7 +21,7 @@
 if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
-import quart
+import asfquart
 from ..lib import middleware, asfuid, config
 import os
 import json
@@ -59,10 +59,10 @@ async def list_queue(form_data, session):
             queue.append(js)
         except json.JSONDecodeError:
             pass
-    return quart.jsonify(queue)
+    return asfquart.jsonify(queue)
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/queue",
     methods=[
         "GET",

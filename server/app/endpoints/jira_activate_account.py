@@ -21,7 +21,7 @@ import uuid
 """Handler for jira account creation"""
 
 from ..lib import middleware, config, email
-import quart
+import asfquart
 import re
 import asyncio
 import psycopg
@@ -33,7 +33,7 @@ VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whit
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 # Jira PSQL DSN
-JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
+#JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
 
 # Mappings dict for userid<->email
 JIRA_EMAIL_MAPPINGS = {}
@@ -111,7 +111,7 @@ async def process_reactivation_request(formdata):
         if JIRA_EMAIL_MAPPINGS[jira_username].lower() == jira_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
-            verify_url = f"https://{quart.app.request.host}/jira-account-reactivate.html?{token}"
+            verify_url = f"https://{asfquart.app.request.host}/jira-account-reactivate.html?{token}"
             email.from_template(
                 "jira_account_reactivate.txt",
                 recipient=jira_email,
@@ -144,7 +144,7 @@ async def process_confirm_reactivation(formdata):
         return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-account-activate",
     methods=[
         "GET",  # DEBUG
@@ -153,7 +153,7 @@ quart.current_app.add_url_rule(
     view_func=middleware.glued(process_reactivation_request),
 )
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-account-activate-confirm",
     methods=[
         "GET",  # DEBUG
@@ -164,4 +164,4 @@ quart.current_app.add_url_rule(
 
 
 # Schedule background updater of email mappings
-quart.current_app.add_background_task(update_jira_email_map)
+asfquart.APP.add_background_task(update_jira_email_map)

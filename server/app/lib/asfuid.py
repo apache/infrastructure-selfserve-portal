@@ -24,7 +24,7 @@ if not __debug__:
 from . import config
 import re
 import asfpy.aioldap
-import quart
+import asfquart
 import time
 import functools
 
@@ -72,23 +72,23 @@ class LDAPClient:
 
 async def membership(project: str):
     # Auth passed via Basic Auth header
-    if quart.request.authorization and quart.request.authorization.username:
-        if config.server.debug_mode is True and quart.request.authorization.username == config.server.debug_user:
+    if asfquart.request.authorization and asfquart.request.authorization.username:
+        if config.server.debug_mode is True and asfquart.request.authorization.username == config.server.debug_user:
             return True, True
         try:
             lc = LDAPClient(
-                username=quart.request.authorization.username, password=quart.request.authorization.password
+                username=asfquart.request.authorization.username, password=asfquart.request.authorization.password
             )
             m, o = await lc.get_members(project)
             return lc.userid in m, lc.userid in o  # committer, pmc
         except asfpy.aioldap.errors.AuthenticationError as e:  # Auth error
-            print(f"Auth error for {quart.request.authorization.username}: {e}")
+            print(f"Auth error for {asfquart.request.authorization.username}: {e}")
         except Exception as e:  # Generic LDAP exception
             print(f"LDAP Exception for project {project}: {e}")
     # Auth passed via session cookie (OAuth)
-    elif quart.session and "uid" in quart.session:
-        if "projects" in quart.session and "pmcs" in quart.session:
-            return project in quart.session["projects"], project in quart.session["pmcs"]
+    elif asfquart.session and "uid" in asfquart.session:
+        if "projects" in asfquart.session and "pmcs" in asfquart.session:
+            return project in asfquart.session["projects"], project in asfquart.session["pmcs"]
     return None, None  # Auth failure
 
 
@@ -96,25 +96,25 @@ class Credentials:
     """Get credentials of user via cookie or debug user (if debug enabled)"""
 
     def __init__(self):
-        if quart.session and "uid" in quart.session:
+        if asfquart.session and "uid" in asfquart.session:
             # Assert that the oauth session is not too old
-            assert quart.session.get("timestamp", 0) > int(
+            assert asfquart.session.get("timestamp", 0) > int(
                 time.time() - SESSION_TIMEOUT
             ), "Session timeout, please authenticate again"
-            self.uid = quart.session["uid"]
-            self.name = quart.session["fullname"]
-            self.projects = quart.session["projects"]
-            self.pmcs = quart.session["pmcs"]
-            self.root = bool(quart.session["isRoot"])
-            self.member = bool(quart.session["isMember"])
-            self.chair = bool(quart.session["isChair"])
+            self.uid = asfquart.session["uid"]
+            self.name = asfquart.session["fullname"]
+            self.projects = asfquart.session["projects"]
+            self.pmcs = asfquart.session["pmcs"]
+            self.root = bool(asfquart.session["isRoot"])
+            self.member = bool(asfquart.session["isMember"])
+            self.chair = bool(asfquart.session["isChair"])
             self.roleaccount = False
 
         elif (
             config.server.debug_mode is True
-            and quart.request.authorization
-            and quart.request.authorization.username == config.server.debug_user
-            and quart.request.authorization.password == config.server.debug_password
+            and asfquart.request.authorization
+            and asfquart.request.authorization.username == config.server.debug_user
+            and asfquart.request.authorization.password == config.server.debug_password
         ):
             self.uid = "testing"
             self.name = "Test Account"
@@ -125,11 +125,11 @@ class Credentials:
             self.member = False
             self.chair = False
         # Role account?
-        elif quart.request.authorization:
-            username = quart.request.authorization.username
+        elif asfquart.request.authorization:
+            username = asfquart.request.authorization.username
             if (
                 username in config.ldap.roleaccounts
-                and config.ldap.roleaccounts[username] == quart.request.authorization.password
+                and config.ldap.roleaccounts[username] == asfquart.request.authorization.password
             ):
                 self.uid = username
                 self.name = "API Role Account"

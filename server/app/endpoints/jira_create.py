@@ -22,7 +22,7 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, asfuid, email, log, config
-import quart
+import asfquart
 import re
 import asyncio
 import os
@@ -211,10 +211,10 @@ async def list_schemes(form_data, session):
                 scheme_dict[key] = js
             except json.JSONDecodeError:  # Bad JSON file? :/
                 scheme_dict[key] = {}
-    return quart.jsonify(scheme_dict)
+    return asfquart.jsonify(scheme_dict)
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-project-create",
     methods=[
         "POST",  # Create a new jira project
@@ -223,7 +223,7 @@ quart.current_app.add_url_rule(
 )
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-project-schemes",
     methods=[
         "GET",  # List valid schemes

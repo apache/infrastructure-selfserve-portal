@@ -22,7 +22,7 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, config, asfuid, email
-import quart
+import asfquart
 import uuid
 import time
 import asfpy.sqlite
@@ -146,13 +146,13 @@ async def check_project_blocked(form_data):
 async def process(form_data):
 
     # Submit application
-    if quart.request.method == "POST":
+    if asfquart.request.method == "POST":
         desired_username = form_data.get("username")
         real_name = form_data.get("realname")
         email_address = form_data.get("email")
         contact_project = form_data.get("project")
         why = form_data.get("why")
-        userip = quart.request.remote_addr
+        userip = asfquart.request.remote_addr
         now = int(time.time())
 
         # Validate fields
@@ -214,7 +214,7 @@ async def process(form_data):
         )
 
         # Send the verification email
-        verify_url = f"https://{quart.app.request.host}/jira-account-verify.html?{token}"
+        verify_url = f"https://{asfquart.app.request.host}/jira-account-verify.html?{token}"
         email.from_template("jira_account_verify.txt",
                             recipient=email_address,
                             variables={"verify_url": verify_url},
@@ -228,7 +228,7 @@ async def process(form_data):
         }
 
     # Validate email
-    elif quart.request.method == "GET":
+    elif asfquart.request.method == "GET":
         token = form_data.get("token")
         record = JIRA_DB.fetchone("pending", token=token)
         if record and record["validated"] == 0:  # Valid, not-already-validated token?
@@ -236,7 +236,7 @@ async def process(form_data):
             JIRA_DB.update("pending", {"validated": 1}, token=token)
 
             # Notify project
-            record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
+            record["review_url"] = f"https://{asfquart.app.request.host}/jira-account-review.html?token={token}"
             project_private_list = email.project_to_private(record["project"])
             email.from_template("jira_account_pending_review.txt",
                                 recipient=[NOTIFICATION_TARGET, project_private_list],
@@ -266,7 +266,7 @@ async def process_review(form_data, session):
         return {"success": False, "message": str(e)}
 
     # Review application
-    if quart.request.method == "GET":
+    if asfquart.request.method == "GET":
         public_keys = (
             "created",
             "project",
@@ -279,7 +279,7 @@ async def process_review(form_data, session):
         return {"success": True, "entry": public_entry}
 
     # Approve/deny application
-    if quart.request.method == "POST":
+    if asfquart.request.method == "POST":
         action = form_data.get("action")
         if action == "approve":
             try:
@@ -366,7 +366,7 @@ async def process_review(form_data, session):
             return {"success": True, "message": "Account denied, notification dispatched."}
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-account",
     methods=[
         "GET",  # Token verification (email validation)
@@ -374,21 +374,21 @@ quart.current_app.add_url_rule(
     ],
     view_func=middleware.glued(process),
 )
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-exists",
     methods=[
         "GET",
     ],
     view_func=middleware.glued(check_user_exists),
 )
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-project-blocked",
     methods=[
         "POST",
     ],
     view_func=middleware.glued(check_project_blocked),
 )
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-account-review",
     methods=[
         "GET",  # View account request
@@ -398,4 +398,4 @@ quart.current_app.add_url_rule(
 )
 
 # Add background loop for pruning pending requests db
-quart.current_app.add_background_task(prune_stale_requests)
+asfquart.APP.add_background_task(prune_stale_requests)

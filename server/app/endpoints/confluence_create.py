@@ -22,7 +22,7 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, asfuid, email, log
-import quart
+import asfquart
 import re
 import asyncio
 
@@ -190,7 +190,7 @@ async def process(form_data, session):
     }
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/confluence-create",
     methods=[
         "GET",
