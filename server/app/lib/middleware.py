@@ -24,7 +24,7 @@ import sys
 import traceback
 import typing
 import uuid
-import asfquart
+import quart
 from . import config
 import werkzeug.routing
 import asyncio
@@ -33,7 +33,7 @@ import functools
 async def consume_body():
     """Consumes the request body, punting it to dev-null. This is required for httpd to not throw 502 at error"""
     # See: https://bz.apache.org/bugzilla/show_bug.cgi?id=55433
-    async for _data in asfquart.request.body:
+    async for _data in quart.request.body:
         pass
 
 
@@ -42,27 +42,27 @@ def glued(func: typing.Callable) -> typing.Callable:
 
     async def call(**args):
         form_data = dict()
-        form_data.update(asfquart.request.args.to_dict())
-        xform = await asfquart.request.form
+        form_data.update(quart.request.args.to_dict())
+        xform = await quart.request.form
         # Pre-parse check for form data size
-        if asfquart.request.content_type and any(
-            x in asfquart.request.content_type
+        if quart.request.content_type and any(
+            x in quart.request.content_type
             for x in (
                 "multipart/form-data",
                 "application/x-www-form-urlencoded",
                 "application/x-url-encoded",
             )
         ):
-            if asfquart.request.content_length > config.server.max_form_size:
+            if quart.request.content_length > config.server.max_form_size:
                 await consume_body()
-                return asfquart.Response(
+                return quart.Response(
                     status=413,
-                    response=f"Request content length ({asfquart.request.content_length} bytes) is larger than what is permitted for form data ({config.server.max_form_size} bytes)!",
+                    response=f"Request content length ({quart.request.content_length} bytes) is larger than what is permitted for form data ({config.server.max_form_size} bytes)!",
                 )
         if xform:
             form_data.update(xform.to_dict())
-        if asfquart.request.is_json:
-            xjson = await asfquart.request.json
+        if quart.request.is_json:
+            xjson = await quart.request.json
             form_data.update(xjson)
         try:
             resp = await func(form_data, **args)
@@ -84,12 +84,12 @@ def glued(func: typing.Callable) -> typing.Callable:
             else:
                 # We only need a short ID here, let's pick 18 chars.
                 eid = str(uuid.uuid4())[:18]
-                sys.stderr.write("API Endpoint %s got into trouble (%s): \n" % (asfquart.request.path, eid))
+                sys.stderr.write("API Endpoint %s got into trouble (%s): \n" % (quart.request.path, eid))
                 for line in err.split("\n"):
                     sys.stderr.write("%s: %s\n" % (eid, line))
                 return {"success": False, "message": f"API error occurred. The application journal will have information. Error ID: {eid}"}, 500, headers
         # If an error is thrown before the request body has been consumed, eat it quietly.
-        if not asfquart.request.body._complete.is_set():
+        if not quart.request.body._complete.is_set():
             await consume_body()
 
         return resp
@@ -105,11 +105,11 @@ def glued(func: typing.Callable) -> typing.Callable:
 
 def auth_failed():
     """Returns the appropriate authorization failure response, depending on auth mechanism supplied."""
-    if "x-artifacts-webui" not in asfquart.request.headers:  # Not done via Web UI, standard 401 response
+    if "x-artifacts-webui" not in quart.request.headers:  # Not done via Web UI, standard 401 response
         headers = {"WWW-Authenticate": 'Basic realm="selfserve.apache.org"'}
-        return asfquart.Response(status=401, headers=headers, response="Please authenticate yourself first!\n")
+        return quart.Response(status=401, headers=headers, response="Please authenticate yourself first!\n")
     else:  # Web UI response, do not send Realm header (we do not want a pop-up in our browser!)
-        return asfquart.Response(status=401, response="Please authenticate yourself first!\n")
+        return quart.Response(status=401, response="Please authenticate yourself first!\n")
 
 
 class FilenameConverter(werkzeug.routing.BaseConverter):
@@ -141,10 +141,10 @@ def rate_limited(func):
 
     @functools.wraps(func)
     async def session_wrapper(*args):
-        ip = asfquart.request.headers.get("X-Forwarded-For", asfquart.request.remote_addr).split(",")[-1].strip()
+        ip = quart.request.headers.get("X-Forwarded-For", quart.request.remote_addr).split(",")[-1].strip()
         usage = config.rate_limits.get(ip, 0) + 1
         if config.server.rate_limit_per_ip and usage > config.server.rate_limit_per_ip:
-            return asfquart.Response(status=429, response="Your request has been rate-limited. Please check back tomorrow!")
+            return quart.Response(status=429, response="Your request has been rate-limited. Please check back tomorrow!")
         config.rate_limits[ip] = usage
         print(ip, usage)
         return await func(*args)
