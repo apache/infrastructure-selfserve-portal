@@ -23,6 +23,7 @@ if not __debug__:
 
 from ..lib import middleware, config, asfuid, email, log
 import asfquart
+from asfquart import auth
 import time
 import json
 import os
@@ -54,6 +55,7 @@ def can_manage_domain(session: dict, domain: str):
 
 
 @asfuid.session_required
+@asfquart.auth.require
 async def process(form_data, session):
     # Creating a new mailing list
 
