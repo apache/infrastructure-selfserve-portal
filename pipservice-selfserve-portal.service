@@ -5,7 +5,7 @@ Description=ASF Selfserve Portal
 [Service]
 Type=simple
 WorkingDirectory=/opt/selfserve-portal/server/
-ExecStart=/usr/local/bin/pipenv run python3 -m hypercorn server:application
+ExecStart=/usr/local/bin/pipenv run python3 server.py
 Restart=always
 User=www-data
 Group=www-data
