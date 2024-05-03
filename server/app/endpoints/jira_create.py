@@ -23,6 +23,8 @@ if not __debug__:
 
 from ..lib import middleware, asfuid, email, log, config
 import asfquart
+import asfquart.auth
+import asfquart.session
 import re
 import asyncio
 import os
@@ -131,8 +133,10 @@ async def set_project_access(project_key: str, ldap_project: str):
     assert proc.returncode == 0, f"Could not assign write access to {ldap_project} committers"
 
 
-@asfuid.session_required
-async def process(form_data, session):
+@asfquart.auth.require
+async def process(form_data):
+
+    session = await asfquart.session.read()
     # Create a new jira project
 
     project_key = form_data.get("project_key")

@@ -22,6 +22,8 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 import asfquart
+import asfquart.auth
+import asfquart.session
 from ..lib import middleware, asfuid, config
 import os
 import json
@@ -30,9 +32,10 @@ import re
 VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
 
 
-@asfuid.session_required
-async def list_queue(form_data, session):
+@asfquart.auth.require
+async def list_queue(form_data):
     """Lists the current selfserve request queue, or removes an item that has been processed"""
+    session = asfquart.session.read()
     if not session.roleaccount:
         return {
             "success": False,

@@ -23,7 +23,8 @@ if not __debug__:
 
 from ..lib import middleware, config, asfuid, email, log
 import asfquart
-from asfquart import auth
+import asfquart.auth
+import asfquart.session
 import time
 import json
 import os
@@ -44,7 +45,8 @@ VALID_MUOPTS_INFRA = ("mu", "mU", "Mu", "MU")  # Infra can use MU as well
 INVALID_ENDINGS = ( "-default", "-owner", )
 
 
-def can_manage_domain(session: dict, domain: str):
+def can_manage_domain(domain: str):
+    session = await asfquart.session.read()
     """Yields true if the user can manage a specific project domain, otherwise False"""
     if session.root is True:  # Root can always manage
         return True
@@ -54,9 +56,9 @@ def can_manage_domain(session: dict, domain: str):
     return False
 
 
-@asfuid.session_required
 @asfquart.auth.require
-async def process(form_data, session):
+async def process(form_data):
+    session = await asfquart.session.read()
     # Creating a new mailing list
 
     listpart = form_data.get("listpart")

@@ -23,6 +23,7 @@ if not __debug__:
 
 from ..lib import middleware
 import asfquart
+import asfquart.session
 import quart
 import aiohttp
 import uuid
@@ -34,6 +35,7 @@ OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
 
 
 async def process(form_data):
+    session = await asfquart.session.read()
     if quart.request.method == "GET":
         code = form_data.get("code")
         state = form_data.get("state")
