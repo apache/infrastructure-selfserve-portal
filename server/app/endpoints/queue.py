@@ -31,7 +31,7 @@ import re
 VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
 
 
-@asfquart.auth.require
+@asfuid.session_required
 async def list_queue(form_data, session):
     """Lists the current selfserve request queue, or removes an item that has been processed"""
     if not session.roleaccount:
