@@ -96,7 +96,7 @@ class Credentials:
     """Get credentials of user via cookie or debug user (if debug enabled)"""
 
     def __init__(self):
-        if quart.session and "uid" in quart.APP.session:
+        if quart.session and "uid" in quart.session:
             # Assert that the oauth session is not too old
             assert quart.session.get("timestamp", 0) > int(
                 time.time() - SESSION_TIMEOUT
