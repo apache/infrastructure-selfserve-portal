@@ -25,24 +25,32 @@ import os
 import hashlib
 import base64
 
-STATIC_DIR = os.path.join(os.path.realpath(".."), "htdocs")  # File location of static assets
+STATIC_DIR = os.path.join(
+    os.path.realpath(".."), "htdocs"
+)  # File location of static assets
 TEMPLATES_DIR = os.path.join(STATIC_DIR, "templates")  # HTML master templates
-COMPILED_DIR = os.path.join(STATIC_DIR, "compiled")    # Compiled HTML (template + content)
+COMPILED_DIR = os.path.join(
+    STATIC_DIR, "compiled"
+)  # Compiled HTML (template + content)
 
 
 def file_to_sri(filepath: str):
     """Generates a sub-resource integrity value for a file - https://www.w3.org/TR/SRI/"""
     with open(filepath, "rb") as f:
         digest = hashlib.sha384(f.read()).digest()
-        b64_digest = base64.b64encode(digest).decode('us-ascii')
+        b64_digest = base64.b64encode(digest).decode("us-ascii")
         return f"sha384-{b64_digest}"
 
 
 def main():
     asfquart.construct(__name__)
     asfquart.APP.secret_key = secrets.token_hex()  # For session management
-    asfquart.APP.config["MAX_CONTENT_LENGTH"] = config.server.max_content_length  # Ensure upload limits match expectations
-    asfquart.APP.url_map.converters["filename"] = middleware.FilenameConverter  # Special converter for filename-style vars
+    asfquart.APP.config[
+        "MAX_CONTENT_LENGTH"
+    ] = config.server.max_content_length  # Ensure upload limits match expectations
+    asfquart.APP.url_map.converters[
+        "filename"
+    ] = middleware.FilenameConverter  # Special converter for filename-style vars
 
     # Static files (or index.html if requesting a dir listing)
     @asfquart.APP.route("/<path:path>")
@@ -65,12 +73,18 @@ def main():
             if os.path.isfile(script_path):
                 sri = file_to_sri(script_path)
                 orig_src = script_src.group(1)
-                new_src = f"{orig_src} integrity=\"{sri}\""
+                new_src = f'{orig_src} integrity="{sri}"'
                 master_template = master_template.replace(orig_src, new_src)
         if not os.path.isdir(COMPILED_DIR):
-            log.log(f"Compiled HTML directory {COMPILED_DIR} does not exist, will attempt to create it")
+            log.log(
+                f"Compiled HTML directory {COMPILED_DIR} does not exist, will attempt to create it"
+            )
             os.makedirs(COMPILED_DIR, exist_ok=True, mode=0o700)
-        for htmlfile in [filename for filename in os.listdir(STATIC_DIR) if filename.endswith(".html")]:
+        for htmlfile in [
+            filename
+            for filename in os.listdir(STATIC_DIR)
+            if filename.endswith(".html")
+        ]:
             print(f"Compiling {htmlfile} into output/{htmlfile}")
             htmldata = open(os.path.join(STATIC_DIR, htmlfile)).read()
             output = master_template.replace("{contents}", htmldata)
