@@ -24,6 +24,7 @@ if not __debug__:
 from ..lib import middleware, email, log
 import asfquart
 import asfquart.session
+import asfquart.auth
 import json
 import re
 import asyncio
