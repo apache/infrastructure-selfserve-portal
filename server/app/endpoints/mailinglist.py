@@ -46,7 +46,7 @@ INVALID_ENDINGS = ( "-default", "-owner", )
 
 
 def can_manage_domain(domain: str):
-    session = await asfquart.session.read()
+    session = asfquart.session.read()
     """Yields true if the user can manage a specific project domain, otherwise False"""
     if session.root is True:  # Root can always manage
         return True

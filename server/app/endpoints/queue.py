@@ -23,7 +23,6 @@ if not __debug__:
 
 import asfquart
 import asfquart.auth
-import asfquart.session
 from ..lib import middleware, asfuid, config
 import os
 import json
@@ -33,9 +32,8 @@ VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
 
 
 @asfquart.auth.require
-async def list_queue(form_data):
+async def list_queue(form_data, session):
     """Lists the current selfserve request queue, or removes an item that has been processed"""
-    session = asfquart.session.read()
     if not session.roleaccount:
         return {
             "success": False,
