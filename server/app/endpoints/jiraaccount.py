@@ -21,8 +21,10 @@
 if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, asfuid, email
+from ..lib import middleware, config, email
 import asfquart
+import asfquart.auth
+import asfquart.session
 import quart
 import uuid
 import time
@@ -250,9 +252,10 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
-@asfuid.session_required
-async def process_review(form_data, session):
+@asfquart.auth.require(asfquart.auth.Requirements.chair)
+async def process_review(form_data):
     """Review and/or approve/deny a request for a new jira account"""
+    session = await asfquart.session.read()
     try:
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
