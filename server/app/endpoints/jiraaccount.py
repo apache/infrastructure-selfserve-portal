@@ -23,6 +23,7 @@ if not __debug__:
 
 from ..lib import middleware, config, asfuid, email
 import asfquart
+import quart
 import uuid
 import time
 import asfpy.sqlite
@@ -146,13 +147,13 @@ async def check_project_blocked(form_data):
 async def process(form_data):
 
     # Submit application
-    if asfquart.request.method == "POST":
+    if quart.request.method == "POST":
         desired_username = form_data.get("username")
         real_name = form_data.get("realname")
         email_address = form_data.get("email")
         contact_project = form_data.get("project")
         why = form_data.get("why")
-        userip = asfquart.request.remote_addr
+        userip = quart.request.remote_addr
         now = int(time.time())
 
         # Validate fields
@@ -228,7 +229,7 @@ async def process(form_data):
         }
 
     # Validate email
-    elif asfquart.request.method == "GET":
+    elif quart.request.method == "GET":
         token = form_data.get("token")
         record = JIRA_DB.fetchone("pending", token=token)
         if record and record["validated"] == 0:  # Valid, not-already-validated token?
@@ -266,7 +267,7 @@ async def process_review(form_data, session):
         return {"success": False, "message": str(e)}
 
     # Review application
-    if asfquart.request.method == "GET":
+    if quart.request.method == "GET":
         public_keys = (
             "created",
             "project",
@@ -279,7 +280,7 @@ async def process_review(form_data, session):
         return {"success": True, "entry": public_entry}
 
     # Approve/deny application
-    if asfquart.request.method == "POST":
+    if quart.request.method == "POST":
         action = form_data.get("action")
         if action == "approve":
             try:

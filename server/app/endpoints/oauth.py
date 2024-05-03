@@ -23,6 +23,7 @@ if not __debug__:
 
 from ..lib import middleware
 import asfquart
+import quart
 import aiohttp
 import uuid
 import urllib.parse
@@ -33,13 +34,13 @@ OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
 
 
 async def process(form_data):
-    if asfquart.request.method == "GET":
+    if quart.request.method == "GET":
         code = form_data.get("code")
         state = form_data.get("state")
         if not code or not state:  # Presumably first step in OAuth
             state = str(uuid.uuid4())
             callback_url = urllib.parse.urljoin(
-                asfquart.request.host_url.replace("http://", "https://"),
+                quart.request.host_url.replace("http://", "https://"),
                 f"/api/oauth?state={state}",
             )
             redirect_url = OAUTH_URL_INIT % (state, urllib.parse.quote(callback_url))
