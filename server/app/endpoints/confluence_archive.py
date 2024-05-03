@@ -21,8 +21,9 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, asfuid, email, log
+from ..lib import middleware, email, log
 import asfquart
+import asfquart.session
 import json
 import re
 import asyncio
@@ -180,15 +181,12 @@ async def read_only_access(space: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
-@asfuid.session_required
-async def process(form_data, session):
+@asfquart.auth.require(any_of={asfquart.auth.Requirements.member, asfquart.auth.Requirements.chair})
+async def process(form_data):
     # Archive a confluence space
     spacename = form_data.get("space")
-
+    session = await asfquart.session.read()
     try:
-        assert (
-            session.member or session.chair or session.root
-        ), "Only officers or foundation members can use this feature"
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert spacename not in PROTECTED_SPACES, "You cannot archive this confluence space"
         users, groups = await get_space_owners(spacename)
