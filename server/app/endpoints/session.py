@@ -18,10 +18,11 @@
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for session operations (view current session, log out)"""
 import asfquart
+import asfquart.auth
 from ..lib import middleware, asfuid, config
 
 
-@asfuid.session_required
+@asfquart.auth.require
 async def process(form_data, session):
     action = form_data.get("action")
     if action == "logout":  # Clear the session

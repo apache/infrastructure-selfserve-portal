@@ -204,7 +204,7 @@ async def process(form_data):
         "message": "Jira project created",
     }
 
-@asfuid.session_required
+@asfquart.auth.require
 async def list_schemes(form_data, session):
     """Lists current valid schemes for Jira"""
     scheme_dict = {}
