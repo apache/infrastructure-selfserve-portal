@@ -19,11 +19,13 @@
 """Handler for session operations (view current session, log out)"""
 import asfquart
 import asfquart.auth
+import asfquart.session
 from ..lib import middleware, asfuid, config
 
 
 @asfquart.auth.require
-async def process(form_data, session):
+async def process(form_data):
+    session = await asfquart.APP.session.read()
     action = form_data.get("action")
     if action == "logout":  # Clear the session
         asfquart.session.clear()
