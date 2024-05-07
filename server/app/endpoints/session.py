@@ -23,7 +23,7 @@ import asfquart.session
 from ..lib import middleware, asfuid, config
 
 
-@asfquart.auth.require
+@asfuid.session_required
 async def process(form_data):
     session = await asfquart.APP.session.read()
     action = form_data.get("action")
