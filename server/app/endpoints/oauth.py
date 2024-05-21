@@ -52,17 +52,14 @@ async def process(form_data):
             return quart.Response(status=302, response="Redirecting...", headers=headers)
         else:  # Callback from oauth.a.o
             ct = aiohttp.client.ClientTimeout(sock_read=15)
+            uid = "??"
             async with aiohttp.client.ClientSession(timeout=ct) as session:
                 rv = await session.get(OAUTH_URL_CALLBACK % code)
                 assert rv.status == 200, "Could not verify oauth response."
                 oauth_data = await rv.json()
-                session.clear()
-                session.update(oauth_data)
-                # Quart sessions live for the entirety of the browser session. We don't want this to extend
-                # too far into the future (abuse??), so let's set a fixed timeout after which a new login
-                # will be required.
-                session["timestamp"] = int(time.time())
-            uid = session["uid"]
+                uid = oauth_data["uid"]
+                # Write cookie session. asfquart will handle expiry.
+                asfquart.session.write(oauth_data)
             return quart.Response(
                 status=200,
                 response=f"Successfully logged in! Welcome, {uid}\n",
