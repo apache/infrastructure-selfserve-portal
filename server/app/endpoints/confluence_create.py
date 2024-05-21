@@ -149,7 +149,7 @@ async def set_default_space_access(space: str, admin: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
-@asfquart.auth.require(any_of={asfquart.auth.Requirements.member, asfquart.auth.Requirements.chair})
+@asfquart.auth.require
 async def process(form_data):
     sesion = await asfquart.session.read()
 
@@ -159,6 +159,7 @@ async def process(form_data):
     description = form_data.get("description")
 
     try:
+        assert (session.isMember or session.isChair), "Only Members and Chairs may create Confluence spaces"
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert (
             isinstance(admin, str) and admin
