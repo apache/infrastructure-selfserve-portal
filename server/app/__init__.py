@@ -43,7 +43,7 @@ def file_to_sri(filepath: str):
 
 
 def main():
-    asfquart.construct(__name__)
+    asfquart.construct(__name__, oauth="/api/auth")
     asfquart.APP.secret_key = secrets.token_hex()  # For session management
     asfquart.APP.config[
         "MAX_CONTENT_LENGTH"
