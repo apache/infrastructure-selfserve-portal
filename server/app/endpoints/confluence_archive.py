@@ -182,7 +182,7 @@ async def read_only_access(space: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
-@asfquart.auth.require(any_of={asfquart.auth.Requirements.member, asfquart.auth.Requirements.chair})
+@asfquart.auth.require
 async def process(form_data):
     # Archive a confluence space
     spacename = form_data.get("space")
@@ -190,6 +190,7 @@ async def process(form_data):
     try:
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert spacename not in PROTECTED_SPACES, "You cannot archive this confluence space"
+        assert (session.isMember or session.isChair), "Only Members and Chairs may archive Confluence spaces"
         users, groups = await get_space_owners(spacename)
         await set_archived_status(spacename)
         await remove_space_access(spacename, userlist=users, grouplist=groups)

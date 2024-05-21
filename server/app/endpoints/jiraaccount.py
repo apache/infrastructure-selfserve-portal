@@ -252,11 +252,12 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
-@asfquart.auth.require(asfquart.auth.Requirements.chair)
+@asfquart.auth.require
 async def process_review(form_data):
     """Review and/or approve/deny a request for a new jira account"""
     session = await asfquart.session.read()
     try:
+        assert (session.isChair), "Only Chairs may review Jira accounts requests"
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
         entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
