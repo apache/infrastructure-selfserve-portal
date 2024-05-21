@@ -117,9 +117,7 @@ async function OAuthGate(callback) {
       window.sessionStorage.setItem('asp_origin', document.location.href); // Store where we came from
     }
     // Construct OAuth URL and redirect to it
-    const state = uuid();
-    const OAuthURL = encodeURIComponent(`https://${document.location.hostname}/oauth.html?action=oauth&state=${state}`);
-    document.location.href = `https://oauth.apache.org/auth?redirect_uri=${OAuthURL}&state=${state}`;
+    document.location.href = `https://${document.location.hostname}/api/auth?login`
   } else if (session.status === 200) { // Found a working session
     const preferences = await session.json();
     if (callback) callback(preferences, QSDict);
