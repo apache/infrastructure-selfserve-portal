@@ -20,12 +20,12 @@
 import asfquart
 import asfquart.auth
 import asfquart.session
-from ..lib import middleware, asfuid, config
+from ..lib import middleware, config
 
 
-@asfuid.session_required
+@asfquart.auth.require
 async def process(form_data):
-    session = await asfquart.APP.session.read()
+    session = await asfquart.session.read()
     action = form_data.get("action")
     if action == "logout":  # Clear the session
         asfquart.session.clear()
