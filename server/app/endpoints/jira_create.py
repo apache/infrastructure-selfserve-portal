@@ -149,7 +149,7 @@ async def process(form_data):
     description = form_data.get("description")
 
     try:
-        assert (session.pmcs or session.root), "Only members of a (P)PMC may create jira projects"
+        assert (session.pmcs or session.isRoot), "Only members of a (P)PMC may create jira projects"
         assert isinstance(project_key, str) and RE_VALID_PROJECT_KEY.match(project_key), "Invalid project key specified"
         assert isinstance(project_name, str) and project_name, "Please specify a title for the new Jira project"
         assert isinstance(description, str) and description, "Please write a short description of this new project"
@@ -157,7 +157,7 @@ async def process(form_data):
         assert (
             ldap_project in config.projects
         ), "Please specify a valid, current apache project to assign this Jira project to"
-        if not session.root:
+        if not session.isRoot:
             assert ldap_project in session.pmcs, "You can only create a Jira project for an Apache project you are on the PMC of"
         assert isinstance(issue_scheme, str) and issue_scheme, "Please specify a valid issue scheme this project"
         assert (
