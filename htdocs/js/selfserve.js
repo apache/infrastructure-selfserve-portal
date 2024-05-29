@@ -95,7 +95,7 @@ const VERIFY = (url, options) => GET(url, options, 'VERIFY');
 async function OAuthGate(callback) {
   const QSDict = new URLSearchParams(document.location.search);
   if (QSDict.get('action') === 'oauth') { // OAuth callback?
-    const OAuthResponse = await GET(`/api/oauth?${QSDict.toString()}`);
+    const OAuthResponse = await GET(`/api/auth?${QSDict.toString()}`);
     if (OAuthResponse.status === 200) {
       if (sessionStorageSupported()) {
         const OriginURL = window.sessionStorage.getItem('asp_origin');
@@ -111,15 +111,14 @@ async function OAuthGate(callback) {
       toast(await OAuthResponse.text());
     }
   }
-  const session = await GET('/api/session');
-  if (session.status === 403) { // No session set for this client yet, run the oauth process
+  const session = await GET('/api/auth');
+  if (session.status === 404) { // No session set for this client yet, run the oauth process
     if (sessionStorageSupported()) {
       window.sessionStorage.setItem('asp_origin', document.location.href); // Store where we came from
     }
     // Construct OAuth URL and redirect to it
-    const state = uuid();
-    const OAuthURL = encodeURIComponent(`https://${document.location.hostname}/oauth.html?action=oauth&state=${state}`);
-    document.location.href = `https://oauth.apache.org/auth?redirect_uri=${OAuthURL}&state=${state}`;
+    let origin = encodeURIComponent(document.location.href);
+    document.location.href = `https://${document.location.hostname}/api/auth?login=${origin}`;
   } else if (session.status === 200) { // Found a working session
     const preferences = await session.json();
     if (callback) callback(preferences, QSDict);

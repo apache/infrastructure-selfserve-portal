@@ -22,7 +22,9 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, asfuid, email, log, config
-import quart
+import asfquart
+import asfquart.auth
+import asfquart.session
 import re
 import asyncio
 import os
@@ -131,8 +133,10 @@ async def set_project_access(project_key: str, ldap_project: str):
     assert proc.returncode == 0, f"Could not assign write access to {ldap_project} committers"
 
 
-@asfuid.session_required
-async def process(form_data, session):
+@asfquart.auth.require
+async def process(form_data):
+
+    session = await asfquart.session.read()
     # Create a new jira project
 
     project_key = form_data.get("project_key")
@@ -145,7 +149,7 @@ async def process(form_data, session):
     description = form_data.get("description")
 
     try:
-        assert (session.pmcs or session.root), "Only members of a (P)PMC may create jira projects"
+        assert (session.pmcs or session.isRoot), "Only members of a (P)PMC may create jira projects"
         assert isinstance(project_key, str) and RE_VALID_PROJECT_KEY.match(project_key), "Invalid project key specified"
         assert isinstance(project_name, str) and project_name, "Please specify a title for the new Jira project"
         assert isinstance(description, str) and description, "Please write a short description of this new project"
@@ -153,7 +157,7 @@ async def process(form_data, session):
         assert (
             ldap_project in config.projects
         ), "Please specify a valid, current apache project to assign this Jira project to"
-        if not session.root:
+        if not session.isRoot:
             assert ldap_project in session.pmcs, "You can only create a Jira project for an Apache project you are on the PMC of"
         assert isinstance(issue_scheme, str) and issue_scheme, "Please specify a valid issue scheme this project"
         assert (
@@ -200,7 +204,7 @@ async def process(form_data, session):
         "message": "Jira project created",
     }
 
-@asfuid.session_required
+@asfquart.auth.require
 async def list_schemes(form_data, session):
     """Lists current valid schemes for Jira"""
     scheme_dict = {}
@@ -211,10 +215,10 @@ async def list_schemes(form_data, session):
                 scheme_dict[key] = js
             except json.JSONDecodeError:  # Bad JSON file? :/
                 scheme_dict[key] = {}
-    return quart.jsonify(scheme_dict)
+    return asfquart.jsonify(scheme_dict)
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-project-create",
     methods=[
         "POST",  # Create a new jira project
@@ -223,7 +227,7 @@ quart.current_app.add_url_rule(
 )
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-project-schemes",
     methods=[
         "GET",  # List valid schemes

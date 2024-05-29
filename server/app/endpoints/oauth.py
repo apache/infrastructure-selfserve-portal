@@ -22,6 +22,8 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware
+import asfquart
+import asfquart.session
 import quart
 import aiohttp
 import uuid
@@ -33,6 +35,7 @@ OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
 
 
 async def process(form_data):
+    session = await asfquart.session.read()
     if quart.request.method == "GET":
         code = form_data.get("code")
         state = form_data.get("state")
@@ -49,24 +52,21 @@ async def process(form_data):
             return quart.Response(status=302, response="Redirecting...", headers=headers)
         else:  # Callback from oauth.a.o
             ct = aiohttp.client.ClientTimeout(sock_read=15)
+            uid = "??"
             async with aiohttp.client.ClientSession(timeout=ct) as session:
                 rv = await session.get(OAUTH_URL_CALLBACK % code)
                 assert rv.status == 200, "Could not verify oauth response."
                 oauth_data = await rv.json()
-                quart.session.clear()
-                quart.session.update(oauth_data)
-                # Quart sessions live for the entirety of the browser session. We don't want this to extend
-                # too far into the future (abuse??), so let's set a fixed timeout after which a new login
-                # will be required.
-                quart.session["timestamp"] = int(time.time())
-            uid = quart.session["uid"]
+                uid = oauth_data["uid"]
+                # Write cookie session. asfquart will handle expiry.
+                asfquart.session.write(oauth_data)
             return quart.Response(
                 status=200,
                 response=f"Successfully logged in! Welcome, {uid}\n",
             )
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/oauth",
     methods=[
         "GET",

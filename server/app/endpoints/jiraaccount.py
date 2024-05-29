@@ -21,7 +21,10 @@
 if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, asfuid, email
+from ..lib import middleware, config, email
+import asfquart
+import asfquart.auth
+import asfquart.session
 import quart
 import uuid
 import time
@@ -214,7 +217,7 @@ async def process(form_data):
         )
 
         # Send the verification email
-        verify_url = f"https://{quart.app.request.host}/jira-account-verify.html?{token}"
+        verify_url = f"https://{asfquart.app.request.host}/jira-account-verify.html?{token}"
         email.from_template("jira_account_verify.txt",
                             recipient=email_address,
                             variables={"verify_url": verify_url},
@@ -236,7 +239,7 @@ async def process(form_data):
             JIRA_DB.update("pending", {"validated": 1}, token=token)
 
             # Notify project
-            record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
+            record["review_url"] = f"https://{asfquart.app.request.host}/jira-account-review.html?token={token}"
             project_private_list = email.project_to_private(record["project"])
             email.from_template("jira_account_pending_review.txt",
                                 recipient=[NOTIFICATION_TARGET, project_private_list],
@@ -249,10 +252,12 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
-@asfuid.session_required
-async def process_review(form_data, session):
+@asfquart.auth.require
+async def process_review(form_data):
     """Review and/or approve/deny a request for a new jira account"""
+    session = await asfquart.session.read()
     try:
+        assert (session.isChair), "Only Chairs may review Jira accounts requests"
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
         entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
@@ -366,7 +371,7 @@ async def process_review(form_data, session):
             return {"success": True, "message": "Account denied, notification dispatched."}
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-account",
     methods=[
         "GET",  # Token verification (email validation)
@@ -374,21 +379,21 @@ quart.current_app.add_url_rule(
     ],
     view_func=middleware.glued(process),
 )
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-exists",
     methods=[
         "GET",
     ],
     view_func=middleware.glued(check_user_exists),
 )
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-project-blocked",
     methods=[
         "POST",
     ],
     view_func=middleware.glued(check_project_blocked),
 )
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/jira-account-review",
     methods=[
         "GET",  # View account request
@@ -398,4 +403,4 @@ quart.current_app.add_url_rule(
 )
 
 # Add background loop for pruning pending requests db
-quart.current_app.add_background_task(prune_stale_requests)
+asfquart.APP.add_background_task(prune_stale_requests)

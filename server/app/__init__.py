@@ -18,34 +18,43 @@
 """Selfserve Portal for the Apache Software Foundation"""
 import re
 import secrets
+import asfquart
 import quart
 from .lib import config, log, middleware
 import os
 import hashlib
 import base64
 
-STATIC_DIR = os.path.join(os.path.realpath(".."), "htdocs")  # File location of static assets
+STATIC_DIR = os.path.join(
+    os.path.realpath(".."), "htdocs"
+)  # File location of static assets
 TEMPLATES_DIR = os.path.join(STATIC_DIR, "templates")  # HTML master templates
-COMPILED_DIR = os.path.join(STATIC_DIR, "compiled")    # Compiled HTML (template + content)
+COMPILED_DIR = os.path.join(
+    STATIC_DIR, "compiled"
+)  # Compiled HTML (template + content)
 
 
 def file_to_sri(filepath: str):
     """Generates a sub-resource integrity value for a file - https://www.w3.org/TR/SRI/"""
     with open(filepath, "rb") as f:
         digest = hashlib.sha384(f.read()).digest()
-        b64_digest = base64.b64encode(digest).decode('us-ascii')
+        b64_digest = base64.b64encode(digest).decode("us-ascii")
         return f"sha384-{b64_digest}"
 
 
 def main():
-    app = quart.Quart(__name__)
-    app.secret_key = secrets.token_hex()  # For session management
-    app.config["MAX_CONTENT_LENGTH"] = config.server.max_content_length  # Ensure upload limits match expectations
-    app.url_map.converters["filename"] = middleware.FilenameConverter  # Special converter for filename-style vars
+    asfquart.construct(__name__, oauth="/api/auth")
+    asfquart.APP.secret_key = secrets.token_hex()  # For session management
+    asfquart.APP.config[
+        "MAX_CONTENT_LENGTH"
+    ] = config.server.max_content_length  # Ensure upload limits match expectations
+    asfquart.APP.url_map.converters[
+        "filename"
+    ] = middleware.FilenameConverter  # Special converter for filename-style vars
 
     # Static files (or index.html if requesting a dir listing)
-    @app.route("/<path:path>")
-    @app.route("/")
+    @asfquart.APP.route("/<path:path>")
+    @asfquart.APP.route("/")
     async def static_files(path="index.html"):
         if path.endswith("/"):
             path += "index.html"
@@ -53,7 +62,7 @@ def main():
             return await quart.send_from_directory(COMPILED_DIR, path)
         return await quart.send_from_directory(STATIC_DIR, path)
 
-    @app.before_serving
+    @asfquart.APP.before_serving
     async def compile_html():
         """Compiles HTML files in htdocs/ using a master template"""
         master_template = open(os.path.join(TEMPLATES_DIR, "master.html")).read()
@@ -64,34 +73,40 @@ def main():
             if os.path.isfile(script_path):
                 sri = file_to_sri(script_path)
                 orig_src = script_src.group(1)
-                new_src = f"{orig_src} integrity=\"{sri}\""
+                new_src = f'{orig_src} integrity="{sri}"'
                 master_template = master_template.replace(orig_src, new_src)
         if not os.path.isdir(COMPILED_DIR):
-            log.log(f"Compiled HTML directory {COMPILED_DIR} does not exist, will attempt to create it")
+            log.log(
+                f"Compiled HTML directory {COMPILED_DIR} does not exist, will attempt to create it"
+            )
             os.makedirs(COMPILED_DIR, exist_ok=True, mode=0o700)
-        for htmlfile in [filename for filename in os.listdir(STATIC_DIR) if filename.endswith(".html")]:
+        for htmlfile in [
+            filename
+            for filename in os.listdir(STATIC_DIR)
+            if filename.endswith(".html")
+        ]:
             print(f"Compiling {htmlfile} into output/{htmlfile}")
             htmldata = open(os.path.join(STATIC_DIR, htmlfile)).read()
             output = master_template.replace("{contents}", htmldata)
             open(os.path.join(COMPILED_DIR, htmlfile), "w").write(output)
 
-    @app.before_serving
+    @asfquart.APP.before_serving
     async def load_endpoints():
         """Load all API end points. This is run before Quart starts serving requests"""
-        async with app.app_context():
+        async with asfquart.APP.app_context():
             from . import endpoints
 
             # Regularly update the list of projects from LDAP
-            app.add_background_task(config.get_projects_from_ldap)
+            asfquart.APP.add_background_task(config.get_projects_from_ldap)
             # Reset rate limits daily
-            app.add_background_task(middleware.reset_rate_limits)
+            asfquart.APP.add_background_task(middleware.reset_rate_limits)
             # Fetch mailing lists hourly
-            app.add_background_task(config.fetch_valid_lists)
+            asfquart.APP.add_background_task(config.fetch_valid_lists)
 
-    @app.after_serving
+    @asfquart.APP.after_serving
     async def shutdown():
         """Ensure a clean shutdown of the portal by stopping background tasks"""
         log.log("Shutting down selfserve portal...")
-        app.background_tasks.clear()  # Clear repo polling etc
+        asfquart.APP.background_tasks.clear()  # Clear repo polling etc
 
-    return app
+    return asfquart.APP

@@ -21,8 +21,10 @@
 if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, asfuid, email, log
-import quart
+from ..lib import middleware, email, log
+import asfquart
+import asfquart.auth
+import asfquart.session
 import re
 import asyncio
 
@@ -147,17 +149,17 @@ async def set_default_space_access(space: str, admin: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
-@asfuid.session_required
-async def process(form_data, session):
+@asfquart.auth.require
+async def process(form_data):
+    sesion = await asfquart.session.read()
+
     # Create a confluence space
     spacename = form_data.get("space")
     admin = form_data.get("admin")
     description = form_data.get("description")
 
     try:
-        assert (
-            session.member or session.chair or session.root
-        ), "Only officers or foundation members can use this feature"
+        assert (session.isMember or session.isChair), "Only Members and Chairs may create Confluence spaces"
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert (
             isinstance(admin, str) and admin
@@ -190,7 +192,7 @@ async def process(form_data, session):
     }
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/confluence-create",
     methods=[
         "GET",

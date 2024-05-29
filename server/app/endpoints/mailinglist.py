@@ -22,7 +22,9 @@ if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, config, asfuid, email, log
-import quart
+import asfquart
+import asfquart.auth
+import asfquart.session
 import time
 import json
 import os
@@ -43,7 +45,8 @@ VALID_MUOPTS_INFRA = ("mu", "mU", "Mu", "MU")  # Infra can use MU as well
 INVALID_ENDINGS = ( "-default", "-owner", )
 
 
-def can_manage_domain(session: dict, domain: str):
+def can_manage_domain(domain: str):
+    session = asfquart.session.read()
     """Yields true if the user can manage a specific project domain, otherwise False"""
     if session.root is True:  # Root can always manage
         return True
@@ -53,8 +56,9 @@ def can_manage_domain(session: dict, domain: str):
     return False
 
 
-@asfuid.session_required
-async def process(form_data, session):
+@asfquart.auth.require
+async def process(form_data):
+    session = await asfquart.session.read()
     # Creating a new mailing list
 
     listpart = form_data.get("listpart")
@@ -138,7 +142,7 @@ async def process(form_data, session):
     }
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/mailinglist",
     methods=[
         "POST",  # Create a new mailing list

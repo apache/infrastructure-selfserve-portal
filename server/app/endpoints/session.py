@@ -17,15 +17,18 @@
 # under the License.
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for session operations (view current session, log out)"""
-import quart
-from ..lib import middleware, asfuid, config
+import asfquart
+import asfquart.auth
+import asfquart.session
+from ..lib import middleware, config
 
 
-@asfuid.session_required
-async def process(form_data, session):
+@asfquart.auth.require
+async def process(form_data):
+    session = await asfquart.session.read()
     action = form_data.get("action")
     if action == "logout":  # Clear the session
-        quart.session.clear()
+        asfquart.session.clear()
         return "Logged out!"
     return {
         "uid": session.uid,
@@ -37,7 +40,7 @@ async def process(form_data, session):
     }
 
 
-quart.current_app.add_url_rule(
+asfquart.APP.add_url_rule(
     "/api/session",
     methods=[
         "GET",
