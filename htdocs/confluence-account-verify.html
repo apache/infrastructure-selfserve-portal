@@ -1,0 +1,15 @@
+<h1>Request a Confluence account</h1>
+
+<div id="verify_response">
+Verifying your token, please wait...
+</div>
+
+<script>
+    document.body.onload = () => {
+        // Check for token verification
+        const token = location.search.substring(1);
+        if (token && token.length == 36) {
+            confluence_verify_email(token);
+        }
+    }
+</script>
