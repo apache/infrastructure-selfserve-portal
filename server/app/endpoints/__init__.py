@@ -1,6 +1,7 @@
 from . import (
     session,
     jiraaccount,
+    confluenceaccount,
     public,
     mailinglist,
     queue,
