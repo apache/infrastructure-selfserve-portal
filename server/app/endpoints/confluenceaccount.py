@@ -32,6 +32,7 @@ import asyncio
 import aiohttp
 import asfquart.auth
 import asfquart.session
+import asfquart.utils
 
 NOTIFICATION_TARGET = "notifications@infra.apache.org"  # This is to notify infra as well as projects about pending requests
 
@@ -250,11 +251,18 @@ async def process(form_data):
         else:
             return {"success": False, "message": "Unknown or already validated token sent."}
 
-
+@asfquart.APP.route(
+    "/api/confluence-account-review",
+    methods=[
+        "GET",  # View account request
+        "POST",  # Action account request (approve/deny)
+    ]
+)
 @asfquart.auth.require
-async def process_review(form_data):
+async def process_review():
     """Review and/or approve/deny a request for a new confluence account"""
     session = await asfquart.session.read()
+    form_data = await asfquart.utils.formdata()
     try:
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
@@ -388,14 +396,6 @@ quart.current_app.add_url_rule(
         "POST",
     ],
     view_func=middleware.glued(check_project_blocked),
-)
-quart.current_app.add_url_rule(
-    "/api/confluence-account-review",
-    methods=[
-        "GET",  # View account request
-        "POST",  # Action account request (approve/deny)
-    ],
-    view_func=middleware.glued(process_review),
 )
 
 # Add background loop for pruning pending requests db
