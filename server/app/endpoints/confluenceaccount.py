@@ -21,7 +21,7 @@
 if not __debug__:
   raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, asfuid, email
+from ..lib import middleware, config, email
 import quart
 import uuid
 import time
@@ -30,6 +30,8 @@ import os
 import re
 import asyncio
 import aiohttp
+import asfquart.auth
+import asfquart.session
 
 NOTIFICATION_TARGET = "notifications@infra.apache.org"  # This is to notify infra as well as projects about pending requests
 
@@ -249,9 +251,10 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
-@asfuid.session_required
-async def process_review(form_data, session):
+@asfquart.auth.require
+async def process_review(form_data):
     """Review and/or approve/deny a request for a new confluence account"""
+    session = await asfquart.session.read()
     try:
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
@@ -260,7 +263,7 @@ async def process_review(form_data, session):
         assert entry["validated"] == 1, "This Confluence account request has not been verified by the requester yet."
         # Only project committers (and infra) can review requests for a project
         assert (
-            entry["project"] in session.projects or session.root
+            entry["project"] in session.projects or session.isRoot
         ), "You can only review account requests related to the projects you are on"
     except AssertionError as e:
         return {"success": False, "message": str(e)}
