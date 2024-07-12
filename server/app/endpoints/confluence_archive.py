@@ -182,8 +182,17 @@ async def read_only_access(space: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
+@asfquart.APP.route(
+    "/api/confluence-archive",
+    methods=[
+        "POST",  # Archive a space
+    ],
+)
 @asfquart.auth.require
-async def process(form_data):
+async def process():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
+
     # Archive a confluence space
     spacename = form_data.get("space")
     session = await asfquart.session.read()
@@ -219,10 +228,3 @@ async def process(form_data):
     }
 
 
-asfquart.APP.add_url_rule(
-    "/api/confluence-archive",
-    methods=[
-        "POST",  # Archive a space
-    ],
-    view_func=middleware.glued(process),
-)
