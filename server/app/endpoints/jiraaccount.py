@@ -24,6 +24,7 @@ if not __debug__:
 from ..lib import middleware, config, email
 import asfquart
 import asfquart.auth
+from asfquart.auth import Requirements as R
 import asfquart.session
 import quart
 import uuid
@@ -120,7 +121,16 @@ async def prune_stale_requests():
 
 
 @middleware.rate_limited
-async def check_user_exists(form_data):
+
+@asfquart.APP.route(
+    "/api/jira-exists",
+    methods=[
+        "GET",
+    ],
+)
+async def check_user_exists():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     """Checks if a username has already been taken"""
     userid = form_data.get("userid")
     if userid and JIRA_DB.fetchone("users", userid=userid):
@@ -137,8 +147,16 @@ async def check_user_exists(form_data):
 
 
 @middleware.rate_limited
-async def check_project_blocked(form_data):
+@asfquart.APP.route(
+    "/api/jira-project-blocked",
+    methods=[
+        "POST",
+    ],
+)
+async def check_project_blocked():
     """Checks if a project is 'blocked', meaning it doesn't use JIRA"""
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     project = form_data.get("project")
     if project and JIRA_DB.fetchone("blocked", project=project):
         return {"blocked": True}
@@ -146,8 +164,16 @@ async def check_project_blocked(form_data):
         return {"blocked": False}
 
 
-async def process(form_data):
-
+@asfquart.APP.route(
+    "/api/jira-account",
+    methods=[
+        "GET",  # Token verification (email validation)
+        "POST",  # User submits request
+    ],
+)
+async def process():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     # Submit application
     if quart.request.method == "POST":
         desired_username = form_data.get("username")
@@ -252,12 +278,19 @@ async def process(form_data):
             return {"success": False, "message": "Unknown or already validated token sent."}
 
 
-@asfquart.auth.require
-async def process_review(form_data):
+@asfquart.auth.require({R.chair})
+@asfquart.APP.route(
+    "/api/jira-account-review",
+    methods=[
+        "GET",  # View account request
+        "POST",  # Action account request (approve/deny)
+    ],
+)
+async def process_review():
     """Review and/or approve/deny a request for a new jira account"""
-    session = await asfquart.session.read()
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read(
     try:
-        assert (session.isChair), "Only Chairs may review Jira accounts requests"
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
         entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
@@ -371,36 +404,6 @@ async def process_review(form_data):
             return {"success": True, "message": "Account denied, notification dispatched."}
 
 
-asfquart.APP.add_url_rule(
-    "/api/jira-account",
-    methods=[
-        "GET",  # Token verification (email validation)
-        "POST",  # User submits request
-    ],
-    view_func=middleware.glued(process),
-)
-asfquart.APP.add_url_rule(
-    "/api/jira-exists",
-    methods=[
-        "GET",
-    ],
-    view_func=middleware.glued(check_user_exists),
-)
-asfquart.APP.add_url_rule(
-    "/api/jira-project-blocked",
-    methods=[
-        "POST",
-    ],
-    view_func=middleware.glued(check_project_blocked),
-)
-asfquart.APP.add_url_rule(
-    "/api/jira-account-review",
-    methods=[
-        "GET",  # View account request
-        "POST",  # Action account request (approve/deny)
-    ],
-    view_func=middleware.glued(process_review),
-)
 
 # Add background loop for pruning pending requests db
 asfquart.APP.add_background_task(prune_stale_requests)

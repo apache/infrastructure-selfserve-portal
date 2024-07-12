@@ -25,6 +25,7 @@ from ..lib import middleware, email, log
 import asfquart
 import asfquart.session
 import asfquart.auth
+from asfquart.auth import Requirements as R
 import json
 import re
 import asyncio
@@ -188,7 +189,7 @@ async def read_only_access(space: str):
         "POST",  # Archive a space
     ],
 )
-@asfquart.auth.require
+@asfquart.auth.require(any_of={R.member, R.chair})
 async def process():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
@@ -199,7 +200,6 @@ async def process():
     try:
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert spacename not in PROTECTED_SPACES, "You cannot archive this confluence space"
-        assert (session.isMember or session.isChair), "Only Members and Chairs may archive Confluence spaces"
         users, groups = await get_space_owners(spacename)
         await set_archived_status(spacename)
         await remove_space_access(spacename, userlist=users, grouplist=groups)

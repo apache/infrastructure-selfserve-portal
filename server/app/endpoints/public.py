@@ -21,17 +21,18 @@ import asfquart
 from ..lib import middleware, config
 
 
-async def process(form_data):
+@asfquart.APP.route(
+    "/api/public",
+    methods=[
+        "GET",
+    ],
+)
+async def process():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     return {
         "projects": config.projects,
         "mail_domains": config.messaging.mail_mappings
     }
 
 
-asfquart.APP.add_url_rule(
-    "/api/public",
-    methods=[
-        "GET",
-    ],
-    view_func=middleware.glued(process),
-)

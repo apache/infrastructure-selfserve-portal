@@ -57,7 +57,14 @@ def can_manage_domain(domain: str):
 
 
 @asfquart.auth.require
-async def process(form_data):
+@asfquart.APP.route(
+    "/api/mailinglist",
+    methods=[
+        "POST",  # Create a new mailing list
+    ],
+)
+async def process():
+    form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Creating a new mailing list
 
@@ -142,10 +149,3 @@ async def process(form_data):
     }
 
 
-asfquart.APP.add_url_rule(
-    "/api/mailinglist",
-    methods=[
-        "POST",  # Create a new mailing list
-    ],
-    view_func=middleware.glued(process),
-)
