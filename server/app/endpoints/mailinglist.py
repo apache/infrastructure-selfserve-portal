@@ -25,6 +25,7 @@ from ..lib import middleware, config, asfuid, email, log
 import asfquart
 import asfquart.auth
 import asfquart.session
+from asfquart.auth import Requirements as R
 import time
 import json
 import os
@@ -56,7 +57,7 @@ def can_manage_domain(domain: str):
     return False
 
 
-@asfquart.auth.require
+@asfquart.auth.require({R.pmc_member})
 @asfquart.APP.route(
     "/api/mailinglist",
     methods=[

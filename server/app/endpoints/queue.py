@@ -23,6 +23,7 @@ if not __debug__:
 
 import asfquart
 import asfquart.auth
+from asfquart.auth import Requirements as R
 from ..lib import middleware, asfuid, config
 import os
 import json
@@ -31,7 +32,7 @@ import re
 VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
 
 
-@asfquart.auth.require
+@asfquart.auth.require({R.roleacct})
 @asfquart.APP.route(
     "/api/queue",
     methods=[
