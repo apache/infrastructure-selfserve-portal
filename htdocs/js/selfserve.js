@@ -482,7 +482,7 @@ async function mailinglist_seed_domain_list(prefs) {
   const pubdata = await pubresp.json();
   for (const [project, domain] of Object.entries(pubdata.mail_domains)) {
     // Only add domain if user can request lists for it. Either by being root, or by being on a PMC
-    if (prefs.root || prefs.pmcs.includes(project)) {
+    if (prefs.isRoot || prefs.committees.includes(project)) {
       const opt = document.createElement("option");
       opt.text = domain;
       opt.value = domain;
@@ -506,7 +506,7 @@ function mailinglist_update_privacy(listpart, privatetick = false) {
 
 async function mailinglist_new(prefs) {
   await mailinglist_seed_domain_list(prefs);
-  if (prefs.root) {
+  if (prefs.isRoot) {
     const admindiv = document.getElementById('admin_div');
     admindiv.style.display = "block";
   }
