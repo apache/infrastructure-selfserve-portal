@@ -119,9 +119,15 @@ async def prune_stale_requests():
         await asyncio.sleep(7200)  # Sleep for two hours, why not
 
 
-@middleware.rate_limited
-async def check_user_exists(form_data):
+@asfquart.APP.route(
+    "/api/confluence-exists",
+    methods=[
+        "GET",
+    ]
+)
+async def check_user_exists():
     """Checks if a username has already been taken"""
+    form_data = await asfquart.utils.formdata()
     userid = form_data.get("userid")
     if userid and CONFLUENCE_DB.fetchone("cwiki_users", userid=userid):
         return {"found": True}
@@ -135,10 +141,15 @@ async def check_user_exists(form_data):
                 else:
                     return {"success": False, "message": "Your query could not be completed at this point. Please retry later."}
 
-
-@middleware.rate_limited
-async def check_project_blocked(form_data):
+@asfquart.APP.route(
+    "/api/confluence-project-blocked",
+    methods=[
+        "POST",
+    ],
+)
+async def check_project_blocked():
     """Checks if a project is 'blocked', meaning it doesn't use CONFLUENCE"""
+    form_data = await asfquart.utils.formdata()
     project = form_data.get("project")
     if project and CONFLUENCE_DB.fetchone("cwiki_blocked", project=project):
         return {"blocked": True}
@@ -146,8 +157,15 @@ async def check_project_blocked(form_data):
         return {"blocked": False}
 
 
-async def process(form_data):
-
+@asfquart.APP.route(
+    "/api/confluence-account",
+    methods=[
+        "GET",  # Token verification (email validation)
+        "POST",  # User submits request
+    ],
+)
+async def process():
+    form_data = await asfquart.utils.formdata()
     # Submit application
     if quart.request.method == "POST":
         desired_username = form_data.get("username")
@@ -374,29 +392,5 @@ async def process_review():
 
             return {"success": True, "message": "Account denied, notification dispatched."}
 
-
-quart.current_app.add_url_rule(
-    "/api/confluence-account",
-    methods=[
-        "GET",  # Token verification (email validation)
-        "POST",  # User submits request
-    ],
-    view_func=middleware.glued(process),
-)
-quart.current_app.add_url_rule(
-    "/api/confluence-exists",
-    methods=[
-        "GET",
-    ],
-    view_func=middleware.glued(check_user_exists),
-)
-quart.current_app.add_url_rule(
-    "/api/confluence-project-blocked",
-    methods=[
-        "POST",
-    ],
-    view_func=middleware.glued(check_project_blocked),
-)
-
 # Add background loop for pruning pending requests db
-quart.current_app.add_background_task(prune_stale_requests)
+asfquart.APP.add_background_task(prune_stale_requests)
