@@ -96,13 +96,21 @@ async def activate_account(username: str):
         raise AssertionError("Jira account reactivation failed due to an internal server error.")
 
 
-@middleware.rate_limited
-async def process_reactivation_request(formdata):
+@asfquart.APP.route(
+    "/api/jira-account-activate",
+    methods=[
+        "GET",  # DEBUG
+        "POST",  # Account re-activation request from user
+    ],
+)
+async def process_reactivation_request():
     """Initial processing of an account re-activation request:
     - Check that username and email match
     - Send confirmation link to email address
     - Wait for confirmation...
     """
+    formdata = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     jira_username = formdata.get("username")
     jira_email = formdata.get("email")
     if jira_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
@@ -127,9 +135,17 @@ async def process_reactivation_request(formdata):
     return {"success": False, "message": "We were unable to find the account based on the information provided. Either your Jira account username, or the email address you registered it with, is incorrect."}
 
 
-@middleware.rate_limited
-async def process_confirm_reactivation(formdata):
+@asfquart.APP.route(
+    "/api/jira-account-activate-confirm",
+    methods=[
+        "GET",  # DEBUG
+        "POST",  # Account re-activation request from user
+    ],
+)
+async def process_confirm_reactivation():
     """Processes confirmation link handling (and actual reactivation of an account)"""
+    formdata = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     token = formdata.get("token")
     if token and token in JIRA_REACTIVATION_QUEUE:  # Verify token
         username = JIRA_REACTIVATION_QUEUE[token]
@@ -143,24 +159,6 @@ async def process_confirm_reactivation(formdata):
     else:
         return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
-
-asfquart.APP.add_url_rule(
-    "/api/jira-account-activate",
-    methods=[
-        "GET",  # DEBUG
-        "POST",  # Account re-activation request from user
-    ],
-    view_func=middleware.glued(process_reactivation_request),
-)
-
-asfquart.APP.add_url_rule(
-    "/api/jira-account-activate-confirm",
-    methods=[
-        "GET",  # DEBUG
-        "POST",  # Account re-activation request from user
-    ],
-    view_func=middleware.glued(process_confirm_reactivation),
-)
 
 
 # Schedule background updater of email mappings

@@ -133,9 +133,15 @@ async def set_project_access(project_key: str, ldap_project: str):
     assert proc.returncode == 0, f"Could not assign write access to {ldap_project} committers"
 
 
+@asfquart.APP.route(
+    "/api/jira-project-create",
+    methods=[
+        "POST",  # Create a new jira project
+    ],
+)
 @asfquart.auth.require
-async def process(form_data):
-
+async def process():
+    form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Create a new jira project
 
@@ -204,9 +210,17 @@ async def process(form_data):
         "message": "Jira project created",
     }
 
+@asfquart.APP.route(
+    "/api/jira-project-schemes",
+    methods=[
+        "GET",  # List valid schemes
+    ],
+)
 @asfquart.auth.require
-async def list_schemes(form_data, session):
+async def list_schemes():
     """Lists current valid schemes for Jira"""
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     scheme_dict = {}
     for key, filepath in JIRA_SCHEME_FILES.items():
         if os.path.isfile(filepath):
@@ -216,21 +230,3 @@ async def list_schemes(form_data, session):
             except json.JSONDecodeError:  # Bad JSON file? :/
                 scheme_dict[key] = {}
     return asfquart.jsonify(scheme_dict)
-
-
-asfquart.APP.add_url_rule(
-    "/api/jira-project-create",
-    methods=[
-        "POST",  # Create a new jira project
-    ],
-    view_func=middleware.glued(process),
-)
-
-
-asfquart.APP.add_url_rule(
-    "/api/jira-project-schemes",
-    methods=[
-        "GET",  # List valid schemes
-    ],
-    view_func=middleware.glued(list_schemes),
-)

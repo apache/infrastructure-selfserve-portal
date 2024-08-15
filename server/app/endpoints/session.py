@@ -23,9 +23,15 @@ import asfquart.session
 from ..lib import middleware, config
 
 
-@asfquart.auth.require
-async def process(form_data):
+@asfquart.APP.route(
+    "/api/session",
+    methods=[
+        "GET",
+    ],
+)
+async def process():
     session = await asfquart.session.read()
+    form_data = await asfquart.utils.formdata()
     action = form_data.get("action")
     if action == "logout":  # Clear the session
         asfquart.session.clear()
@@ -38,12 +44,3 @@ async def process(form_data):
         "root": session.root,
         "all_projects": config.projects,
     }
-
-
-asfquart.APP.add_url_rule(
-    "/api/session",
-    methods=[
-        "GET",
-    ],
-    view_func=middleware.glued(process),
-)

@@ -25,6 +25,7 @@ from ..lib import middleware, config, asfuid, email, log
 import asfquart
 import asfquart.auth
 import asfquart.session
+from asfquart.auth import Requirements as R
 import time
 import json
 import os
@@ -56,8 +57,15 @@ def can_manage_domain(domain: str):
     return False
 
 
-@asfquart.auth.require
-async def process(form_data):
+@asfquart.APP.route(
+    "/api/mailinglist",
+    methods=[
+        "POST",  # Create a new mailing list
+    ],
+)
+@asfquart.auth.require({R.pmc_member})
+async def process():
+    form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Creating a new mailing list
 
@@ -140,12 +148,3 @@ async def process(form_data):
         "success": True,
         "message": "Request logged. Please allow for up to 24 hours for the request to be processed.",
     }
-
-
-asfquart.APP.add_url_rule(
-    "/api/mailinglist",
-    methods=[
-        "POST",  # Create a new mailing list
-    ],
-    view_func=middleware.glued(process),
-)

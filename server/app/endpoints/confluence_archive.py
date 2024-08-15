@@ -25,6 +25,7 @@ from ..lib import middleware, email, log
 import asfquart
 import asfquart.session
 import asfquart.auth
+from asfquart.auth import Requirements as R
 import json
 import re
 import asyncio
@@ -182,8 +183,16 @@ async def read_only_access(space: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
-@asfquart.auth.require
-async def process(form_data):
+@asfquart.APP.route(
+    "/api/confluence-archive",
+    methods=[
+        "POST",  # Archive a space
+    ],
+)
+@asfquart.auth.require(any_of={R.member, R.chair})
+async def process():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
     # Archive a confluence space
     spacename = form_data.get("space")
     session = await asfquart.session.read()
@@ -218,11 +227,3 @@ async def process(form_data):
         "message": "Confluence space archived",
     }
 
-
-asfquart.APP.add_url_rule(
-    "/api/confluence-archive",
-    methods=[
-        "POST",  # Archive a space
-    ],
-    view_func=middleware.glued(process),
-)

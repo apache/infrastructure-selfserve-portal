@@ -24,6 +24,7 @@ if not __debug__:
 from ..lib import middleware, email, log
 import asfquart
 import asfquart.auth
+from asfquart.auth import Requirements as R
 import asfquart.session
 import re
 import asyncio
@@ -149,9 +150,17 @@ async def set_default_space_access(space: str, admin: str):
     assert proc.returncode == 0, CONFLUENCE_ERROR
 
 
-@asfquart.auth.require
-async def process(form_data):
+@asfquart.APP.route(
+    "/api/confluence-create",
+    methods=[
+        "GET",
+        "POST",  # Create a new confluence space
+    ],
+)
+@asfquart.auth.require(any_of={R.member, R.chair})
+async def process():
     sesion = await asfquart.session.read()
+    form_data = await asfquart.utils.formdata()
 
     # Create a confluence space
     spacename = form_data.get("space")
@@ -159,7 +168,6 @@ async def process(form_data):
     description = form_data.get("description")
 
     try:
-        assert (session.isMember or session.isChair), "Only Members and Chairs may create Confluence spaces"
         assert isinstance(spacename, str) and RE_VALID_SPACE.match(spacename), "Invalid space name specified"
         assert (
             isinstance(admin, str) and admin
@@ -191,12 +199,3 @@ async def process(form_data):
         "message": "Confluence space created",
     }
 
-
-asfquart.APP.add_url_rule(
-    "/api/confluence-create",
-    methods=[
-        "GET",
-        "POST",  # Create a new confluence space
-    ],
-    view_func=middleware.glued(process),
-)
