@@ -23,7 +23,6 @@ import asfquart.session
 from ..lib import middleware, config
 
 
-@asfquart.auth.require
 @asfquart.APP.route(
     "/api/session",
     methods=[
@@ -45,5 +44,3 @@ async def process():
         "root": session.root,
         "all_projects": config.projects,
     }
-
-

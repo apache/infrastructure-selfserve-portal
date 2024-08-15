@@ -57,13 +57,13 @@ def can_manage_domain(domain: str):
     return False
 
 
-@asfquart.auth.require({R.pmc_member})
 @asfquart.APP.route(
     "/api/mailinglist",
     methods=[
         "POST",  # Create a new mailing list
     ],
 )
+@asfquart.auth.require({R.pmc_member})
 async def process():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
@@ -148,5 +148,3 @@ async def process():
         "success": True,
         "message": "Request logged. Please allow for up to 24 hours for the request to be processed.",
     }
-
-

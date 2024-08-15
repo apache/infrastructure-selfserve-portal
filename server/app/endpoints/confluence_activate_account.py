@@ -18,40 +18,39 @@
 """Selfserve Portal for the Apache Software Foundation"""
 import uuid
 
-"""Handler for jira account creation"""
+"""Handler for confluence account creation"""
 
 from ..lib import middleware, config, email
-import asfquart
+import quart
 import re
 import asyncio
-import psycopg
+import aiomysql
 
 ONE_DAY = 86400  # A day in seconds
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
+VALID_CONFLUENCE_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
-# Jira PSQL DSN
-#JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
+# Confluence MYSQL DSN
+CONFLUENCE_MYSQL_DSN = aiomysql.create_pool(**config.cwikimysql.yaml)
 
 # Mappings dict for userid<->email
-JIRA_EMAIL_MAPPINGS = {}
+CONFLUENCE_EMAIL_MAPPINGS = {}
 
 # Reactivation queue. No real need for permanent storage here, all requests can be ephemeral.
-JIRA_REACTIVATION_QUEUE = {}
+CONFLUENCE_REACTIVATION_QUEUE = {}
 
 # ACLI command - TODO: Add to yaml??
 ACLI_CMD = "/opt/latest-cli/acli.sh"
 
-
-async def update_jira_email_map():
-    """Updates the jira userid<->email mappings from psql on a daily basis"""
+async def update_confluence_email_map():
+    """Updates the confluence userid<->email mappings from mysql on a daily basis"""
     while True:
-        print("Updating Jira email mappings dict")
+        print("Updating Confluence email mappings dict")
         try:
             tmp_dict = {}
-            async with await psycopg.AsyncConnection.connect(JIRA_PGSQL_DSN) as conn:
+            async with CONFLUENCE_MYSQL_DSN.acquire() as conn:
                 async with conn.cursor() as cur:
                     await cur.execute("SELECT lower_user_name, email_address from cwd_user WHERE directory_id != 10000")
                     async for row in cur:
@@ -59,21 +58,21 @@ async def update_jira_email_map():
                             tmp_dict[row[0]] = row[1]
 
             # Clear and refresh mappings
-            JIRA_EMAIL_MAPPINGS.clear()
-            JIRA_EMAIL_MAPPINGS.update(tmp_dict)
-        except psycopg.OperationalError as e:
-            print(f"Operational error while querying Jira PSQL: {e}")
+            CONFLUENCE_EMAIL_MAPPINGS.clear()
+            CONFLUENCE_EMAIL_MAPPINGS.update(tmp_dict)
+        except aiomysql.OperationalError as e:
+            print(f"Operational error while querying Confluence MYSQL: {e}")
             print("Retrying later...")
         await asyncio.sleep(ONE_DAY)  # Wait a day...
 
 
 async def activate_account(username: str):
     """Activates an account through ACLI"""
-    email_address = JIRA_EMAIL_MAPPINGS[username]
+    email_address = CONFLUENCE_EMAIL_MAPPINGS[username]
     proc = await asyncio.create_subprocess_exec(
         ACLI_CMD,
         *(
-            "jira",
+            "confluence",
             "-v",
             "--action",
             "updateUser",
@@ -92,65 +91,49 @@ async def activate_account(username: str):
         good_bit = '"active":true'  # If the ACLI JSON output has this, it means the update worked, despite ACLI complaining.
         if good_bit in stdout or good_bit in stderr:
             return  # all good, ignore!
-        print(f"Could not reactivate Jira account '{username}': {stderr}")
-        raise AssertionError("Jira account reactivation failed due to an internal server error.")
+        print(f"Could not reactivate Confluence account '{username}': {stderr}")
+        raise AssertionError("Confluence account reactivation failed due to an internal server error.")
 
 
-@asfquart.APP.route(
-    "/api/jira-account-activate",
-    methods=[
-        "GET",  # DEBUG
-        "POST",  # Account re-activation request from user
-    ],
-)
-async def process_reactivation_request():
+@middleware.rate_limited
+async def process_reactivation_request(formdata):
     """Initial processing of an account re-activation request:
     - Check that username and email match
     - Send confirmation link to email address
     - Wait for confirmation...
     """
-    formdata = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
-    jira_username = formdata.get("username")
-    jira_email = formdata.get("email")
-    if jira_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
+    confluence_username = formdata.get("username")
+    confluence_email = formdata.get("email")
+    if confluence_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
         return {"success": False, "message": "Reactivation of internal ASF accounts cannot be done through this tool."}
-    if jira_username and jira_username in JIRA_EMAIL_MAPPINGS:
-        if JIRA_EMAIL_MAPPINGS[jira_username].lower() == jira_email.lower():  # We have a match!
+    if confluence_username and confluence_username in CONFLUENCE_EMAIL_MAPPINGS:
+        if CONFLUENCE_EMAIL_MAPPINGS[confluence_username].lower() == confluence_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
-            verify_url = f"https://{asfquart.app.request.host}/jira-account-reactivate.html?{token}"
+            verify_url = f"https://{quart.app.request.host}/confluence-account-reactivate.html?{token}"
             email.from_template(
-                "jira_account_reactivate.txt",
-                recipient=jira_email,
+                "confluence_account_reactivate.txt",
+                recipient=confluence_email,
                 variables={
                     "verify_url": verify_url,
                 },
                 thread_start=True,
-                thread_key=f"jira-activate-{token}",
+                thread_key=f"confluence-activate-{token}",
             )
             # Store marker in our temp dict
-            JIRA_REACTIVATION_QUEUE[token] = jira_username
+            CONFLUENCE_REACTIVATION_QUEUE[token] = confluence_username
             return {"success": True}
-    return {"success": False, "message": "We were unable to find the account based on the information provided. Either your Jira account username, or the email address you registered it with, is incorrect."}
+    return {"success": False, "message": "We were unable to find the account based on the information provided. Either your Confluence account username, or the email address you registered it with, is incorrect."}
 
 
-@asfquart.APP.route(
-    "/api/jira-account-activate-confirm",
-    methods=[
-        "GET",  # DEBUG
-        "POST",  # Account re-activation request from user
-    ],
-)
-async def process_confirm_reactivation():
+@middleware.rate_limited
+async def process_confirm_reactivation(formdata):
     """Processes confirmation link handling (and actual reactivation of an account)"""
-    formdata = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     token = formdata.get("token")
-    if token and token in JIRA_REACTIVATION_QUEUE:  # Verify token
-        username = JIRA_REACTIVATION_QUEUE[token]
-        del JIRA_REACTIVATION_QUEUE[token]  # Remove right away, before entering the async wait
-        if username in JIRA_EMAIL_MAPPINGS:
+    if token and token in CONFLUENCE_REACTIVATION_QUEUE:  # Verify token
+        username = CONFLUENCE_REACTIVATION_QUEUE[token]
+        del CONFLUENCE_REACTIVATION_QUEUE[token]  # Remove right away, before entering the async wait
+        if username in CONFLUENCE_EMAIL_MAPPINGS:
             try:
                 await activate_account(username)
             except AssertionError as e:
@@ -160,6 +143,24 @@ async def process_confirm_reactivation():
         return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
 
+quart.current_app.add_url_rule(
+    "/api/confluence-account-activate",
+    methods=[
+        "GET",  # DEBUG
+        "POST",  # Account re-activation request from user
+    ],
+    view_func=middleware.glued(process_reactivation_request),
+)
+
+quart.current_app.add_url_rule(
+    "/api/confluence-account-activate-confirm",
+    methods=[
+        "GET",  # DEBUG
+        "POST",  # Account re-activation request from user
+    ],
+    view_func=middleware.glued(process_confirm_reactivation),
+)
+
 
 # Schedule background updater of email mappings
-asfquart.APP.add_background_task(update_jira_email_map)
+quart.current_app.add_background_task(update_confluence_email_map)

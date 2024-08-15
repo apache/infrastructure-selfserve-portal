@@ -133,13 +133,13 @@ async def set_project_access(project_key: str, ldap_project: str):
     assert proc.returncode == 0, f"Could not assign write access to {ldap_project} committers"
 
 
-@asfquart.auth.require
 @asfquart.APP.route(
     "/api/jira-project-create",
     methods=[
         "POST",  # Create a new jira project
     ],
 )
+@asfquart.auth.require
 async def process():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
@@ -210,13 +210,13 @@ async def process():
         "message": "Jira project created",
     }
 
-@asfquart.auth.require
 @asfquart.APP.route(
     "/api/jira-project-schemes",
     methods=[
         "GET",  # List valid schemes
     ],
 )
+@asfquart.auth.require
 async def list_schemes():
     """Lists current valid schemes for Jira"""
     form_data = await asfquart.utils.formdata()
@@ -230,7 +230,3 @@ async def list_schemes():
             except json.JSONDecodeError:  # Bad JSON file? :/
                 scheme_dict[key] = {}
     return asfquart.jsonify(scheme_dict)
-
-
-
-

@@ -24,7 +24,7 @@ if not __debug__:
 import asfquart
 import asfquart.auth
 from asfquart.auth import Requirements as R
-from ..lib import middleware, asfuid, config
+from ..lib import config
 import os
 import json
 import re
@@ -32,13 +32,13 @@ import re
 VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
 
 
-@asfquart.auth.require({R.roleacct})
 @asfquart.APP.route(
     "/api/queue",
     methods=[
         "GET",
     ],
 )
+@asfquart.auth.require({R.roleacct})
 async def list_queue():
     """Lists the current selfserve request queue, or removes an item that has been processed"""
     form_data = await asfquart.utils.formdata()
@@ -70,5 +70,3 @@ async def list_queue():
         except json.JSONDecodeError:
             pass
     return asfquart.jsonify(queue)
-
-

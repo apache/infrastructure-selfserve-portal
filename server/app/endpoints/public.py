@@ -34,5 +34,3 @@ async def process():
         "projects": config.projects,
         "mail_domains": config.messaging.mail_mappings
     }
-
-

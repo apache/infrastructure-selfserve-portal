@@ -1,0 +1,12 @@
+Please verify your email address for Confluence account reactivation
+--
+This email has been sent to you in order to verify the authenticity of a request to reactivate a
+Confluence account with The Apache Software Foundation. If you requested reactivation of your account,
+please visit the following link to verify your email address:
+
+{verify_url}
+
+If you did not submit a request, please disregard this notice.
+
+With regards,
+The Apache Software Foundation Self-serve Portal

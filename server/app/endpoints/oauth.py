@@ -33,7 +33,6 @@ import time
 OAUTH_URL_INIT = "https://oauth.apache.org/auth?state=%s&redirect_uri=%s"
 OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
 
-
 @asfquart.APP.route(
     "/api/oauth",
     methods=[
@@ -71,5 +70,3 @@ async def process():
                 status=200,
                 response=f"Successfully logged in! Welcome, {uid}\n",
             )
-
-

@@ -1,0 +1,9 @@
+Confluence account created: {userid}
+--
+Hi there,
+As requested by the {project} project, we have created a Confluence user account, {userid}, for you to use when reporting issues related to The Apache Software Foundation's projects or products.
+
+Go to https://cwiki.apache.org/confluence/forgotuserpassword.action
+and select to have your password emailed to you.
+
+If you encounter any problems, please email root@apache.org with any details you can provide.
