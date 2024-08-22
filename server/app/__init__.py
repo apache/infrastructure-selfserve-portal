@@ -95,6 +95,7 @@ def main():
         """Load all API end points. This is run before Quart starts serving requests"""
         async with asfquart.APP.app_context():
             from . import endpoints
+            from .lib import tokens
 
             # Regularly update the list of projects from LDAP
             asfquart.APP.add_background_task(config.get_projects_from_ldap)
