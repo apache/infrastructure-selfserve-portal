@@ -190,7 +190,7 @@ async def read_only_access(space: str):
     ],
 )
 @asfquart.auth.require(any_of={R.member, R.chair})
-async def process():
+async def process_archive():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Archive a confluence space

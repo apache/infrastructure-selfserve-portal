@@ -140,7 +140,7 @@ async def set_project_access(project_key: str, ldap_project: str):
     ],
 )
 @asfquart.auth.require
-async def process():
+async def process_jira_space_create():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Create a new jira project

@@ -164,7 +164,7 @@ async def check_project_blocked():
         "POST",  # User submits request
     ],
 )
-async def process():
+async def process_caccount():
     form_data = await asfquart.utils.formdata()
     # Submit application
     if quart.request.method == "POST":
@@ -277,7 +277,7 @@ async def process():
     ]
 )
 @asfquart.auth.require
-async def process_review():
+async def process_review_cwiki():
     """Review and/or approve/deny a request for a new confluence account"""
     session = await asfquart.session.read()
     form_data = await asfquart.utils.formdata()

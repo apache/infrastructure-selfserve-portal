@@ -158,8 +158,8 @@ async def set_default_space_access(space: str, admin: str):
     ],
 )
 @asfquart.auth.require(any_of={R.member, R.chair})
-async def process():
-    sesion = await asfquart.session.read()
+async def process_cwiki_space_create():
+    session = await asfquart.session.read()
     form_data = await asfquart.utils.formdata()
 
     # Create a confluence space

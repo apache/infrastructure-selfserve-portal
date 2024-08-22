@@ -64,7 +64,7 @@ def can_manage_domain(domain: str):
     ],
 )
 @asfquart.auth.require({R.pmc_member})
-async def process():
+async def process_lists():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Creating a new mailing list

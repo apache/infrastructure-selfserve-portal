@@ -27,7 +27,7 @@ from ..lib import middleware, config
         "GET",
     ],
 )
-async def process():
+async def process_public():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     return {

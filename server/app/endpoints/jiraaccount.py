@@ -127,7 +127,7 @@ async def prune_stale_requests():
         "GET",
     ],
 )
-async def check_user_exists():
+async def check_user_exists_jira():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     """Checks if a username has already been taken"""
@@ -151,7 +151,7 @@ async def check_user_exists():
         "POST",
     ],
 )
-async def check_project_blocked():
+async def check_project_blocked_jira():
     """Checks if a project is 'blocked', meaning it doesn't use JIRA"""
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
@@ -169,7 +169,7 @@ async def check_project_blocked():
         "POST",  # User submits request
     ],
 )
-async def process():
+async def process_jiraaccount():
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     # Submit application
