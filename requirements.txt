@@ -11,4 +11,5 @@ rfc3339
 pytest-asyncio
 cmarkgfm
 psycopg[binary]
+asfquart >= 0.1.7
 
