@@ -2,6 +2,7 @@ from . import (
     session,
     jiraaccount,
     confluenceaccount,
+    confluence_activate_account,
     public,
     mailinglist,
     queue,
