@@ -20,7 +20,7 @@
 import asfquart
 import asfquart.auth
 import asfquart.session
-from ..lib import middleware, config
+from ..lib import config
 
 
 @asfquart.APP.route(
