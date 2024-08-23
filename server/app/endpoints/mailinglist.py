@@ -51,7 +51,7 @@ def can_manage_domain(domain: str):
     """Yields true if the user can manage a specific project domain, otherwise False"""
     if session.root is True:  # Root can always manage
         return True
-    for project in session.pmcs:
+    for project in session.committees:
         if config.messaging.mail_mappings.get(project) == domain:
             return True
     return False
