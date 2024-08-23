@@ -43,4 +43,5 @@ async def process():
         "pmcs": session.committees,
         "root": session.isRoot,
         "all_projects": config.projects,
+        "roleaccount": session.isRole,
     }
