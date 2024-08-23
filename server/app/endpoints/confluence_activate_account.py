@@ -20,8 +20,9 @@ import uuid
 
 """Handler for confluence account creation"""
 
-from ..lib import middleware, config, email
-import quart
+from ..lib import config, email
+import asfquart
+import asfquart.utils
 import re
 import asyncio
 import aiomysql
@@ -43,6 +44,8 @@ CONFLUENCE_REACTIVATION_QUEUE = {}
 
 # ACLI command - TODO: Add to yaml??
 ACLI_CMD = "/opt/latest-cli/acli.sh"
+
+APP = asfquart.APP
 
 async def update_confluence_email_map():
     """Updates the confluence userid<->email mappings from mysql on a daily basis"""
@@ -95,13 +98,14 @@ async def activate_account(username: str):
         raise AssertionError("Confluence account reactivation failed due to an internal server error.")
 
 
-@middleware.rate_limited
-async def process_reactivation_request(formdata):
+@APP.route("/api/confluence-account-activate", methods=["GET", "POST"])
+async def process_reactivation_request():
     """Initial processing of an account re-activation request:
     - Check that username and email match
     - Send confirmation link to email address
     - Wait for confirmation...
     """
+    formdata = await asfquart.utils.formdata()
     confluence_username = formdata.get("username")
     confluence_email = formdata.get("email")
     if confluence_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
@@ -110,7 +114,7 @@ async def process_reactivation_request(formdata):
         if CONFLUENCE_EMAIL_MAPPINGS[confluence_username].lower() == confluence_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
-            verify_url = f"https://{quart.app.request.host}/confluence-account-reactivate.html?{token}"
+            verify_url = f"https://{APP.request.host}/confluence-account-reactivate.html?{token}"
             email.from_template(
                 "confluence_account_reactivate.txt",
                 recipient=confluence_email,
@@ -126,9 +130,10 @@ async def process_reactivation_request(formdata):
     return {"success": False, "message": "We were unable to find the account based on the information provided. Either your Confluence account username, or the email address you registered it with, is incorrect."}
 
 
-@middleware.rate_limited
-async def process_confirm_reactivation(formdata):
+@APP.route("/api/confluence-account-activate-confirm", methods=["GET", "POST"])
+async def process_confirm_reactivation():
     """Processes confirmation link handling (and actual reactivation of an account)"""
+    formdata = await asfquart.utils.formdata()
     token = formdata.get("token")
     if token and token in CONFLUENCE_REACTIVATION_QUEUE:  # Verify token
         username = CONFLUENCE_REACTIVATION_QUEUE[token]
@@ -143,24 +148,5 @@ async def process_confirm_reactivation(formdata):
         return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
 
-quart.current_app.add_url_rule(
-    "/api/confluence-account-activate",
-    methods=[
-        "GET",  # DEBUG
-        "POST",  # Account re-activation request from user
-    ],
-    view_func=middleware.glued(process_reactivation_request),
-)
-
-quart.current_app.add_url_rule(
-    "/api/confluence-account-activate-confirm",
-    methods=[
-        "GET",  # DEBUG
-        "POST",  # Account re-activation request from user
-    ],
-    view_func=middleware.glued(process_confirm_reactivation),
-)
-
-
 # Schedule background updater of email mappings
-quart.current_app.add_background_task(update_confluence_email_map)
+APP.add_background_task(update_confluence_email_map)
