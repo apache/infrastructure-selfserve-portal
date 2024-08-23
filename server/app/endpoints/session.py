@@ -38,9 +38,9 @@ async def process():
         return "Logged out!"
     return {
         "uid": session.uid,
-        "name": session.name,
+        "name": session.fullname,
         "projects": session.projects,
-        "pmcs": session.pmcs,
-        "root": session.root,
+        "pmcs": session.committees,
+        "root": session.isRoot,
         "all_projects": config.projects,
     }
