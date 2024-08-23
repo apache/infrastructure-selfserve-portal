@@ -139,6 +139,8 @@ class CwikiMySQLConfiguration:
         if yml:
             # TODO: More verbosity here. We only need the raw dict to pass to the DSN constructor.
             assert all(key in yml for key in ("host", "user", "password", "dbname",)), "Cwiki MySQL config is missing information!"
+            yml["db"] = yml["dbname"]  # Renaming internally due to API, but keeping it conforming externally
+            del yml["dbname"]
             self.yaml = yml
 
 
