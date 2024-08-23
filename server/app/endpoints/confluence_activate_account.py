@@ -33,9 +33,6 @@ VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_CONFLUENCE_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
-# Confluence MYSQL DSN
-CONFLUENCE_MYSQL_DSN = aiomysql.create_pool(**config.cwikimysql.yaml)
-
 # Mappings dict for userid<->email
 CONFLUENCE_EMAIL_MAPPINGS = {}
 
@@ -47,13 +44,15 @@ ACLI_CMD = "/opt/latest-cli/acli.sh"
 
 APP = asfquart.APP
 
+
 async def update_confluence_email_map():
     """Updates the confluence userid<->email mappings from mysql on a daily basis"""
+    pool = await aiomysql.create_pool(**config.cwikimysql.yaml)
     while True:
         print("Updating Confluence email mappings dict")
         try:
             tmp_dict = {}
-            async with CONFLUENCE_MYSQL_DSN.acquire() as conn:
+            async with pool.acquire() as conn:
                 async with conn.cursor() as cur:
                     await cur.execute("SELECT lower_user_name, email_address from cwd_user WHERE directory_id != 10000")
                     async for row in cur:
