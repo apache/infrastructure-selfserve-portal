@@ -43,7 +43,6 @@ VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
 async def list_queue():
     """Lists the current selfserve request queue, or removes an item that has been processed"""
     form_data = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     # Externals can remove an item (mark it as processed) by using the `rm` key.
     to_remove = form_data.get("rm")
     if to_remove:
