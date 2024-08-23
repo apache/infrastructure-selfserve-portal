@@ -90,12 +90,12 @@ async def process_lists():
             VALID_EMAIL_RE.match(moderator) for moderator in moderators
         ), "Invalid moderator list provided. Please use valid email addresses only"
         assert not is_private or (
-            listpart in PRIVATE_LISTS or session.root is True
+            listpart in PRIVATE_LISTS or session.isRoot is True
         ), "Only private@ or security@ can be made private by default. Please file a ticket with Infrastructure for non-standard private lists"
         assert is_private or listpart not in PRIVATE_LISTS, "private@ and security@ lists MUST be marked as private"
-        assert muopts in VALID_MUOPTS or (session.root is True and muopts in VALID_MUOPTS_INFRA), "Invalid moderation options given"
+        assert muopts in VALID_MUOPTS or (session.isRoot is True and muopts in VALID_MUOPTS_INFRA), "Invalid moderation options given"
         assert isinstance(trailer, bool), "Trailer option must be a boolean value"
-        assert not expedited or session.root, "Only infrastructure can expedite mailing list requests"
+        assert not expedited or session.isRoot, "Only infrastructure can expedite mailing list requests"
         assert f"{listpart}@{domainpart}" not in config.messaging.mailing_lists, "This mailing already exists"
         assert not any(listpart.endswith(bad_ending) for bad_ending in INVALID_ENDINGS), "Invalid list name. Cannot end in a restricted ezmlm keyword"
     except AssertionError as e:
