@@ -39,7 +39,7 @@ VALID_QUEUE_FILENAME = re.compile(r"^[-.a-z0-9]+\.json$")
         "GET",
     ],
 )
-@asfquart.auth.require({R.roleacct})
+@asfquart.auth.require(any_of={R.roleacct, R.root})
 async def list_queue():
     """Lists the current selfserve request queue, or removes an item that has been processed"""
     form_data = await asfquart.utils.formdata()
