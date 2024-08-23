@@ -20,13 +20,26 @@
 """Personal Access Token handler for selfserve"""
 
 import asfquart
+import os
+
+roleaccounts = {}
+ROLEACCOUNT_FILE = os.path.normpath(os.path.join("..", "roleaccounts.txt"))
+
+if os.path.exists(ROLEACCOUNT_FILE):
+    print("Parsing role accounts list")
+    for line in open(ROLEACCOUNT_FILE).readlines():
+        if not line.startswith("#"):
+            k, v = line.split(":", 1)
+            k = k.strip().lower()
+            print(f"Found role account: {k}")
+            roleaccounts[v.strip()] = k
+
 
 async def token_handler(token):
-    print(f"Trying to sort out token {token}")
-    if token == "foobar":
+    if token in roleaccounts:
         return {
-            "uid": "mailgw-role",
-            "fullname": "MailGW Role Account",
+            "uid": roleaccounts[token],
+            "fullname": f"{roleaccounts[token]} role Account",
             "roleaccount": True,
         }
 
