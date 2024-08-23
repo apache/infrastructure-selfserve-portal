@@ -49,7 +49,7 @@ INVALID_ENDINGS = ( "-default", "-owner", )
 def can_manage_domain(domain: str):
     session = asfquart.session.read()
     """Yields true if the user can manage a specific project domain, otherwise False"""
-    if session.root is True:  # Root can always manage
+    if session.isRoot is True:  # Root can always manage
         return True
     for project in session.committees:
         if config.messaging.mail_mappings.get(project) == domain:
