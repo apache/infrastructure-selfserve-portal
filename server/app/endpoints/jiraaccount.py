@@ -282,13 +282,12 @@ async def process_jiraaccount():
         "POST",  # Action account request (approve/deny)
     ],
 )
-@asfquart.auth.require({R.chair})
+@asfquart.auth.require
 async def process_review():
     """Review and/or approve/deny a request for a new jira account"""
     form_data = await asfquart.utils.formdata()
     session = await asfquart.session.read()
     try:
-        assert (session.isChair), "Only Chairs may review Jira accounts requests"
         token = form_data.get("token")  # Must have a valid token
         assert isinstance(token, str) and len(token) == 36, "Invalid token format"
         entry = JIRA_DB.fetchone("pending", token=token)  # Fetch request entry from DB, verify it
@@ -296,7 +295,7 @@ async def process_review():
         assert entry["validated"] == 1, "This Jira account request has not been verified by the requester yet."
         # Only project committers (and infra) can review requests for a project
         assert (
-            entry["project"] in session.projects or session.root
+            entry["project"] in session.projects or session.isRoot
         ), "You can only review account requests related to the projects you are on"
     except AssertionError as e:
         return {"success": False, "message": str(e)}
