@@ -98,7 +98,7 @@ async def activate_account(username: str):
 
 
 @APP.route("/api/confluence-account-activate", methods=["GET", "POST"])
-async def process_reactivation_request():
+async def process_reactivation_request_cwiki():
     """Initial processing of an account re-activation request:
     - Check that username and email match
     - Send confirmation link to email address
@@ -130,7 +130,7 @@ async def process_reactivation_request():
 
 
 @APP.route("/api/confluence-account-activate-confirm", methods=["GET", "POST"])
-async def process_confirm_reactivation():
+async def process_confirm_reactivation_cwiki():
     """Processes confirmation link handling (and actual reactivation of an account)"""
     formdata = await asfquart.utils.formdata()
     token = formdata.get("token")
