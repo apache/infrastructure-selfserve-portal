@@ -33,7 +33,7 @@ VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whit
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 # Jira PSQL DSN
-#JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
+JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
 
 # Mappings dict for userid<->email
 JIRA_EMAIL_MAPPINGS = {}
