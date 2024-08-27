@@ -19,6 +19,7 @@
 import re
 import secrets
 import asfquart
+import asfquart.generics
 import quart
 from .lib import config, log, middleware
 import os
@@ -33,6 +34,8 @@ COMPILED_DIR = os.path.join(
     STATIC_DIR, "compiled"
 )  # Compiled HTML (template + content)
 
+asfquart.generics.OAUTH_URL_INIT = "https://oauth.apache.org/auth?state=%s&redirect_uri=%s"
+asfquart.generics.OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
 
 def file_to_sri(filepath: str):
     """Generates a sub-resource integrity value for a file - https://www.w3.org/TR/SRI/"""
