@@ -26,6 +26,7 @@ import asfquart.utils
 import re
 import asyncio
 import aiomysql
+import quart
 
 ONE_DAY = 86400  # A day in seconds
 
@@ -113,7 +114,7 @@ async def process_reactivation_request_cwiki():
         if CONFLUENCE_EMAIL_MAPPINGS[confluence_username].lower() == confluence_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
-            verify_url = f"https://{APP.request.host}/confluence-account-reactivate.html?{token}"
+            verify_url = f"https://{quart.request.host}/confluence-account-reactivate.html?{token}"
             email.from_template(
                 "confluence_account_reactivate.txt",
                 recipient=confluence_email,
