@@ -46,8 +46,7 @@ VALID_MUOPTS_INFRA = ("mu", "mU", "Mu", "MU")  # Infra can use MU as well
 INVALID_ENDINGS = ( "-default", "-owner", )
 
 
-def can_manage_domain(domain: str):
-    session = asfquart.session.read()
+def can_manage_domain(session, domain: str):
     """Yields true if the user can manage a specific project domain, otherwise False"""
     if session.isRoot is True:  # Root can always manage
         return True
@@ -84,7 +83,7 @@ async def process_lists():
         ), "Invalid list name. Must only consist of alphanumerical characters and dashes"
         assert listpart.endswith("-digest") is False, "A mailing list cannot end in -digest"
         assert domainpart in config.messaging.mail_mappings.values(), "Mailing list domain is not a valid ASF hostname"
-        assert can_manage_domain(domainpart), "You are not authorized to create mailing lists for this domain"
+        assert can_manage_domain(session, domainpart), "You are not authorized to create mailing lists for this domain"
         assert isinstance(moderators, list) and moderators, "You need to provide a list of moderators"
         assert all(
             VALID_EMAIL_RE.match(moderator) for moderator in moderators
