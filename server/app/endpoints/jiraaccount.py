@@ -241,7 +241,7 @@ async def process_jiraaccount():
         )
 
         # Send the verification email
-        verify_url = f"https://{asfquart.app.request.host}/jira-account-verify.html?{token}"
+        verify_url = f"https://{quart.app.request.host}/jira-account-verify.html?{token}"
         email.from_template("jira_account_verify.txt",
                             recipient=email_address,
                             variables={"verify_url": verify_url},
@@ -263,7 +263,7 @@ async def process_jiraaccount():
             JIRA_DB.update("pending", {"validated": 1}, token=token)
 
             # Notify project
-            record["review_url"] = f"https://{asfquart.app.request.host}/jira-account-review.html?token={token}"
+            record["review_url"] = f"https://{quart.app.request.host}/jira-account-review.html?token={token}"
             project_private_list = email.project_to_private(record["project"])
             email.from_template("jira_account_pending_review.txt",
                                 recipient=[NOTIFICATION_TARGET, project_private_list],
