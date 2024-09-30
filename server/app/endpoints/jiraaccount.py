@@ -40,7 +40,7 @@ NOTIFICATION_TARGET = "notifications@infra.apache.org"  # This is to notify infr
 INFRAREPORTS_USERID_CHECK = "https://infra-reports.apache.org/api/userid"
 
 VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
+VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s.]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
 # Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 # It is expensive to use the Jira CLI to check for existing user ids
