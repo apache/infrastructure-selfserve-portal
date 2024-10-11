@@ -133,6 +133,8 @@ class JiraPSQLConfiguration:
             # TODO: More verbosity here. We only need the raw dict to pass to the DSN constructor.
             assert all(key in yml for key in ("host", "user", "password", "dbname",)), "Jira PSQL config is missing information!"
             self.yaml = yml
+        else:
+            self.yaml = {} # ensure attribute exists
 
 class CwikiMySQLConfiguration:
     def __init__(self, yml: dict):
@@ -142,6 +144,8 @@ class CwikiMySQLConfiguration:
             yml["db"] = yml["dbname"]  # Renaming internally due to API, but keeping it conforming externally
             del yml["dbname"]
             self.yaml = yml
+        else:
+            self.yaml = {} # ensure attribute exists
 
 
 async def get_projects_from_ldap():
