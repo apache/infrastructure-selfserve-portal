@@ -44,5 +44,3 @@ async def token_handler(token):
         }
 
 asfquart.APP.token_handler = token_handler
-
-

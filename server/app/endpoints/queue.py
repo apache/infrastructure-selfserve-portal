@@ -19,7 +19,7 @@
 """Handler for queues for external services"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 import asfquart
 import asfquart.auth

@@ -19,7 +19,7 @@
 """Handler for mailing list creation"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, config, asfuid, email, log
 import asfquart

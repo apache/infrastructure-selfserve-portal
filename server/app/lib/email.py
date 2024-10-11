@@ -18,7 +18,7 @@
 """SelfServe Platform for the Apache Software Foundation"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 from . import config
 import asfpy.messaging

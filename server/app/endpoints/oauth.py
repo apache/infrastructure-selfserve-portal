@@ -19,7 +19,7 @@
 """Handler for oauth operations"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware
 import asfquart

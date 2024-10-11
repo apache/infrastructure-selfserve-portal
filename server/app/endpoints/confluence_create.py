@@ -19,7 +19,7 @@
 """Handler for creating a confluence space"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, email, log
 import asfquart
@@ -198,4 +198,3 @@ async def process_cwiki_space_create():
         "success": True,
         "message": "Confluence space created",
     }
-

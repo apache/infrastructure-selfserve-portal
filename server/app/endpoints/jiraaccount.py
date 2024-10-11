@@ -19,7 +19,7 @@
 """Handler for jira account creation"""
 
 if not __debug__:
-  raise RuntimeError("This code requires assert statements to be enabled")
+    raise RuntimeError("This code requires assert statements to be enabled")
 
 from ..lib import middleware, config, email
 import asfquart
@@ -376,7 +376,7 @@ async def process_review():
 
         elif action == "deny":
             if entry.get("denied_ts", 0):  # If already denied, the denied_ts entry is > 0. Only deny once
-              return {"success": False, "message": "This account request has already been denied. Nothing to do."}
+                return {"success": False, "message": "This account request has already been denied. Nothing to do."}
             entry["denied_ts"] = int(time.time())  # Mark when denied, for db pruning loop
             JIRA_DB.update("pending", entry, token=entry["token"])
 
