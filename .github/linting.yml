@@ -1,0 +1,41 @@
+name: Linting and MyPy
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1 # no point even starting next on failure
+      fail-fast: true
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@master
+      with:
+        persist-credentials: false
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        sudo apt -y install python3-dev libldap2-dev libsasl2-dev # for bonsai
+        python -m pip install --upgrade pip
+        pip install pylint
+        pip install -r requirements.txt
+        pip install mypy
+        pip install types-PyYAML
+        pip install pylint
+    - name: Type testing with mypy
+      run: |
+          mypy --cache-dir /tmp/ --install-types
+          mypy --cache-dir /tmp/ --ignore-missing-imports server # recursive by default
+    - name: Testing with pylint
+      if: always()
+      run: |
+          pylint --recursive y server
