@@ -23,16 +23,11 @@ import uuid
 from ..lib import config, email
 import asfquart
 import asfquart.utils
-import re
 import asyncio
 import aiomysql
 import quart
 
 ONE_DAY = 86400  # A day in seconds
-
-VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-VALID_CONFLUENCE_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
-# Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 # Mappings dict for userid<->email
 CONFLUENCE_EMAIL_MAPPINGS = {}

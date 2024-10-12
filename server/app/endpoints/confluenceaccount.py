@@ -21,7 +21,7 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, email
+from ..lib import middleware, config, email, utils
 import quart
 import uuid
 import time
@@ -38,10 +38,6 @@ NOTIFICATION_TARGET = "notifications@infra.apache.org"  # This is to notify infr
 
 # infra-reports' more extensive userid search which includes user IDs that are not necessarily present in crowd but would cause issues.
 INFRAREPORTS_USERID_CHECK = "https://infra-reports.apache.org/api/userid"
-
-VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-VALID_CONFLUENCE_USERNAME_RE = re.compile(r"^[^<>&%\s.]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
-# Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 # It is expensive to use the ACLI to check for existing user ids
 # This table is pre-populated with existing ids and the app adds new ids on creation
@@ -181,13 +177,13 @@ async def process_caccount():
             assert (
                 isinstance(desired_username, str) and len(desired_username) >= 4
             ), "Confluence Username should at least be four character long"
-            assert VALID_CONFLUENCE_USERNAME_RE.match(
+            assert utils.check_confluence_id_syntax(
                 desired_username
             ), "Your Confluence username contains invalid characters, or is too long"
             assert (
                 isinstance(real_name, str) and len(real_name) >= 3
             ), "Your public (real) name must be at least three characters long"
-            assert isinstance(email_address, str) and VALID_EMAIL_RE.match(
+            assert isinstance(email_address, str) and utils.check_email_address(
                 email_address
             ), "Please enter a valid email address"
             assert (
