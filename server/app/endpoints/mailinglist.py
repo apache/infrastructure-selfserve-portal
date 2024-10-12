@@ -21,7 +21,7 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, asfuid, email, log
+from ..lib import middleware, config, asfuid, email, log, utils
 import asfquart
 import asfquart.auth
 import asfquart.session
@@ -31,7 +31,6 @@ import json
 import os
 import re
 
-VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 VALID_LISTPART_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 # These lists are accepted as private (and MUST be private). All other lists should be public unless root.
 PRIVATE_LISTS = (
@@ -86,7 +85,7 @@ async def process_lists():
         assert can_manage_domain(session, domainpart), "You are not authorized to create mailing lists for this domain"
         assert isinstance(moderators, list) and moderators, "You need to provide a list of moderators"
         assert all(
-            VALID_EMAIL_RE.match(moderator) for moderator in moderators
+            utils.check_email_address(moderator) for moderator in moderators
         ), "Invalid moderator list provided. Please use valid email addresses only"
         assert not is_private or (
             listpart in PRIVATE_LISTS or session.isRoot is True

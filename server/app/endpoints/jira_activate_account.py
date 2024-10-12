@@ -22,15 +22,10 @@ import uuid
 
 from ..lib import middleware, config, email
 import asfquart
-import re
 import asyncio
 import psycopg
 
 ONE_DAY = 86400  # A day in seconds
-
-VALID_EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-VALID_JIRA_USERNAME_RE = re.compile(r"^[^<>&%\s]{4,20}$")  # 4-20 chars, no whitespace or illegal chars
-# Taken from com.atlassian.jira.bc.user.UserValidationHelper
 
 # Jira PSQL DSN
 JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
