@@ -198,3 +198,4 @@ htdocs/compiled/*
 # Local test files
 roleaccounts.txt
 selfserve-portal.yaml
+server/apptoken.txt
