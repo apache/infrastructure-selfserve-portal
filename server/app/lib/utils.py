@@ -29,7 +29,6 @@ VALID_USERNAME_RE = re.compile(r"[a-z][a-z0-9]{3,20}")  # 4-20 lowercase alphanu
 
 # validate an email address
 def check_email_address(email: str) -> bool:
-    print(email)
     parts = email.split('@')
     if len(parts) != 2: # must have just one '@'
         return False
@@ -38,7 +37,6 @@ def check_email_address(email: str) -> bool:
 
 # generic user id check; OK for JIRA and CONFLENCE (and ASF ids)
 def check_user_id_syntax(uid: str) -> bool:
-    print(uid)
     return VALID_USERNAME_RE.fullmatch(uid)
 
 # same as above currently
