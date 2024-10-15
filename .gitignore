@@ -199,3 +199,6 @@ htdocs/compiled/*
 roleaccounts.txt
 selfserve-portal.yaml
 server/apptoken.txt
+
+docker-config/cert.pem
+docker-config/key.pem
