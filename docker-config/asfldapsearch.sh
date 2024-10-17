@@ -15,6 +15,7 @@ case "$@" in
     done
     ;;
     *)
-        echo dn: uid=sebb,ou=people,dc=apache,dc=org
+        echo "Invalid request" >&1
+        exit 1
     ;;
 esac
