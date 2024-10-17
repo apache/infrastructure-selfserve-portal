@@ -36,6 +36,7 @@ def from_template(template_filename: str, recipient: str, variables: dict, threa
     assert os.path.isfile(template_path), f"Could not find template {template_path}"
     template_data = open(template_path).read()
     subject, body = template_data.split("--", maxsplit=1)
+    host = config.messaging.get('mail_relay', asfpy.messaging.DEFAULT_MSA)
     asfpy.messaging.mail(
         sender=config.messaging.sender,
         recipient=recipient,
@@ -44,6 +45,7 @@ def from_template(template_filename: str, recipient: str, variables: dict, threa
         thread_start=thread_start,
         thread_key=thread_key,
         headers={},
+        host=host,
     )
 
 
