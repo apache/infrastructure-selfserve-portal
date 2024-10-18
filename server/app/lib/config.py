@@ -173,7 +173,7 @@ async def fetch_valid_lists():
     """Fetches the current list of active mailing lists"""
     while True:
         async with aiohttp.ClientSession() as client:
-            async with client.get(WEBMOD_MAILING_LIST_URL) as resp:
+            async with client.get(cfg_yaml.get("webmod_list_url", WEBMOD_MAILING_LIST_URL)) as resp:
                 if resp.status == 200:
                     try:
                         messaging.mailing_lists = await resp.json()
