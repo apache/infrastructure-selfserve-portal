@@ -17,6 +17,10 @@
 
 # Docker instructions
 
+This implementation is a work in progress; it is not yet a complete framework for local testing.
+
+------
+
 The following instructions assume a shell terminal at the top level of the source tree.
 (i.e. where Dockerfile and compose.yaml are located)
 
