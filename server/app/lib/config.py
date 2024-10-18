@@ -125,6 +125,7 @@ class MessagingConfiguration:
         self.slack_url = yml.get("slack_url")  # Incoming webhook style
         self.slack_token = yml.get("slack_token")  # restricted token style
         self.slack_channel = yml.get("slack_channel")  # token style, cont'd.
+        self.mail_relay = yml.get("mail_relay", asfpy.messaging.DEFAULT_MSA)
 
 
 class JiraPSQLConfiguration:
