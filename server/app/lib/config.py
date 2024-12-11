@@ -162,6 +162,7 @@ async def get_projects_from_ldap():
                 project_list = set([x["cn"][0] for x in ldap_data])
             projects.clear()
             project_list.add("infra")  # Add infra for testing
+            project_list.add("tooling")  # INFRA-26363: one-off for tooling while the org finds a place for it in LDAP
             projects.extend(sorted(project_list))
             # Grab the mailing list hostname mappings for our projects
             await fetch_committee_mappings()
