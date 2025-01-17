@@ -215,6 +215,17 @@ async def process_jiraaccount():
             assert (
                 JIRA_DB.fetchone("pending", email=email_address) is None
             ), "There is already a pending Jira account request associated with this email address. Please wait for it to be processed"
+            # INFRA-26199: Check infra-reports' userid db as well
+            # (code extracted from check_user_exists_jira())
+            async with aiohttp.ClientSession() as client:
+                async with client.get(INFRAREPORTS_USERID_CHECK, params={"id": desired_username}) as resp:
+                    assert (
+                        resp.status == 200
+                    ), "Your query could not be completed at this point. Please retry later."
+                    result = await resp.json()
+                    assert(
+                        not result.get("exists", True) # Default to True if the backend throws a gnome at us.
+                    ), "The username you selected is already in use."
 
         except AssertionError as e:
             return {"success": False, "message": str(e)}
