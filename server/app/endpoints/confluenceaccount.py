@@ -179,7 +179,7 @@ async def process_caccount():
             ), "Confluence Username should at least be four character long"
             assert utils.check_confluence_id_syntax(
                 desired_username
-            ), "Your Confluence username contains invalid characters, or is too long"
+            ), f"Invalid Confluence user name: expecting {utils.VALID_USERNAME_MSG}"
             assert (
                 isinstance(real_name, str) and len(real_name) >= 3
             ), "Your public (real) name must be at least three characters long"

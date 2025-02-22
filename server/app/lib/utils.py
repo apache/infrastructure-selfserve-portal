@@ -26,6 +26,7 @@ import re
 VALID_EMAIL_LOCAL = re.compile(r"\S+") # local-part can be anything non-spaces
 VALID_EMAIL_DOMAIN = re.compile(r"\S+") # domain ditto currently (but maybe restrict to alphanumeric?)
 VALID_USERNAME_RE = re.compile(r"[a-z][a-z0-9]{3,20}")  # 4-20 lowercase alphanumeric, starting with alpha
+VALID_USERNAME_MSG = '4-20 lowercase alphanumeric, starting with alpha'
 
 # validate an email address
 def check_email_address(email: str) -> bool:
