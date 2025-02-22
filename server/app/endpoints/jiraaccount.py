@@ -185,7 +185,7 @@ async def process_jiraaccount():
             ), "Jira Username should at least be four character long"
             assert utils.check_jira_id_syntax(
                 desired_username
-            ), "Your Jira username contains invalid characters, or is too long"
+            ), f"Invalid Jira user name: expecting {utils.VALID_USERNAME_MSG}"
             assert (
                 isinstance(real_name, str) and len(real_name) >= 3
             ), "Your public (real) name must be at least three characters long"
