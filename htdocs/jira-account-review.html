@@ -25,6 +25,9 @@
     <div id="buttons_real">
         <button type="button" onclick="jira_account_approve(this.form, 'approve');" class="btn btn-primary">Approve request</button>
         <button type="button" onclick="jira_account_deny_details();" class="btn btn-danger">Deny request</button>
+        <p>
+        (You can provide a reason for rejection after pressing the Deny button)
+        </p>
     </div>
     <div id="deny_details" style="display: none;">
         <div class="mb-3">
@@ -45,6 +48,6 @@
 
 <script>
     document.body.onload = () => {
-        OAuthGate(jira_account_review);
+        // OAuthGate(jira_account_review);
     }
 </script>
