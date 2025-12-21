@@ -7,5 +7,8 @@ As approved by {approver}@apache.org, a new Jira user account, {userid}, has bee
 They provided the public name: {realname}
 and the reason: {why}
 
+Message from the approver:
+{reason}
+
 An email has been sent to the email address provided and this new user will
 need to reset their password before logging in for the first time.
