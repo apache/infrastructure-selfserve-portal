@@ -253,34 +253,74 @@ async function jira_account_review(prefs, qs) {
 
 async function jira_account_approve(form, verdict = "deny") {
   // Approve or deny a jira account request
-  const data = new FormData(form)
+  const data = new FormData(form);
   data.set("action", verdict);
-  // Hide deny details panel and buttons
-  const deny_details = document.getElementById('deny_details');
-  deny_details.style.display = "none";
-  const btns = document.getElementById('buttons_real');
-  btns.style.display = "none";
+  
+  // Get the appropriate reason based on verdict
+  const reasonField = verdict === 'approve' ? 'approve_reason' : 'deny_reason';
+  const reason = form.querySelector(`#${reasonField}`).value;
+  if (reason) {
+    data.set("reason", reason);
+  }
+  
+  // Hide all detail sections and buttons
+  jira_account_hide_details();
+  hide_main_buttons();
+  
   // Show spinner
   const spin = document.getElementById('buttons_spin');
   spin.style.display = "block";
-  const resp = await POST("/api/jira-account-review", {data: data})
-  const result = await resp.json();
-  if (result.success) {
-    const container = document.getElementById('contents');
-    container.innerText = result.message;
-  } else {
-    toast(result.message);
-    // Put back buttons, hide spinner
-    btns.style.display = "block";
+  
+  try {
+    const resp = await POST("/api/jira-account-review", {data: data});
+    const result = await resp.json();
+    
+    if (result.success) {
+      const container = document.getElementById('contents');
+      container.innerText = result.message;
+    } else {
+      toast(result.message);
+      // Reset UI to a consistent state
+      jira_account_hide_details();
+      show_main_buttons();
+    }
+  } catch (error) {
+    toast("An error occurred while processing your request. Please try again.");
+    // Reset UI to a consistent state
+    jira_account_hide_details();
+    show_main_buttons();
+  } finally {
+    // Always hide spinner
     spin.style.display = "none";
   }
 }
 
-function jira_account_deny_details() {
-  const real_buttons = document.getElementById('buttons_real');
-  real_buttons.style.display = "none";
-  const deny_details = document.getElementById('deny_details');
-  deny_details.style.display = "block";
+function jira_account_show_details(action) {
+  // Hide main buttons
+  hide_main_buttons();
+  
+  // Show the appropriate details section based on action
+  if (action === 'approve') {
+    document.getElementById('approve_details').style.display = 'block';
+  } else if (action === 'deny') {
+    document.getElementById('deny_details').style.display = 'block';
+  }
+}
+
+function jira_account_hide_details() {
+  // Hide all detail sections
+  document.getElementById('approve_details').style.display = 'none';
+  document.getElementById('deny_details').style.display = 'none';
+}
+
+function show_main_buttons() {
+  // Show main buttons
+  document.getElementById('buttons_real').style.display = 'block';
+}
+
+function hide_main_buttons() {
+  // Hide main buttons
+  document.getElementById('buttons_real').style.display = 'none';
 }
 
 async function jira_account_reactivate_submit(form) {
@@ -416,8 +456,7 @@ async function confluence_account_approve(form, verdict = "deny") {
   // Hide deny details panel and buttons
   const deny_details = document.getElementById('deny_details');
   deny_details.style.display = "none";
-  const btns = document.getElementById('buttons_real');
-  btns.style.display = "none";
+  hide_main_buttons();
   // Show spinner
   const spin = document.getElementById('buttons_spin');
   spin.style.display = "block";
@@ -429,14 +468,13 @@ async function confluence_account_approve(form, verdict = "deny") {
   } else {
     toast(result.message);
     // Put back buttons, hide spinner
-    btns.style.display = "block";
+    show_main_buttons();
     spin.style.display = "none";
   }
 }
 
 function confluence_account_deny_details() {
-  const real_buttons = document.getElementById('buttons_real');
-  real_buttons.style.display = "none";
+  hide_main_buttons();
   const deny_details = document.getElementById('deny_details');
   deny_details.style.display = "block";
 }
@@ -555,8 +593,7 @@ async function confluence_archive(form) {
   }
 
   // Set spinner, hide real button
-  const buttons = document.getElementById('buttons_real');
-  buttons.style.display = "none";
+  hide_main_buttons();
   const spin = document.getElementById('buttons_spin');
   spin.style.display = "block";
 
@@ -572,7 +609,7 @@ async function confluence_archive(form) {
   } else {
     toast(result.message);
     // hide spinner, put button back
-    buttons.style.display = "block";
+    show_main_buttons();
     spin.style.display = "none";
   }
 }
@@ -590,8 +627,7 @@ async function confluence_create(form) {
   }
 
   // Set spinner, hide real button
-  const buttons = document.getElementById('buttons_real');
-  buttons.style.display = "none";
+  hide_main_buttons();
   const spin = document.getElementById('buttons_spin');
   spin.style.display = "block";
 
@@ -609,7 +645,7 @@ async function confluence_create(form) {
   } else {
     toast(result.message);
     // hide spinner, put button back
-    buttons.style.display = "block";
+    show_main_buttons();
     spin.style.display = "none";
   }
 }
@@ -638,8 +674,7 @@ async function jira_create(form) {
   const data = new FormData(form);
 
   // Set spinner, hide real button
-  const buttons = document.getElementById('buttons_real');
-  buttons.style.display = "none";
+  hide_main_buttons();
   const spin = document.getElementById('buttons_spin');
   spin.style.display = "block";
 
@@ -653,7 +688,7 @@ async function jira_create(form) {
   } else {
     toast(result.message);
     // hide spinner, put button back
-    buttons.style.display = "block";
+    show_main_buttons();
     spin.style.display = "none";
   }
 }

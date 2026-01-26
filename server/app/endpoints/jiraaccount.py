@@ -363,6 +363,9 @@ async def process_review():
             JIRA_DB.delete("pending", token=token)
             JIRA_DB.insert("users", {"userid": entry["userid"]})
 
+            # Add optional reason for approving
+            entry["reason"] = form_data.get("reason") or ""
+
             # Send welcome email
             email.from_template("jira_account_welcome.txt",
                                 recipient=entry["email"],
