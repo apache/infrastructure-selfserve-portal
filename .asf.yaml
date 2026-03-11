@@ -8,3 +8,6 @@ github:
   features:
     # Enable issue management
     issues: true
+  pull_requests:
+    # auto-delete head branches after being merged
+    del_branch_on_merge: true
