@@ -1,0 +1,45 @@
+<h1>Create a DockerHub Repository</h1>
+
+<p>Use this form to create a new repository in the <strong>apache</strong> DockerHub organisation and grant an existing team write access to it. This action is restricted to infrastructure staff.</p>
+
+<form onsubmit="dockerhub_add_repository(this); return false;">
+    <div class="mb-3">
+        <label for="repository" class="form-label" style="display: block;">Repository name</label>
+        <input required pattern="[a-z0-9][a-z0-9._\-]{0,98}" type="text" class="form-control" id="repository" name="repository" style="display: inline-block; width: auto;">
+        <div id="repositoryHelp" class="form-text">The name of the new repository. Must be lowercase and may contain letters, digits, hyphens, underscores, or periods. For example: <kbd>my-project</kbd></div>
+    </div>
+    <div class="mb-3">
+        <label for="summary" class="form-label" style="display: block;">Short description</label>
+        <input type="text" class="form-control" id="summary" name="summary">
+        <div id="summaryHelp" class="form-text">A brief, one-line description of the repository (optional).</div>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label" style="display: block;">Full description</label>
+        <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+        <div id="descriptionHelp" class="form-text">A longer description of the repository, supports Markdown (optional).</div>
+    </div>
+    <div class="mb-3">
+        <label for="group" class="form-label" style="display: block;">DockerHub group to grant write access</label>
+        <input required pattern="[a-z0-9][a-z0-9._\-]*" type="text" class="form-control" id="group" name="group" style="display: inline-block; width: auto;">
+        <div id="groupHelp" class="form-text">The name of an <strong>existing</strong> DockerHub team in the Apache org to grant write access to this repository. For example: <kbd>my-project</kbd></div>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Create repository</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(dockerhub_add_repository_prime);
+    }
+</script>

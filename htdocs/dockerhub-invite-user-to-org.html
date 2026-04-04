@@ -1,0 +1,35 @@
+<h1>Invite a User to the Apache DockerHub Org</h1>
+
+<p>Use this form to send an invitation to a person to join the <strong>apache</strong> DockerHub organisation. You may optionally place them in a specific group upon acceptance. This action is restricted to infrastructure staff.</p>
+
+<form onsubmit="dockerhub_invite_user_to_org(this); return false;">
+    <div class="mb-3">
+        <label for="user" class="form-label" style="display: block;">DockerHub username or email address</label>
+        <input required type="text" class="form-control" id="user" name="user" style="display: inline-block; width: auto;">
+        <div id="userHelp" class="form-text">The DockerHub username or email address of the person to invite to the Apache org.</div>
+    </div>
+    <div class="mb-3">
+        <label for="group" class="form-label" style="display: block;">Group to add upon acceptance <span class="text-muted">(optional)</span></label>
+        <input pattern="[a-z0-9][a-z0-9._\-]*" type="text" class="form-control" id="group" name="group" style="display: inline-block; width: auto;">
+        <div id="groupHelp" class="form-text">If specified, the user will be placed in this existing DockerHub group once they accept the invitation. Leave blank to invite to the org only.</div>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Send invitation</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(dockerhub_invite_user_to_org_prime);
+    }
+</script>

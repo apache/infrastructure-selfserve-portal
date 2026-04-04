@@ -149,6 +149,19 @@ class CwikiMySQLConfiguration:
             self.yaml = {} # ensure attribute exists
 
 
+class DockerhubConfiguration:
+    def __init__(self, yml: dict):
+        if yml:
+            assert all(key in yml for key in ("username", "password")), "DockerHub config is missing username or password!"
+            self.username = yml["username"]
+            self.password = yml["password"]
+            self.org = yml.get("org", "apache")
+        else:
+            self.username = None
+            self.password = None
+            self.org = "apache"
+
+
 async def get_projects_from_ldap():
     """Reads and sets the current list of projects from LDAP"""
     ldap_search_timeout = 30  # Wait no more than 30 sec for ldap data...
@@ -217,5 +230,6 @@ storage = StorageConfiguration(cfg_yaml.get("storage", {}))
 messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
 jirapsql = JiraPSQLConfiguration(cfg_yaml.get("jirapsql", {}))
 cwikimysql = CwikiMySQLConfiguration(cfg_yaml.get("cwikimysql", {}))
+dockerhub = DockerhubConfiguration(cfg_yaml.get("dockerhub", {}))
 projects = []  # Filled every 10 min by get_projects_from_ldap
 rate_limits = {}  # Tracks IPs and their usage, resets every day

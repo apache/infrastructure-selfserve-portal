@@ -1,0 +1,35 @@
+<h1>Create a DockerHub Group</h1>
+
+<p>Use this form to create a new team/group in the <strong>apache</strong> DockerHub organisation. Groups are used to control which users have access to which repositories. This action is restricted to infrastructure staff.</p>
+
+<form onsubmit="dockerhub_add_group(this); return false;">
+    <div class="mb-3">
+        <label for="group" class="form-label" style="display: block;">Group name</label>
+        <input required pattern="[a-z0-9][a-z0-9._\-]*" type="text" class="form-control" id="group" name="group" style="display: inline-block; width: auto;">
+        <div id="groupHelp" class="form-text">The name of the new group. Must be lowercase and may contain letters, digits, hyphens, underscores, or periods. For example: <kbd>my-project</kbd></div>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label" style="display: block;">Description</label>
+        <input type="text" class="form-control" id="description" name="description">
+        <div id="descriptionHelp" class="form-text">A short description of this group and its purpose (optional).</div>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Create group</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(dockerhub_add_group_prime);
+    }
+</script>

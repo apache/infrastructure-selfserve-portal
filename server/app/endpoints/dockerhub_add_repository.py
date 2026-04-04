@@ -1,108 +1,108 @@
 #!/usr/bin/env python3
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+"""Selfserve Portal for the Apache Software Foundation"""
+"""Handler for creating a DockerHub repository and associating an existing group with it"""
 
-import requests
-import asyncio
-import argparse
-import sys
-import json
+if not __debug__:
+    raise RuntimeError("This code requires assert statements to be enabled")
 
-"""
-This script create a Dockerhub repository in the 'apache' org 
-in Dockerhub and then adds an already existing auth group/team 
-to the repository with write/admin access.
-"""
+from ..lib import config, log
+from ..lib.dockerhub import get_token, auth_headers, DOCKERHUB_API
+import asfquart
+import asfquart.auth
+import asfquart.session
+import aiohttp
+import re
 
-# TODO: Would be ideal if a group was needed to be created at the same
-#       time as a new repo creation.
-
-# TODO: Check if repository being requested already exists.
-
-# authenticate via user/pass to obtain token
-authurl = "https://hub.docker.com/v2/users/login"
-baseurl = "https://hub.docker.com/"
-
-data = {
-  "username": "user",
-  "password": "pass"
-}
-
-response = requests.post(authurl, json=data)
-bearer_token = response.json().get("token")
-
-headers = {"Authorization": f"Bearer {bearer_token}",'Content-type': 'application/json'}
-headers_nojson = {"Authorization": f"Bearer {bearer_token}"}
+# Docker Hub repository names: lowercase letters, digits, underscores, periods, hyphens.
+# Must begin with a letter or digit.
+VALID_REPO_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,98}$")
+# Group (team) names follow the same general pattern
+VALID_GROUP_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
-# The API endpoints
-org_name = 'apache'
-getusers = 'https://hub.docker.com/v2/orgs/apache/scim/2.0/Users'
-getgroups = 'https://hub.docker.com/v2/orgs/apache/groups'
+@asfquart.APP.route(
+    "/api/dockerhub-add-repository",
+    methods=[
+        "POST",  # Create a new DockerHub repository and associate a group with it
+    ],
+)
+@asfquart.auth.require
+async def process_dockerhub_add_repository():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
 
-# add a repository to the 'apache' org in Dockerhub
+    repository = form_data.get("repository")
+    summary = form_data.get("summary", "")
+    description = form_data.get("description", "")
+    group = form_data.get("group")
 
-async def main():
-  new_repo = args.repository
-  summary = args.summary
-  description = args.description
-  categories = "apache"
-  categories_array = json.dumps(categories)
-  group = args.group
+    try:
+        assert session.isRoot, "Only infrastructure team members may create DockerHub repositories"
+        assert isinstance(repository, str) and VALID_REPO_NAME_RE.match(repository), \
+            "Invalid repository name. Must start with a lowercase letter or digit and only contain " \
+            "lowercase letters, digits, hyphens, underscores, or periods (max 100 characters)"
+        assert isinstance(group, str) and VALID_GROUP_NAME_RE.match(group), \
+            "Please specify a valid, existing DockerHub group name to associate with the repository"
 
-  print(categories_array)
+        token = await get_token()
+        headers = auth_headers(token)
+        org = config.dockerhub.org
 
-###
-  payload = {
-      'description': summary,
-      'full_description': description,
-      'categories': [categories], #TODO: this doesnt work
-      'is_private': False,
-      'name': new_repo,
-      'namespace': org_name
-  }
-  resp = requests.post(
-      'https://hub.docker.com/v2/repositories/',
-      json=payload,
-      headers=headers,
-  )
-  print(resp.json())
+        async with aiohttp.ClientSession() as client:
+            # Create the repository in the org
+            payload = {
+                "description": summary,
+                "full_description": description,
+                "is_private": False,
+                "name": repository,
+                "namespace": org,
+            }
+            resp = await client.post(f"{DOCKERHUB_API}/repositories/", json=payload, headers=headers)
+            data = await resp.json()
+            assert resp.status == 201, \
+                f"Failed to create repository '{repository}': {data.get('message', str(data))}"
 
-  add_group_to_repository(group,new_repo)
-###
+            # Fetch the group ID so we can reference it when granting access
+            resp = await client.get(f"{DOCKERHUB_API}/orgs/{org}/groups/{group}", headers=headers)
+            group_data = await resp.json()
+            assert resp.status == 200, \
+                f"Could not find group '{group}': {group_data.get('message', str(group_data))}"
+            group_id = group_data["id"]
 
-def add_group_to_repository(group,repo):
+            # Grant the group write access to the new repository
+            resp = await client.post(
+                f"{DOCKERHUB_API}/repositories/{org}/{repository}/groups",
+                json={"group_id": group_id, "permission": "write"},
+                headers=headers,
+            )
+            assert resp.status in (200, 201), \
+                f"Failed to add group '{group}' to repository '{repository}': {await resp.text()}"
 
-  group_name = group
-  new_repo = repo
+    except AssertionError as e:
+        return {"success": False, "message": str(e)}
 
-  # Fetch the group id, so it can be used
-  fetch_group_id = requests.get(f"https://hub.docker.com/v2/orgs/{org_name}/groups/{group_name}",
-    headers=headers)
+    await log.slack(
+        f"A new DockerHub repository `{config.dockerhub.org}/{repository}` has been created "
+        f"and group `{group}` has been granted write access, as requested by {session.uid}@apache.org."
+    )
 
-  print(fetch_group_id.json())
-
-  groupid = fetch_group_id.json()['id']
-
-  addgrouptorepository = requests.post(f"https://hub.docker.com/v2/repositories/{org_name}/{new_repo}/groups",
-    json={'group_id': groupid, 'permission':'write'},
-    headers=headers  # with json
-  )
-
-# end def
- 
-if __name__ == "__main__":
-    # check for any input args
-    parser = argparse.ArgumentParser(description = "Add Dockerhub repository")
-    parser.add_argument("-r", "--repository", help = "Name of repository to create", type = str, required = True)
-    parser.add_argument("-s", "--summary", help = "Short description of repository [optional]", type = str, required = False, default ='')
-    parser.add_argument("-d", "--description", help = "Long description of repository [optional]", type = str, required = False, default ='') 
-    parser.add_argument("-g", "--group", help = "Name of existing auth group to associate with the repository", type = str, required = True)
-
-    args = parser.parse_args()
-
-# Default modern behavior (Python>=3.7)
-    if sys.version_info.minor >= 7:
-        asyncio.run(main())
-    # Python<=3.6 fallback
-    else:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
+    return {
+        "success": True,
+        "message": f"Repository '{repository}' created and group '{group}' granted write access.",
+    }

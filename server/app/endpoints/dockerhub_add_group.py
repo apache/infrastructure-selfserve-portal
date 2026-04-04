@@ -1,74 +1,81 @@
 #!/usr/bin/env python3
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+"""Selfserve Portal for the Apache Software Foundation"""
+"""Handler for creating a DockerHub group (team) in the Apache org"""
 
-import requests
-import asyncio
-import argparse
-import sys
-import json
+if not __debug__:
+    raise RuntimeError("This code requires assert statements to be enabled")
 
-"""
-This script create a Dockerhub Group (team) in the 'apache' org
-in Dockerhub.
-"""
+from ..lib import config, log
+from ..lib.dockerhub import get_token, auth_headers, DOCKERHUB_API
+import asfquart
+import asfquart.auth
+import asfquart.session
+import aiohttp
+import re
 
-# TODO: A group is no use without members, add one at the same time?
-
-# authenticate via user/pass to obtain token
-authurl = "https://hub.docker.com/v2/users/login"
-baseurl = "https://hub.docker.com/"
-
-data = {
-  "username": "user",
-  "password": "pass"
-}
-
-response = requests.post(authurl, json=data)
-bearer_token = response.json().get("token")
-# print(bearer_token)
-headers = {"Authorization": f"Bearer {bearer_token}",'Content-type': 'application/json'}
-headers_nojson = {"Authorization": f"Bearer {bearer_token}"}
-
-# The API endpoints
-org_name = 'apache'
-getusers = 'https://hub.docker.com/v2/orgs/apache/scim/2.0/Users'
-getgroups = 'https://hub.docker.com/v2/orgs/apache/groups'
-
-async def main():
-
-  group = args.group
-  description = args.description
-
-  groupdata = {
-    "name": group,
-    "description": description
-  }
-
-  creategroup = requests.post(f"https://hub.docker.com/v2/orgs/{org_name}/groups", headers=headers, json=groupdata)
-  print(creategroup.json())
-  # print(headers)
+VALID_GROUP_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
-  # Fetch the group id, so it can be used 
-  # fetch_group_id = requests.get(f"https://hub.docker.com/v2/orgs/{org_name}/groups/{group}",
-  #   headers=headers)
+@asfquart.APP.route(
+    "/api/dockerhub-add-group",
+    methods=[
+        "POST",  # Create a new DockerHub group (team) in the Apache org
+    ],
+)
+@asfquart.auth.require
+async def process_dockerhub_add_group():
+    form_data = await asfquart.utils.formdata()
+    session = await asfquart.session.read()
 
-  # print(fetch_group_id.json())
-  # groupid = fetch_group_id.json()['id']
+    group = form_data.get("group")
+    description = form_data.get("description", "")
 
+    try:
+        assert session.isRoot, "Only infrastructure team members may create DockerHub groups"
+        assert isinstance(group, str) and VALID_GROUP_NAME_RE.match(group), \
+            "Invalid group name. Must start with a lowercase letter or digit and only contain " \
+            "lowercase letters, digits, hyphens, underscores, or periods"
+        assert isinstance(description, str), "Description must be a string"
 
-if __name__ == "__main__":
-    # check for any input args
-    parser = argparse.ArgumentParser(description = "Add Dockerhub Group")
-    parser.add_argument("-g", "--group", help = "Name of group to create", type = str, required = True)
-    parser.add_argument("-d", "--description", help = "Description of group [optional]", type = str, required = False, default ='') 
+        token = await get_token()
+        headers = auth_headers(token)
+        org = config.dockerhub.org
 
-    args = parser.parse_args()
+        async with aiohttp.ClientSession() as client:
+            resp = await client.post(
+                f"{DOCKERHUB_API}/orgs/{org}/groups",
+                json={"name": group, "description": description},
+                headers=headers,
+            )
+            data = await resp.json()
+            assert resp.status == 201, \
+                f"Failed to create group '{group}': {data.get('message', str(data))}"
 
-# Default modern behavior (Python>=3.7)
-    if sys.version_info.minor >= 7:
-        asyncio.run(main())
-    # Python<=3.6 fallback
-    else:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
+    except AssertionError as e:
+        return {"success": False, "message": str(e)}
 
+    await log.slack(
+        f"A new DockerHub group `{group}` has been created in the `{config.dockerhub.org}` org, "
+        f"as requested by {session.uid}@apache.org."
+    )
+
+    return {
+        "success": True,
+        "message": f"Group '{group}' created in the '{config.dockerhub.org}' org.",
+    }

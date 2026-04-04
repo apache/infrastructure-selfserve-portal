@@ -41,3 +41,8 @@ jirapsql:
   user: psql
   password: psql
   dbname: jira
+
+dockerhub:
+  username: "dockerhub_username"
+  password: "dockerhub_password_or_token"
+  org: "apache"

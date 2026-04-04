@@ -1,0 +1,35 @@
+<h1>Add a User to a DockerHub Group</h1>
+
+<p>Use this form to add an existing DockerHub user to a team/group in the <strong>apache</strong> DockerHub organisation. The user must already be a member of the Apache org — if not, use the <a href="/dockerhub-invite-user-to-org.html">invite user to org</a> form first. This action is restricted to infrastructure staff.</p>
+
+<form onsubmit="dockerhub_add_user_to_group(this); return false;">
+    <div class="mb-3">
+        <label for="user" class="form-label" style="display: block;">DockerHub username</label>
+        <input required pattern="[a-zA-Z0-9._\-]{1,100}" type="text" class="form-control" id="user" name="user" style="display: inline-block; width: auto;">
+        <div id="userHelp" class="form-text">The DockerHub username of the person to add to the group. This must be their DockerHub handle, not their Apache ID or email address.</div>
+    </div>
+    <div class="mb-3">
+        <label for="group" class="form-label" style="display: block;">Group name</label>
+        <input required pattern="[a-z0-9][a-z0-9._\-]*" type="text" class="form-control" id="group" name="group" style="display: inline-block; width: auto;">
+        <div id="groupHelp" class="form-text">The name of the existing DockerHub group to add this user to. For example: <kbd>my-project</kbd></div>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Add user to group</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(dockerhub_add_user_to_group_prime);
+    }
+</script>

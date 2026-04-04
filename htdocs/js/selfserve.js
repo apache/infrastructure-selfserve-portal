@@ -698,3 +698,128 @@ async function jira_create_prime() {
   await jira_seed_schemes();
 }
 
+/********* DOCKERHUB FUNCTIONS *********/
+
+async function dockerhub_add_repository_prime(prefs) {
+  if (!prefs.isRoot) {
+    toast("This page is restricted to ASF Infrastructure staff only.");
+    document.querySelector('form').style.display = "none";
+  }
+}
+
+async function dockerhub_add_repository(form) {
+  // Create a DockerHub repository and associate an existing group with it
+  const data = new FormData(form);
+
+  // Set spinner, hide real button
+  hide_main_buttons();
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  const resp = await POST("/api/dockerhub-add-repository", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    // Hide spinner, put button back
+    show_main_buttons();
+    spin.style.display = "none";
+  }
+}
+
+async function dockerhub_add_group_prime(prefs) {
+  if (!prefs.isRoot) {
+    toast("This page is restricted to ASF Infrastructure staff only.");
+    document.querySelector('form').style.display = "none";
+  }
+}
+
+async function dockerhub_add_group(form) {
+  // Create a new DockerHub group (team) in the Apache org
+  const data = new FormData(form);
+
+  // Set spinner, hide real button
+  hide_main_buttons();
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  const resp = await POST("/api/dockerhub-add-group", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    show_main_buttons();
+    spin.style.display = "none";
+  }
+}
+
+async function dockerhub_add_user_to_group_prime(prefs) {
+  if (!prefs.isRoot) {
+    toast("This page is restricted to ASF Infrastructure staff only.");
+    document.querySelector('form').style.display = "none";
+  }
+}
+
+async function dockerhub_add_user_to_group(form) {
+  // Add a DockerHub user to an existing group in the Apache org
+  const data = new FormData(form);
+
+  // Set spinner, hide real button
+  hide_main_buttons();
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  const resp = await POST("/api/dockerhub-add-user-to-group", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    show_main_buttons();
+    spin.style.display = "none";
+  }
+}
+
+async function dockerhub_invite_user_to_org_prime(prefs) {
+  if (!prefs.isRoot) {
+    toast("This page is restricted to ASF Infrastructure staff only.");
+    document.querySelector('form').style.display = "none";
+  }
+}
+
+async function dockerhub_invite_user_to_org(form) {
+  // Invite a user to the Apache DockerHub org, optionally into a group
+  const data = new FormData(form);
+  // Send an empty string for group if not filled in, so the backend treats it as None
+  if (!data.get("group")) {
+    data.delete("group");
+  }
+
+  // Set spinner, hide real button
+  hide_main_buttons();
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  const resp = await POST("/api/dockerhub-invite-user-to-org", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    show_main_buttons();
+    spin.style.display = "none";
+  }
+}
+
+/********* END OF DOCKERHUB FUNCTIONS *********/
+

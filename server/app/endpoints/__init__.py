@@ -10,4 +10,8 @@ from . import (
     confluence_create,
     jira_create,
     jira_activate_account,
+    dockerhub_add_repository,
+    dockerhub_add_group,
+    dockerhub_add_user_to_group,
+    dockerhub_invite_user_to_org,
 )
