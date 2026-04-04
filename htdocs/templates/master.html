@@ -9,6 +9,17 @@
     <title>ASF Self-serve Portal - The Apache Software Foundation</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/fontawesome.all.min.css" rel="stylesheet">
+    <style>
+        /* Nested dropdown submenu support for Bootstrap 5 */
+        .dropdown-submenu { position: relative; }
+        .dropdown-submenu .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+            display: none;
+        }
+        .dropdown-submenu.show > .dropdown-menu { display: block; }
+    </style>
 </head>
 <body class="d-flex flex-column h-100">
 <main class="flex-shrink-0">
@@ -38,6 +49,16 @@
                         <li><a class="dropdown-item" href="/mailinglist-new.html"><i class="fa-solid fa-envelopes-bulk" style="color: rebeccapurple; display: inline-block; width: 26px;"></i>Create a mailing list</a></li>
                         <li><a class="dropdown-item" href="/mailinglist-manage.html"><i class="fa-solid fa-envelope-circle-check" style="color: mediumvioletred; display: inline-block; width: 26px;"></i>Manage mailing lists</a></li>
                         <li><a class="dropdown-item" href="/confluence-archive.html"><i class="fa-brands fa-confluence" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Archive a Confluence wiki space</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#"><i class="fa-brands fa-docker" style="color: dodgerblue; display: inline-block; width: 26px;"></i>DockerHub</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/dockerhub-add-repository.html"><i class="fa-brands fa-docker" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Create a repository</a></li>
+                                <li><a class="dropdown-item" href="/dockerhub-add-group.html"><i class="fa-brands fa-docker" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Create a group</a></li>
+                                <li><a class="dropdown-item" href="/dockerhub-add-user-to-group.html"><i class="fa-solid fa-user-plus" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Add user to group</a></li>
+                                <li><a class="dropdown-item" href="/dockerhub-invite-user-to-org.html"><i class="fa-solid fa-envelope" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Invite user to org</a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
@@ -55,15 +76,6 @@
                         <li><a class="dropdown-item" href="/jira-account-reactivate.html"><i class="fa-solid fa-heart-pulse" style="color: darkgreen; display: inline-block; width: 26px;"></i>Reactivate a Jira account</a></li>
                         <li><a class="dropdown-item" href="/confluence-account.html"><i class="fa-solid fa-user-plus" style="color: darkgreen; display: inline-block; width: 26px;"></i>Request a Confluence account</a></li>
                         <li><a class="dropdown-item" href="/confluence-account-reactivate.html"><i class="fa-solid fa-heart-pulse" style="color: darkgreen; display: inline-block; width: 26px;"></i>Reactivate a Confluence account</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">DockerHub</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/dockerhub-add-repository.html"><i class="fa-brands fa-docker" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Create a repository</a></li>
-                        <li><a class="dropdown-item" href="/dockerhub-add-group.html"><i class="fa-brands fa-docker" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Create a group</a></li>
-                        <li><a class="dropdown-item" href="/dockerhub-add-user-to-group.html"><i class="fa-solid fa-user-plus" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Add user to group</a></li>
-                        <li><a class="dropdown-item" href="/dockerhub-invite-user-to-org.html"><i class="fa-solid fa-envelope" style="color: dodgerblue; display: inline-block; width: 26px;"></i>Invite user to org</a></li>
                     </ul>
                 </li>
             </ul>
@@ -109,5 +121,28 @@
 </footer>
 <script type="application/ecmascript" src="/js/selfserve.js"></script>
 <script type="application/ecmascript" src="/js/bootstrap.bundle.min.js"></script>
+<script>
+    /* Enable Bootstrap 5 nested dropdown submenus */
+    document.querySelectorAll('.dropdown-submenu .dropdown-toggle').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var submenu = this.nextElementSibling;
+            var parent = this.parentElement;
+            // Close any other open submenus at this level
+            parent.closest('.dropdown-menu').querySelectorAll('.dropdown-submenu.show').forEach(function (open) {
+                if (open !== parent) open.classList.remove('show');
+            });
+            parent.classList.toggle('show');
+        });
+    });
+    // Close submenus when the parent dropdown closes
+    document.querySelectorAll('.nav-item.dropdown').forEach(function (el) {
+        el.addEventListener('hide.bs.dropdown', function () {
+            this.querySelectorAll('.dropdown-submenu.show').forEach(function (open) {
+                open.classList.remove('show');
+            });
+        });
+    });
+</script>
 </body>
 </html>
