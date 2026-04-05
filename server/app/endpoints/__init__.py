@@ -13,5 +13,6 @@ from . import (
     dockerhub_add_repository,
     dockerhub_add_group,
     dockerhub_add_user_to_group,
+    dockerhub_remove_user_from_group,
     dockerhub_invite_user_to_org,
 )

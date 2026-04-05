@@ -821,5 +821,34 @@ async function dockerhub_invite_user_to_org(form) {
   }
 }
 
+async function dockerhub_remove_user_from_group_prime(prefs) {
+  if (!prefs.isRoot) {
+    toast("This page is restricted to ASF Infrastructure staff only.");
+    document.querySelector('form').style.display = "none";
+  }
+}
+
+async function dockerhub_remove_user_from_group(form) {
+  // Remove a DockerHub user from an existing group in the Apache org
+  const data = new FormData(form);
+
+  // Set spinner, hide real button
+  hide_main_buttons();
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  const resp = await POST("/api/dockerhub-remove-user-from-group", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    toast(result.message, type="success", redirect_on_close="/");
+  } else {
+    toast(result.message);
+    show_main_buttons();
+    spin.style.display = "none";
+  }
+}
+
 /********* END OF DOCKERHUB FUNCTIONS *********/
 

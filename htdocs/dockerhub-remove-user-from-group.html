@@ -1,0 +1,35 @@
+<h1>Remove a User from a DockerHub Group</h1>
+
+<p>Use this form to remove an existing DockerHub user from a team/group in the <strong>apache</strong> DockerHub organisation. This does not remove the user from the org itself. This action is restricted to infrastructure staff.</p>
+
+<form onsubmit="dockerhub_remove_user_from_group(this); return false;">
+    <div class="mb-3">
+        <label for="user" class="form-label" style="display: block;">DockerHub username</label>
+        <input required pattern="[a-zA-Z0-9._\-]{1,100}" type="text" class="form-control" id="user" name="user" style="display: inline-block; width: auto;">
+        <div id="userHelp" class="form-text">The DockerHub username of the person to remove from the group. This must be their DockerHub handle, not their Apache ID or email address.</div>
+    </div>
+    <div class="mb-3">
+        <label for="group" class="form-label" style="display: block;">Group name</label>
+        <input required pattern="[a-z0-9][a-z0-9._\-]*" type="text" class="form-control" id="group" name="group" style="display: inline-block; width: auto;">
+        <div id="groupHelp" class="form-text">The name of the existing DockerHub group to remove this user from. For example: <kbd>my-project</kbd></div>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-danger">Remove user from group</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-danger" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(dockerhub_remove_user_from_group_prime);
+    }
+</script>
