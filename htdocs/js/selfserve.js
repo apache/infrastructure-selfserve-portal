@@ -378,7 +378,7 @@ async function confluence_check_project(project_name) {
   const apiresp = await POST("/api/confluence-project-blocked", {json: {"project": project_name}});
   const apidata = await apiresp.json();
   if (apidata.blocked === true) {
-    toast(`The project you have selected does not use Confluence. Please contact the project at dev@${project_name}.apache.org to find out where thy use a wiki.`);
+    toast(`The project you have selected does not use Confluence. Please contact the project at dev@${project_name}.apache.org to find out where they use a wiki.`);
     confluence_account_inputs_state("disabled");
   } else {
     confluence_account_inputs_state("enabled");
