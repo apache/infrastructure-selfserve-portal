@@ -67,7 +67,7 @@ async def process_dockerhub_remove_user_from_group():
             assert resp.status in (200, 204), \
                 f"Failed to remove user '{user}' from group '{group}': {await resp.text()}"
 
-    except AssertionError as e:
+    except Exception as e:
         return {"success": False, "message": str(e)}
 
     await log.slack(

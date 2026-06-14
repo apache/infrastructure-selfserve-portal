@@ -67,7 +67,7 @@ async def process_dockerhub_add_group():
             assert resp.status == 201, \
                 f"Failed to create group '{group}': {data.get('message', str(data))}"
 
-    except AssertionError as e:
+    except Exception as e:
         return {"success": False, "message": str(e)}
 
     await log.slack(

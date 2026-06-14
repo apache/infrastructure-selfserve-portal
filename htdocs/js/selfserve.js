@@ -700,6 +700,17 @@ async function jira_create_prime() {
 
 /********* DOCKERHUB FUNCTIONS *********/
 
+// Shared helper: parse a DockerHub API response, returning a safe result object
+// even if the server returns a non-JSON error page (which would otherwise cause
+// an uncaught SyntaxError and leave the spinner running forever).
+async function dockerhub_parse_response(resp) {
+  try {
+    return await resp.json();
+  } catch (e) {
+    return { success: false, message: `Unexpected server response (HTTP ${resp.status}). Check server logs for details.` };
+  }
+}
+
 async function dockerhub_add_repository_prime(prefs) {
   if (!prefs.isRoot) {
     toast("This page is restricted to ASF Infrastructure staff only.");
@@ -719,7 +730,7 @@ async function dockerhub_add_repository(form) {
   const resp = await POST("/api/dockerhub-add-repository", {
     data: data
   });
-  const result = await resp.json();
+  const result = await dockerhub_parse_response(resp);
   if (result.success) {
     toast(result.message, type="success", redirect_on_close="/");
   } else {
@@ -749,7 +760,7 @@ async function dockerhub_add_group(form) {
   const resp = await POST("/api/dockerhub-add-group", {
     data: data
   });
-  const result = await resp.json();
+  const result = await dockerhub_parse_response(resp);
   if (result.success) {
     toast(result.message, type="success", redirect_on_close="/");
   } else {
@@ -778,7 +789,7 @@ async function dockerhub_add_user_to_group(form) {
   const resp = await POST("/api/dockerhub-add-user-to-group", {
     data: data
   });
-  const result = await resp.json();
+  const result = await dockerhub_parse_response(resp);
   if (result.success) {
     toast(result.message, type="success", redirect_on_close="/");
   } else {
@@ -811,7 +822,7 @@ async function dockerhub_invite_user_to_org(form) {
   const resp = await POST("/api/dockerhub-invite-user-to-org", {
     data: data
   });
-  const result = await resp.json();
+  const result = await dockerhub_parse_response(resp);
   if (result.success) {
     toast(result.message, type="success", redirect_on_close="/");
   } else {
@@ -840,7 +851,7 @@ async function dockerhub_remove_user_from_group(form) {
   const resp = await POST("/api/dockerhub-remove-user-from-group", {
     data: data
   });
-  const result = await resp.json();
+  const result = await dockerhub_parse_response(resp);
   if (result.success) {
     toast(result.message, type="success", redirect_on_close="/");
   } else {

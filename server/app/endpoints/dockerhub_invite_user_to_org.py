@@ -75,7 +75,7 @@ async def process_dockerhub_invite_user_to_org():
             assert resp.status in (200, 201), \
                 f"Failed to invite user '{user}' to the org: {await resp.text()}"
 
-    except AssertionError as e:
+    except Exception as e:
         return {"success": False, "message": str(e)}
 
     group_msg = f" and added to group `{group}`" if group else ""

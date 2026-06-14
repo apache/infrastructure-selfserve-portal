@@ -68,7 +68,7 @@ async def process_dockerhub_add_user_to_group():
             assert resp.status in (200, 201), \
                 f"Failed to add user '{user}' to group '{group}': {await resp.text()}"
 
-    except AssertionError as e:
+    except Exception as e:
         return {"success": False, "message": str(e)}
 
     await log.slack(
