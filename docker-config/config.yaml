@@ -44,5 +44,6 @@ jirapsql:
 
 dockerhub:
   username: "dockerhub_username"
-  password: "dockerhub_password_or_token"
+  secret: "dockerhub_personal_access_token"  # Personal Access Token (PAT), not account password
+  totp_secret: "BASE32_TOTP_SEED"             # 2FA seed shown when setting up an authenticator app (base32 string)
   org: "apache"

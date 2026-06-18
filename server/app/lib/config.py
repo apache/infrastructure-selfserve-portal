@@ -152,13 +152,15 @@ class CwikiMySQLConfiguration:
 class DockerhubConfiguration:
     def __init__(self, yml: dict):
         if yml:
-            assert all(key in yml for key in ("username", "password")), "DockerHub config is missing username or password!"
+            assert all(key in yml for key in ("username", "secret")), "DockerHub config is missing username or secret (PAT)!"
             self.username = yml["username"]
-            self.password = yml["password"]
+            self.secret = yml["secret"]      # Personal Access Token - used in place of a password
+            self.totp_secret = yml.get("totp_secret")  # Optional: base32 TOTP seed for 2FA accounts
             self.org = yml.get("org", "apache")
         else:
             self.username = None
-            self.password = None
+            self.secret = None
+            self.totp_secret = None
             self.org = "apache"
 
 

@@ -12,4 +12,5 @@ pytest-asyncio
 cmarkgfm
 psycopg[binary]
 asfquart >= 0.1.7
+pyotp  # TOTP code generation for DockerHub 2FA login
 
