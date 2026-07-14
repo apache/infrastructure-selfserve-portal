@@ -41,3 +41,10 @@ jirapsql:
   user: psql
   password: psql
   dbname: jira
+
+acli:
+  # Path to the acli binary used for Jira operations. Can point to a different
+  # acli install/version than confluence_cmd below.
+  jira_cmd: "/opt/latest-cli/acli.sh"
+  # Path to the acli binary used for Confluence operations.
+  confluence_cmd: "/opt/latest-cli/acli.sh"

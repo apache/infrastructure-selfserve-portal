@@ -338,7 +338,7 @@ async def process_review():
                     entry["email"],
                 )
                 proc = await asyncio.create_subprocess_exec(
-                    "/opt/latest-cli/acli.sh",
+                    config.acli.jira_cmd,
                     *acli_arguments,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,

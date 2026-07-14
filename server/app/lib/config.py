@@ -149,6 +149,14 @@ class CwikiMySQLConfiguration:
             self.yaml = {} # ensure attribute exists
 
 
+class AcliConfiguration:
+    def __init__(self, yml: dict):
+        yml = yml or {}
+        # Jira and Confluence each get their own acli command, so they can be upgraded independently.
+        self.jira_cmd = yml.get("jira_cmd", "/opt/latest-cli/acli.sh")
+        self.confluence_cmd = yml.get("confluence_cmd", "/opt/latest-cli/acli.sh")
+
+
 async def get_projects_from_ldap():
     """Reads and sets the current list of projects from LDAP"""
     ldap_search_timeout = 30  # Wait no more than 30 sec for ldap data...
@@ -217,5 +225,6 @@ storage = StorageConfiguration(cfg_yaml.get("storage", {}))
 messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
 jirapsql = JiraPSQLConfiguration(cfg_yaml.get("jirapsql", {}))
 cwikimysql = CwikiMySQLConfiguration(cfg_yaml.get("cwikimysql", {}))
+acli = AcliConfiguration(cfg_yaml.get("acli", {}))
 projects = []  # Filled every 10 min by get_projects_from_ldap
 rate_limits = {}  # Tracks IPs and their usage, resets every day

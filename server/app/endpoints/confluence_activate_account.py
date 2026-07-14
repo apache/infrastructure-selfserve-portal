@@ -35,8 +35,7 @@ CONFLUENCE_EMAIL_MAPPINGS = {}
 # Reactivation queue. No real need for permanent storage here, all requests can be ephemeral.
 CONFLUENCE_REACTIVATION_QUEUE = {}
 
-# ACLI command - TODO: Add to yaml??
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = config.acli.confluence_cmd
 
 APP = asfquart.APP
 

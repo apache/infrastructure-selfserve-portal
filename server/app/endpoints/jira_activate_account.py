@@ -36,8 +36,7 @@ JIRA_EMAIL_MAPPINGS = {}
 # Reactivation queue. No real need for permanent storage here, all requests can be ephemeral.
 JIRA_REACTIVATION_QUEUE = {}
 
-# ACLI command - TODO: Add to yaml??
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = config.acli.jira_cmd
 
 
 async def update_jira_email_map():

@@ -21,7 +21,7 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, email, log
+from ..lib import middleware, config, email, log
 import asfquart
 import asfquart.session
 import asfquart.auth
@@ -31,7 +31,7 @@ import re
 import asyncio
 
 RE_VALID_SPACE = re.compile(r"^[A-Z0-9]+$")
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = config.acli.confluence_cmd
 
 # Protected from archiving
 PROTECTED_SPACES = (
