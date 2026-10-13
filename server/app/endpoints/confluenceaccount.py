@@ -321,7 +321,7 @@ async def process_review_cwiki():
                     entry["email"],
                 )
                 proc = await asyncio.create_subprocess_exec(
-                    "/opt/latest-cli/acli.sh",
+                    "/opt/confluence-cli/acli.sh",
                     *acli_arguments,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,

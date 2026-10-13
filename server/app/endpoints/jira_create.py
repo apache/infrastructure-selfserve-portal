@@ -32,7 +32,7 @@ import os
 import json
 
 RE_VALID_PROJECT_KEY = re.compile(r"^[A-Z0-9]+$")
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = "/opt/jira-cli/acli.sh"
 JIRA_SCHEME_FILES = {
     "workflow": "/x1/acli/site/js/jiraworkflowschemes.json",
 }
