@@ -37,7 +37,7 @@ JIRA_EMAIL_MAPPINGS = {}
 JIRA_REACTIVATION_QUEUE = {}
 
 # ACLI command - TODO: Add to yaml??
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = "/opt/jira-cli/acli.sh"
 
 
 async def update_jira_email_map():

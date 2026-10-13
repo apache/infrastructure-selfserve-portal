@@ -36,7 +36,7 @@ CONFLUENCE_EMAIL_MAPPINGS = {}
 CONFLUENCE_REACTIVATION_QUEUE = {}
 
 # ACLI command - TODO: Add to yaml??
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = "/opt/confluence-cli/acli.sh"
 
 APP = asfquart.APP
 

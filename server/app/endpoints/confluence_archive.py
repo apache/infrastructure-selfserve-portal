@@ -31,7 +31,7 @@ import re
 import asyncio
 
 RE_VALID_SPACE = re.compile(r"^[A-Z0-9]+$")
-ACLI_CMD = "/opt/latest-cli/acli.sh"
+ACLI_CMD = "/opt/confluence-cli/acli.sh"
 
 # Protected from archiving
 PROTECTED_SPACES = (
