@@ -61,5 +61,9 @@ else
     echo "Using configuration from docker-config/config.yaml"
 fi
 
+# Without this, the app's own print() output (warnings, errors, mail and Slack fallbacks)
+# sits in Python's buffer and never reaches `docker compose logs`
+export PYTHONUNBUFFERED=1
+
 cd server
 python3 -m hypercorn -b 0.0.0.0:8000 server:application
