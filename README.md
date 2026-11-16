@@ -2,6 +2,7 @@
 
 [![Lint](https://github.com/apache/infrastructure-selfserve-portal/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/apache/infrastructure-selfserve-portal/actions/workflows/lint.yml?query=branch%3Amain)
 [![Type check](https://github.com/apache/infrastructure-selfserve-portal/actions/workflows/typecheck.yml/badge.svg?branch=main)](https://github.com/apache/infrastructure-selfserve-portal/actions/workflows/typecheck.yml?query=branch%3Amain)
+[![Test](https://github.com/apache/infrastructure-selfserve-portal/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/apache/infrastructure-selfserve-portal/actions/workflows/test.yml?query=branch%3Amain)
 
 This repository houses the code for the ASF self-serve portal.
 It is constructed as a [PipService](https://cwiki.apache.org/confluence/display/INFRA/Pipservices)
@@ -22,7 +23,8 @@ Dependencies are managed with [uv](https://docs.astral.sh/uv/): `pyproject.toml`
     uv sync                                    # create .venv with app + dev tools
     uv run pylint --recursive y server
     uv run mypy --ignore-missing-imports server
-    uv run pytest tests
+    uv run pytest                              # unit + integration
+    uv run pytest --cov                        # with the coverage gate CI enforces
 
 `requirements.txt` is generated from `uv.lock` for the production PipService deployment.
 After changing dependencies (`uv add ...`), regenerate it:

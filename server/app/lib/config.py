@@ -35,7 +35,10 @@ import json
 
 # If pipservice, we may use the pipservice module to define a config. Use if found.
 PIPSERVICE_CONFIG = os.path.join(os.path.realpath(".."), "selfserve-portal.yaml")
-CONFIG_FILE = PIPSERVICE_CONFIG if os.path.isfile(PIPSERVICE_CONFIG) else "config.yaml"
+# SELFSERVE_CONFIG overrides both (used by the test suite).
+CONFIG_FILE = os.environ.get("SELFSERVE_CONFIG") or (
+    PIPSERVICE_CONFIG if os.path.isfile(PIPSERVICE_CONFIG) else "config.yaml"
+)
 WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
 WHIMSY_COMMITTEE_URL = "https://whimsy.apache.org/public/committee-info.json"
 

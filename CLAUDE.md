@@ -16,13 +16,14 @@ docker compose run --rm -p8000:8000 --entrypoint /bin/bash selfserve   # then do
 uv sync                                                # .venv with app + dev deps (pinned pylint/mypy, same as CI)
 uv run pylint --recursive y server                     # lint (config: pylintrc)
 uv run mypy --ignore-missing-imports server            # types
-uv run pytest tests                                    # run from repo root
+uv run pytest                                          # unit + integration (-m unit / -m integration)
+uv run pytest --cov                                    # + branch-coverage gate, as CI runs it
 ```
 
 Inside the docker container the same tools are installed into the system Python, so drop the `uv run`.
 `bonsai` needs libsasl2/libldap headers to build on the host; if `uv sync` fails there, use the container.
-CI runs on every push against Python 3.10, 3.12 and 3.14: `.github/workflows/lint.yml` (pylint) and
-`typecheck.yml` (mypy), kept separate so each has its own README badge. Both get their environment from
+CI runs on every push against Python 3.10, 3.12 and 3.14: `.github/workflows/lint.yml` (pylint),
+`typecheck.yml` (mypy) and `test.yml` (pytest + coverage gate), kept separate so each has its own README badge. Both get their environment from
 the composite action `.github/actions/setup-python-uv` (Python, uv, apt libs, `uv sync`, shared uv cache);
 new CI workflows should use it too, and Python versions are listed in each workflow's matrix.
 Code must stay 3.10-compatible (`requires-python`, pylint `py-version`). `pylintrc` has `fail-under=10.0`, so **any** pylint
@@ -35,6 +36,19 @@ message fails the build. Run both before pushing.
   `uv export --no-dev --no-hashes --no-emit-project --frozen -q -o requirements.txt`
 - Dev tools (pylint, mypy, pytest) live in the `dev` group and are pinned; bump them deliberately.
 - Don't change `pipservice-selfserve-portal.service` or remove `requirements.txt` without coordinating with the production deployment.
+
+## Tests
+
+- `tests/unit/` — pure functions in `server/app/lib`. `tests/integration/` — real requests through the Quart app.
+- `tests/conftest.py` builds the app once, at import, against a temp config (`SELFSERVE_CONFIG`) and temp
+  storage. Background loops are recorded, never started. Nothing may write into the repo or reach the network.
+- Integration fixtures (`tests/integration/conftest.py`): `auth("pmc")` → bearer headers for a persona in
+  `PERSONAS`; `sent_mail` captures email; `acli` fakes ACLI (`acli.respond = lambda argv: (rc, out, err)`);
+  `http` fakes aiohttp GETs; `post_form` sends browser-style forms (Quart's `form=` omits Content-Length,
+  which asfquart's `formdata()` needs — don't use `client.post(form=...)`).
+- Unhandled errors come back as HTTP 500, as in production (`PROPAGATE_EXCEPTIONS = False`).
+- Coverage gate: `fail_under` in `pyproject.toml` is the measured branch coverage. When tests raise coverage,
+  raise the gate to the new measured value (rounded down); never lower it to pass CI. Test behaviour, not lines.
 
 ## Layout
 

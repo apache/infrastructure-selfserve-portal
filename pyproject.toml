@@ -28,8 +28,32 @@ dev = [
     "types-PyYAML==6.0.12.20261113",
     "pytest",
     "pytest-asyncio",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.uv]
 # This is an application run from server/, not an installable package.
 package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "unit: pure-function tests; no app, no I/O beyond tmp files",
+    "integration: requests through the Quart app with external services faked",
+]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["server/app"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+# Gate = measured branch coverage when the suite was written (62.52% on 3.10/3.12,
+# 62.58% on 3.14), rounded down. Raise it when you add tests; never lower it to get
+# a PR through. Includes code no test can reach yet (oauth.py and lib/asfuid.py are
+# never imported; Confluence archive/create and the DB-backed email-map loaders).
+fail_under = 62.5
