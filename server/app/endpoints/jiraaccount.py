@@ -21,10 +21,9 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, email, utils
+from ..lib import config, email, utils
 import asfquart
 import asfquart.auth
-from asfquart.auth import Requirements as R
 import asfquart.session
 import quart
 import uuid
@@ -125,7 +124,6 @@ async def prune_stale_requests():
 )
 async def check_user_exists_jira():
     form_data = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     """Checks if a username has already been taken"""
     userid = form_data.get("userid")
     if userid and JIRA_DB.fetchone("users", userid=userid):
@@ -150,7 +148,6 @@ async def check_user_exists_jira():
 async def check_project_blocked_jira():
     """Checks if a project is 'blocked', meaning it doesn't use JIRA"""
     form_data = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     project = form_data.get("project")
     if project and JIRA_DB.fetchone("blocked", project=project):
         return {"blocked": True}
@@ -167,7 +164,6 @@ async def check_project_blocked_jira():
 )
 async def process_jiraaccount():
     form_data = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     # Submit application
     if quart.request.method == "POST":
         desired_username = form_data.get("username")
@@ -350,7 +346,7 @@ async def process_review():
                     aclilog.write(f"Process returned code {proc.returncode}\n")
                     aclilog.write(f"stdout was: \n{stdout.decode()}\n")
                     aclilog.write(f"stderr was: \n{stderr.decode()}\n")
-                    aclilog.write(f"---------------------------------------------\n\n")
+                    aclilog.write("---------------------------------------------\n\n")
                 # Check for known error messages in stderr:
                 assert b"A user with that username already exists" not in stderr, "An account with this username already exists in Jira"
                 assert not re.search(b"Client error: User '.+?' is already defined.", stderr or b""), "The Jira backend was unable to create this account due to a naming conflict. Please contact infrastructure and have them create the account."

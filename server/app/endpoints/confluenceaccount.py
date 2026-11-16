@@ -21,7 +21,7 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, email, utils
+from ..lib import config, email, utils
 import quart
 import uuid
 import time
@@ -333,7 +333,7 @@ async def process_review_cwiki():
                     aclilog.write(f"Process returned code {proc.returncode}\n")
                     aclilog.write(f"stdout was: \n{stdout.decode()}\n")
                     aclilog.write(f"stderr was: \n{stderr.decode()}\n")
-                    aclilog.write(f"---------------------------------------------\n\n")
+                    aclilog.write("---------------------------------------------\n\n")
                 # Check for known error messages in stderr:
                 assert b"A user with that username already exists" not in stderr, "An account with this username already exists in Confluence"
                 assert not re.search(b"Client error: User '.+?' is already defined.", stderr or b""), "The Confluence backend was unable to create this account due to a naming conflict. Please contact infrastructure and have them create the account."
