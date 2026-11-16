@@ -21,8 +21,11 @@ uv run pytest tests                                    # run from repo root
 
 Inside the docker container the same tools are installed into the system Python, so drop the `uv run`.
 `bonsai` needs libsasl2/libldap headers to build on the host; if `uv sync` fails there, use the container.
-CI runs on every push, Python 3.10: `.github/workflows/lint.yml` (pylint) and `typecheck.yml` (mypy) —
-kept separate so each has its own README badge. `pylintrc` has `fail-under=10.0`, so **any** pylint
+CI runs on every push against Python 3.10, 3.12 and 3.14: `.github/workflows/lint.yml` (pylint) and
+`typecheck.yml` (mypy), kept separate so each has its own README badge. Both get their environment from
+the composite action `.github/actions/setup-python-uv` (Python, uv, apt libs, `uv sync`, shared uv cache);
+new CI workflows should use it too, and Python versions are listed in each workflow's matrix.
+Code must stay 3.10-compatible (`requires-python`, pylint `py-version`). `pylintrc` has `fail-under=10.0`, so **any** pylint
 message fails the build. Run both before pushing.
 
 ## Dependencies (uv)
