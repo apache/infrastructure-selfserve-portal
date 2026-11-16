@@ -6,12 +6,18 @@ on:
 permissions:
   contents: read
 
+env:
+  UV_VERSION: "0.13.5"
+  UV_CACHE_DIR: /tmp/uv-cache
+
 jobs:
   mypy:
     runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64/tag=infra
     strategy:
       matrix:
         python-version: ["3.10"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -20,25 +26,33 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: pip
-        cache-dependency-path: |
-          requirements.txt
-          requirements-dev.txt
-    - name: Install dependencies
+    - name: Install uv
+      run: python -m pip install "uv==${UV_VERSION}"
+    - name: Cache uv
+      uses: actions/cache@v4
+      with:
+        path: /tmp/uv-cache
+        key: uv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
+        restore-keys: |
+          uv-${{ runner.os }}-py${{ matrix.python-version }}-
+    - name: Install system libraries
       run: |
         # Runner images ship without apt package lists, so refresh them first.
         sudo apt-get update -qq
         sudo apt-get install -y --no-install-recommends python3-dev libldap2-dev libsasl2-dev # for bonsai
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt -r requirements-dev.txt
+    - name: Install dependencies
+      run: uv sync --locked
     # mypy's incremental cache: exact hit when nothing changed, otherwise reuse the
-    # newest cache for the same Python + dependency set and let mypy refresh it.
+    # newest cache for the same Python + lockfile and let mypy refresh it.
     - name: Cache mypy
       uses: actions/cache@v4
       with:
         path: .mypy_cache
-        key: mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements*.txt') }}-${{ hashFiles('server/**/*.py') }}
+        key: mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}-${{ hashFiles('server/**/*.py') }}
         restore-keys: |
-          mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements*.txt') }}-
+          mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}-
     - name: Type check with mypy
-      run: mypy --ignore-missing-imports server
+      run: uv run --no-sync mypy --ignore-missing-imports server
+    - name: Minimize uv cache
+      if: always()
+      run: uv cache prune --ci

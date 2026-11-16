@@ -14,3 +14,20 @@ The layout is:
 - `documentation/`: The documentation for the self-serve processes
 - `server/`: The backend server (quart?) for the self-serve actions
 
+## Development
+
+Dependencies are managed with [uv](https://docs.astral.sh/uv/): `pyproject.toml` declares them and
+`uv.lock` pins them.
+
+    uv sync                                    # create .venv with app + dev tools
+    uv run pylint --recursive y server
+    uv run mypy --ignore-missing-imports server
+    uv run pytest tests
+
+`requirements.txt` is generated from `uv.lock` for the production PipService deployment.
+After changing dependencies (`uv add ...`), regenerate it:
+
+    uv export --no-dev --no-hashes --no-emit-project --frozen -q -o requirements.txt
+
+For a full local environment (databases, mail capture) see [DOCKER.md](DOCKER.md).
+

@@ -13,16 +13,25 @@ docker compose build                                   # image with MySQL, Postg
 docker compose up                                      # app on http://localhost:8000
 docker compose exec selfserve docker-config/smtpd.sh   # capture outgoing email (separate terminal)
 docker compose run --rm -p8000:8000 --entrypoint /bin/bash selfserve   # then docker-config/start.sh to restart app only
-pip install -r requirements-dev.txt                    # pinned pylint/mypy, same as CI
-pylint --recursive y server                            # lint (config: pylintrc)
-mypy --ignore-missing-imports server                   # types
-python -m pytest tests                                 # run from repo root
+uv sync                                                # .venv with app + dev deps (pinned pylint/mypy, same as CI)
+uv run pylint --recursive y server                     # lint (config: pylintrc)
+uv run mypy --ignore-missing-imports server            # types
+uv run pytest tests                                    # run from repo root
 ```
 
-Host machines usually lack the deps (`bonsai` needs libsasl2/libldap) — run lint/tests inside the container.
+Inside the docker container the same tools are installed into the system Python, so drop the `uv run`.
+`bonsai` needs libsasl2/libldap headers to build on the host; if `uv sync` fails there, use the container.
 CI runs on every push, Python 3.10: `.github/workflows/lint.yml` (pylint) and `typecheck.yml` (mypy) —
 kept separate so each has its own README badge. `pylintrc` has `fail-under=10.0`, so **any** pylint
-message fails the build. Run both before pushing. Bump tool versions only in `requirements-dev.txt`.
+message fails the build. Run both before pushing.
+
+## Dependencies (uv)
+
+- `pyproject.toml` + `uv.lock` are the source of truth. Add/remove with `uv add <pkg>` / `uv add --dev <pkg>`; never hand-edit `uv.lock`.
+- `requirements.txt` is **generated** for production (the PipService host still installs it with pipenv). After any dependency change, regenerate it — CI fails if it drifts:
+  `uv export --no-dev --no-hashes --no-emit-project --frozen -q -o requirements.txt`
+- Dev tools (pylint, mypy, pytest) live in the `dev` group and are pinned; bump them deliberately.
+- Don't change `pipservice-selfserve-portal.service` or remove `requirements.txt` without coordinating with the production deployment.
 
 ## Layout
 

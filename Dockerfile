@@ -33,8 +33,12 @@ RUN  DEBIAN_FRONTEND='noninteractive' apt-get install -y \
 RUN  DEBIAN_FRONTEND='noninteractive' apt-get install -y \
     sqlite3
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt  --break-system-packages
+# Install the locked dependencies (including the dev group: pylint, mypy, pytest) into the system Python
+RUN pip install uv==0.13.5 --break-system-packages
+COPY pyproject.toml uv.lock /tmp/selfserve/
+RUN cd /tmp/selfserve && \
+    uv export --frozen --no-emit-project --no-hashes -q -o /tmp/requirements-all.txt && \
+    uv pip install --system --break-system-packages -r /tmp/requirements-all.txt
 
 # database
 RUN  DEBIAN_FRONTEND='noninteractive' apt-get install -y \

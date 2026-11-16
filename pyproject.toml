@@ -1,0 +1,35 @@
+[project]
+name = "selfserve-portal"
+version = "0.0.0"
+description = "ASF self-serve portal (selfserve.apache.org)"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = [
+    "aiofiles",
+    "aiohttp",
+    "aiomysql",
+    "asfpy[aioldap]>=0.47",  # For aioldap and clitools
+    "async-timeout",
+    "bonsai",  # NOTE: needs libsasl2-dev and libldap-dev installed first
+    "hypercorn",
+    "pyyaml",
+    "quart",
+    "rfc3339",
+    "cmarkgfm",
+    "psycopg[binary]",
+    "asfquart>=0.1.7",
+]
+
+[dependency-groups]
+# Pinned so a new pylint/mypy release can't break CI on its own; bump deliberately.
+dev = [
+    "pylint==4.1.4",
+    "mypy==2.4.1",
+    "types-PyYAML==6.0.12.20261113",
+    "pytest",
+    "pytest-asyncio",
+]
+
+[tool.uv]
+# This is an application run from server/, not an installable package.
+package = false
