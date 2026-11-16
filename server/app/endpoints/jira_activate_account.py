@@ -23,6 +23,7 @@ import uuid
 from ..lib import config, email
 import asfquart
 import asyncio
+import quart
 import psycopg
 
 ONE_DAY = 86400  # A day in seconds
@@ -115,7 +116,7 @@ async def process_reactivation_request():
         if JIRA_EMAIL_MAPPINGS[jira_username].lower() == jira_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
-            verify_url = f"https://{asfquart.app.request.host}/jira-account-reactivate.html?{token}"
+            verify_url = f"https://{quart.request.host}/jira-account-reactivate.html?{token}"
             email.from_template(
                 "jira_account_reactivate.txt",
                 recipient=jira_email,
