@@ -110,6 +110,8 @@ async def process_reactivation_request():
     formdata = await asfquart.utils.formdata()
     jira_username = formdata.get("username")
     jira_email = formdata.get("email")
+    if not isinstance(jira_username, str) or not isinstance(jira_email, str):
+        return {"success": False, "message": "Please provide both your Jira username and the email address you registered it with."}
     if jira_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
         return {"success": False, "message": "Reactivation of internal ASF accounts cannot be done through this tool."}
     if jira_username and jira_username in JIRA_EMAIL_MAPPINGS:
@@ -146,14 +148,14 @@ async def process_confirm_reactivation():
     if token and token in JIRA_REACTIVATION_QUEUE:  # Verify token
         username = JIRA_REACTIVATION_QUEUE[token]
         del JIRA_REACTIVATION_QUEUE[token]  # Remove right away, before entering the async wait
-        if username in JIRA_EMAIL_MAPPINGS:
-            try:
-                await activate_account(username)
-            except AssertionError as e:
-                return {"success": False, "activated": False, "error": str(e)}
-            return {"success": True, "activated": True}
-    else:
-        return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
+        if username not in JIRA_EMAIL_MAPPINGS:  # Account went away since the request was made
+            return {"success": False, "activated": False, "error": "The Jira account for this request could no longer be found. Please resubmit your request."}
+        try:
+            await activate_account(username)
+        except AssertionError as e:
+            return {"success": False, "activated": False, "error": str(e)}
+        return {"success": True, "activated": True}
+    return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
 
 

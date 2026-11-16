@@ -3,6 +3,8 @@
 import json
 import os
 
+import pytest
+
 from app.lib import config
 
 
@@ -22,6 +24,13 @@ async def test_session_reports_the_authenticated_user(client, auth):
     assert data["root"] is False
     assert data["roleaccount"] is False
     assert data["all_projects"] == config.projects
+
+
+async def test_session_without_login_is_not_found(client):
+    """Regression: used to be a 500. 404 is what asfquart's own /api/auth answers when logged out."""
+    resp = await client.get("/api/session")
+    assert resp.status_code == 404
+    assert (await resp.get_json())["success"] is False
 
 
 async def test_session_logout(client, auth):
@@ -70,5 +79,13 @@ async def test_queue_removal_rejects_path_traversal(client, auth, tmp_path):
     outside.write_text("{}")
     rel = os.path.relpath(outside, config.storage.queue_dir)
     resp = await client.get("/api/queue", query_string={"rm": rel}, headers=auth("role"))
-    assert resp.status_code >= 400
+    assert resp.status_code == 400
     assert outside.exists()
+
+
+@pytest.mark.parametrize("name", ["../x.json", "Mailinglist-Dev.json", "mailinglist-dev.txt", "a b.json", ".json/"])
+async def test_queue_removal_rejects_invalid_names(client, auth, name):
+    """Regression: used to be a 500 from a bare assert."""
+    resp = await client.get("/api/queue", query_string={"rm": name}, headers=auth("role"))
+    assert resp.status_code == 400
+    assert await resp.get_json() == {"success": False, "message": "Invalid queue item name"}

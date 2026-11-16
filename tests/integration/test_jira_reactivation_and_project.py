@@ -1,8 +1,9 @@
-"""Jira account reactivation (email-confirmed, via ACLI) and Jira project creation."""
+"""Jira account reactivation (email-confirmed, via ACLI), Jira project creation and scheme listing."""
 
 import pytest
 
 from app.endpoints import jira_activate_account as reactivation
+from app.endpoints import jira_create
 
 # --- reactivation --------------------------------------------------------------
 
@@ -77,6 +78,27 @@ async def test_confirmation_rejects_unknown_token(client, known_account):
     assert (await resp.get_json())["success"] is False
 
 
+@pytest.mark.parametrize("body", [{"username": "olduser"}, {"email": "old.user@example.org"}, {}])
+async def test_reactivation_needs_username_and_email(client, known_account, sent_mail, body):
+    """Regression: a missing field used to be a 500."""
+    resp = await client.post("/api/jira-account-activate", json=body)
+    assert resp.status_code == 200
+    data = await resp.get_json()
+    assert data["success"] is False and "provide both" in data["message"]
+    assert not sent_mail
+
+
+async def test_confirmation_fails_cleanly_when_account_has_gone(client, known_account, acli):
+    """Regression: used to be a 500 if the account left the email map between request and confirmation."""
+    await request_reactivation(client)
+    reactivation.JIRA_EMAIL_MAPPINGS.clear()
+    data = await confirm(client)
+    assert data["success"] is False and data["activated"] is False
+    assert "no longer be found" in data["error"]
+    assert not acli.calls
+    assert not reactivation.JIRA_REACTIVATION_QUEUE
+
+
 # --- project creation ------------------------------------------------------------
 
 
@@ -136,3 +158,19 @@ async def test_project_creation_stops_when_lead_unknown(client, auth, acli):
 
 async def test_root_can_create_for_any_project(client, auth, acli):
     assert (await create_project(client, auth("root"), ldap_project="tomcat"))["success"] is True
+
+
+async def test_schemes_are_read_from_acli_exports(client, auth, monkeypatch, tmp_path):
+    (tmp_path / "workflow.json").write_text('{"Default": "classic default workflow"}')
+    (tmp_path / "issue.json").write_text("{truncated")
+    monkeypatch.setattr(
+        jira_create,
+        "JIRA_SCHEME_FILES",
+        {
+            "workflow": str(tmp_path / "workflow.json"),
+            "issue": str(tmp_path / "issue.json"),  # unreadable export: listed, but empty
+            "missing": str(tmp_path / "missing.json"),  # no export yet: left out
+        },
+    )
+    resp = await client.get("/api/jira-project-schemes", headers=auth("committer"))
+    assert await resp.get_json() == {"workflow": {"Default": "classic default workflow"}, "issue": {}}

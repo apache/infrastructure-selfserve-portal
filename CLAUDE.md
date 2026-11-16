@@ -44,9 +44,14 @@ message fails the build. Run both before pushing.
 - `tests/conftest.py` builds the app once, at import, against a temp config (`SELFSERVE_CONFIG`) and temp
   storage. Background loops are recorded, never started. Nothing may write into the repo or reach the network.
 - Integration fixtures (`tests/integration/conftest.py`): `auth("pmc")` → bearer headers for a persona in
-  `PERSONAS`; `sent_mail` captures email; `acli` fakes ACLI (`acli.respond = lambda argv: (rc, out, err)`);
-  `http` fakes aiohttp GETs; `post_form` sends browser-style forms (Quart's `form=` omits Content-Length,
-  which asfquart's `formdata()` needs — don't use `client.post(form=...)`).
+  `PERSONAS`; `acli` fakes ACLI (`acli.respond = lambda argv: (rc, out, err)`); `post_form` sends
+  browser-style forms (Quart's `form=` omits Content-Length, which asfquart's `formdata()` needs — don't use
+  `client.post(form=...)`).
+- Shared fixtures (`tests/conftest.py`, usable from unit tests too): `sent_mail` captures email; `http` fakes
+  aiohttp (`http.routes[url] = (status, json)` for GETs, POSTs recorded in `http.posts`); `one_pass` runs one
+  iteration of a `while True` background loop (`with pytest.raises(one_pass): await loop()`).
+- `tests/integration/test_api_access.py` lists every `/api` route as public or protected; a new endpoint must be
+  added there.
 - Unhandled errors come back as HTTP 500, as in production (`PROPAGATE_EXCEPTIONS = False`).
 - Coverage gate: `fail_under` in `pyproject.toml` is the measured branch coverage. When tests raise coverage,
   raise the gate to the new measured value (rounded down); never lower it to pass CI. Test behaviour, not lines.

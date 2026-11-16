@@ -406,5 +406,7 @@ async def process_review():
 
             return {"success": True, "message": "Account denied, notification dispatched."}
 
+    return {"success": False, "message": "Invalid action specified. Please approve or deny the request."}
+
 # Add background loop for pruning pending requests db
 asfquart.APP.add_background_task(prune_stale_requests)

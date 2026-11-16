@@ -1,8 +1,12 @@
 """Small pieces of request plumbing: the filename URL converter and role-account tokens."""
 
+import pathlib
+
 import pytest
 
 from app.lib import middleware, tokens
+
+REPO = pathlib.Path(__file__).resolve().parents[2]
 
 
 @pytest.mark.parametrize(
@@ -27,3 +31,18 @@ async def test_role_account_token_maps_to_role_session(monkeypatch):
 async def test_unknown_token_gives_no_session(monkeypatch):
     monkeypatch.setattr(tokens, "roleaccounts", {"tok-123": "svc-mailreq"})
     assert await tokens.token_handler("guess") is None
+
+
+def test_role_account_file_is_parsed_leniently(tmp_path):
+    """Regression: a blank line (or any line without a colon) used to stop the app from starting."""
+    accounts = tmp_path / "roleaccounts.txt"
+    accounts.write_text("# API role accounts\nMail-Role: tok-1 \n\nsvc-two:tok:with:colons\nnot an account\n\n")
+    assert tokens.load_roleaccounts(str(accounts)) == {"tok-1": "mail-role", "tok:with:colons": "svc-two"}
+
+
+def test_missing_role_account_file_means_no_role_accounts(tmp_path):
+    assert tokens.load_roleaccounts(str(tmp_path / "absent.txt")) == {}
+
+
+def test_example_role_account_file_parses():
+    assert tokens.load_roleaccounts(str(REPO / "roleaccounts.example.txt")) == {"thisisapassword": "mail-role"}

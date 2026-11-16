@@ -1,18 +1,11 @@
-"""Configuration parsing and the LDAP project-list refresh loop."""
+"""Configuration parsing and the refresh loops for projects, mail domains and mailing lists."""
 
 import asyncio
+import json
 
 import pytest
 
 from app.lib import config
-
-
-class StopLoop(Exception):
-    """Raised from a patched asyncio.sleep to end an infinite background loop after one pass."""
-
-
-async def _stop(_seconds):
-    raise StopLoop
 
 
 @pytest.mark.parametrize(
@@ -63,11 +56,10 @@ def test_database_configurations():
 
 
 @pytest.fixture
-def ldap_projects(monkeypatch):
+def ldap_projects(monkeypatch, one_pass):  # pylint: disable=unused-argument
     """Run get_projects_from_ldap once against a fake LDAP answer; returns (setter, project list)."""
     projects = ["old-project"]
     monkeypatch.setattr(config, "projects", projects)
-    monkeypatch.setattr(config.asyncio, "sleep", _stop)
 
     async def no_mappings():
         return None
@@ -83,10 +75,10 @@ def ldap_projects(monkeypatch):
     return answer_with, projects
 
 
-async def test_ldap_refresh_replaces_project_list(ldap_projects):
+async def test_ldap_refresh_replaces_project_list(ldap_projects, one_pass):
     answer_with, projects = ldap_projects
     answer_with([{"cn": [f"project{i:03}"]} for i in range(150)])
-    with pytest.raises(StopLoop):
+    with pytest.raises(one_pass):
         await config.get_projects_from_ldap()
     assert len(projects) == 152
     assert "old-project" not in projects
@@ -94,16 +86,16 @@ async def test_ldap_refresh_replaces_project_list(ldap_projects):
     assert projects == sorted(projects)
 
 
-async def test_ldap_refresh_keeps_list_when_answer_is_too_small(ldap_projects):
+async def test_ldap_refresh_keeps_list_when_answer_is_too_small(ldap_projects, one_pass):
     """Regression: a short LDAP answer used to raise UnboundLocalError and kill the loop."""
     answer_with, projects = ldap_projects
     answer_with([{"cn": ["only-one"]}])
-    with pytest.raises(StopLoop):  # i.e. the loop survived to its sleep
+    with pytest.raises(one_pass):  # i.e. the loop survived to its sleep
         await config.get_projects_from_ldap()
     assert projects == ["old-project"]
 
 
-async def test_ldap_refresh_survives_timeouts(ldap_projects, monkeypatch):
+async def test_ldap_refresh_survives_timeouts(ldap_projects, monkeypatch, one_pass):
     _answer_with, projects = ldap_projects
 
     async def timeout(awaitable, *_args, **_kwargs):
@@ -111,6 +103,67 @@ async def test_ldap_refresh_survives_timeouts(ldap_projects, monkeypatch):
         raise asyncio.exceptions.TimeoutError
 
     monkeypatch.setattr(config.asyncio, "wait_for", timeout)
-    with pytest.raises(StopLoop):
+    with pytest.raises(one_pass):
         await config.get_projects_from_ldap()
     assert projects == ["old-project"]
+
+
+# --- mailing lists (webmod) and project mail domains (whimsy) -----------------------
+
+WEBMOD = config.cfg_yaml["webmod_list_url"]
+
+
+@pytest.fixture
+def mailing_lists(monkeypatch):
+    monkeypatch.setattr(config.messaging, "mailing_lists", ["dev@old.apache.org"])
+
+
+async def test_mailing_list_refresh_replaces_known_lists(http, one_pass, mailing_lists):
+    http.routes[WEBMOD] = (200, ["dev@httpd.apache.org", "users@httpd.apache.org"])
+    with pytest.raises(one_pass):
+        await config.fetch_valid_lists()
+    assert config.messaging.mailing_lists == ["dev@httpd.apache.org", "users@httpd.apache.org"]
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [(503, "Service Unavailable"), (200, json.JSONDecodeError("garbled", "<html>", 0))],
+    ids=["http-error", "invalid-json"],
+)
+async def test_mailing_list_refresh_keeps_known_lists_on_failure(http, one_pass, mailing_lists, answer):
+    """The list guards against creating duplicates, so a webmod outage must not empty it."""
+    http.routes[WEBMOD] = answer
+    with pytest.raises(one_pass):  # i.e. the loop survived to its sleep
+        await config.fetch_valid_lists()
+    assert config.messaging.mailing_lists == ["dev@old.apache.org"]
+
+
+@pytest.fixture
+def mail_mappings(monkeypatch):
+    monkeypatch.setattr(config, "projects", ["httpd", "infra", "newpodling"])
+    monkeypatch.setattr(config.messaging, "mail_mappings", {"stale": "stale.apache.org"})
+
+
+async def test_committee_mappings_use_whimsy_mail_list_names(http, mail_mappings):
+    """These mappings decide which domains a PMC member may create mailing lists on."""
+    committees = {"httpd": {"mail_list": "httpd"}, "infra": {"mail_list": "infrastructure"}}
+    http.routes[config.WHIMSY_COMMITTEE_URL] = (200, {"committees": committees})
+    await config.fetch_committee_mappings()
+    assert config.messaging.mail_mappings == {
+        "foundation": "apache.org",
+        "apachecon": "apachecon.com",
+        "httpd": "httpd.apache.org",
+        "infra": "infrastructure.apache.org",  # whimsy's mail_list wins over the LDAP name
+        "newpodling": "newpodling.apache.org",  # unknown to whimsy: falls back to the LDAP name
+    }
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [(500, "oops"), (200, json.JSONDecodeError("garbled", "<html>", 0)), (200, {"unexpected": "shape"})],
+    ids=["http-error", "invalid-json", "no-committees-key"],
+)
+async def test_committee_mappings_are_kept_when_whimsy_fails(http, mail_mappings, answer):
+    http.routes[config.WHIMSY_COMMITTEE_URL] = answer
+    await config.fetch_committee_mappings()
+    assert config.messaging.mail_mappings == {"stale": "stale.apache.org"}

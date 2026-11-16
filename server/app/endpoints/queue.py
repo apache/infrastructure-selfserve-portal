@@ -46,7 +46,8 @@ async def list_queue():
     # Externals can remove an item (mark it as processed) by using the `rm` key.
     to_remove = form_data.get("rm")
     if to_remove:
-        assert VALID_QUEUE_FILENAME.match(to_remove)
+        if not isinstance(to_remove, str) or not VALID_QUEUE_FILENAME.match(to_remove):
+            return {"success": False, "message": "Invalid queue item name"}, 400
         filepath = os.path.join(config.storage.queue_dir, to_remove)
         if os.path.isfile(filepath):
             os.unlink(filepath)

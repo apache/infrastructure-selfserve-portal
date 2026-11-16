@@ -52,8 +52,8 @@ branch = true
 [tool.coverage.report]
 show_missing = true
 precision = 2
-# Gate = measured branch coverage when the suite was written (62.52% on 3.10/3.12,
-# 62.58% on 3.14), rounded down. Raise it when you add tests; never lower it to get
-# a PR through. Includes code no test can reach yet (oauth.py and lib/asfuid.py are
-# never imported; Confluence archive/create and the DB-backed email-map loaders).
-fail_under = 62.5
+# Gate = measured branch coverage when the suite was last extended (82.27% on 3.10/3.12,
+# 82.33% on 3.14), rounded down. Raise it when you add tests; never lower it to get
+# a PR through. Nearly all of the remainder is code nothing imports or calls (oauth.py,
+# lib/asfuid.py, and glued/rate_limited/auth_failed in lib/middleware.py).
+fail_under = 82.2

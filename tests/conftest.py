@@ -16,6 +16,7 @@ import pathlib
 import sys
 import tempfile
 
+import aiohttp
 import pytest
 import yaml
 
@@ -78,6 +79,86 @@ def sent_mail(monkeypatch):
     sent: list[dict] = []
     monkeypatch.setattr(asfpy.messaging, "mail", lambda **kwargs: sent.append(kwargs))
     return sent
+
+
+class FakeResponse:
+    def __init__(self, status: int, payload):
+        self.status = status
+        self._payload = payload
+
+    async def json(self):
+        if isinstance(self._payload, Exception):  # e.g. a JSONDecodeError for a garbled body
+            raise self._payload
+        return self._payload
+
+    async def text(self):
+        return str(self._payload)
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *_exc):
+        return False
+
+
+class FakeHTTP:
+    """Replacement for aiohttp.ClientSession.
+
+    GETs are routed by URL to (status, json payload) and recorded in `requests`.
+    POSTs always succeed and are recorded in `posts` as (url, kwargs).
+    """
+
+    routes: dict = {}
+    requests: list = []
+    posts: list = []
+
+    def __init__(self, *_args, **_kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *_exc):
+        return False
+
+    def get(self, url, params=None, **_kwargs):
+        FakeHTTP.requests.append((url, params))
+        status, payload = FakeHTTP.routes[url]
+        return FakeResponse(status, payload)
+
+    async def post(self, url, **kwargs):
+        FakeHTTP.posts.append((url, kwargs))
+        return FakeResponse(200, {"ok": True})
+
+
+@pytest.fixture
+def http(monkeypatch):
+    """Replace aiohttp.ClientSession with FakeHTTP; nothing reaches the network."""
+    FakeHTTP.routes = {}
+    FakeHTTP.requests = []
+    FakeHTTP.posts = []
+    monkeypatch.setattr(aiohttp, "ClientSession", FakeHTTP)
+    return FakeHTTP
+
+
+class StopLoop(Exception):
+    """Raised from a patched asyncio.sleep to end an infinite background loop after one pass."""
+
+
+@pytest.fixture
+def one_pass(monkeypatch):
+    """Make `while True: ...; await asyncio.sleep(n)` loops stop at their first sleep.
+
+    Usage: `with pytest.raises(one_pass): await some_loop()`; reaching the sleep means
+    the loop body completed without dying.
+    """
+    import asyncio  # pylint: disable=import-outside-toplevel
+
+    async def stop(_seconds):
+        raise StopLoop
+
+    monkeypatch.setattr(asyncio, "sleep", stop)
+    return StopLoop
 
 
 def _build_app():

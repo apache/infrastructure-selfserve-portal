@@ -2,7 +2,8 @@
 
 Authentication: requests carry `Authorization: Bearer <persona>`; the app's token
 handler is swapped for one that maps persona names to sessions (see PERSONAS).
-External services (mail, ACLI, infra-reports HTTP) are replaced with recorders.
+External services (mail, ACLI, infra-reports HTTP) are replaced with recorders;
+the `sent_mail` and `http` fixtures live in tests/conftest.py so unit tests can use them too.
 """
 
 import asyncio
@@ -10,7 +11,6 @@ import os
 import shutil
 import urllib.parse
 
-import aiohttp
 import pytest
 
 from app.lib import config
@@ -23,6 +23,7 @@ PERSONAS = {
     # PMC member of another project
     "other-pmc": {"uid": "carol", "fullname": "Carol", "projects": ["tomcat"], "pmcs": ["tomcat"]},
     "member": {"uid": "dave", "fullname": "Dave", "isMember": True, "projects": [], "pmcs": []},
+    "chair": {"uid": "frank", "fullname": "Frank", "isChair": True, "projects": ["tomcat"], "pmcs": ["tomcat"]},
     "root": {"uid": "root-erin", "fullname": "Erin", "isRoot": True, "projects": [], "pmcs": []},
     "role": {"uid": "svc-mailreq", "fullname": "svc-mailreq role Account", "roleaccount": True},
 }
@@ -124,50 +125,3 @@ def acli(monkeypatch):
     fake = FakeACLI()
     monkeypatch.setattr(asyncio, "create_subprocess_exec", fake)
     return fake
-
-
-class FakeResponse:
-    def __init__(self, status: int, payload):
-        self.status = status
-        self._payload = payload
-
-    async def json(self):
-        return self._payload
-
-    async def text(self):
-        return str(self._payload)
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *_exc):
-        return False
-
-
-class FakeHTTP:
-    """Replacement for aiohttp.ClientSession. Routes GET by URL to (status, json payload)."""
-
-    routes: dict = {}
-    requests: list = []
-
-    def __init__(self, *_args, **_kwargs):
-        pass
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *_exc):
-        return False
-
-    def get(self, url, params=None, **_kwargs):
-        FakeHTTP.requests.append((url, params))
-        status, payload = FakeHTTP.routes[url]
-        return FakeResponse(status, payload)
-
-
-@pytest.fixture
-def http(monkeypatch):
-    FakeHTTP.routes = {}
-    FakeHTTP.requests = []
-    monkeypatch.setattr(aiohttp, "ClientSession", FakeHTTP)
-    return FakeHTTP

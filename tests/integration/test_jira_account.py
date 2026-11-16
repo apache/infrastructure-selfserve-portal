@@ -223,3 +223,16 @@ async def test_deny_notifies_once(client, username_free, auth, sent_mail, submit
 
     again = await post_form("/api/jira-account-review", form, auth("committer"))
     assert "already been denied" in (await again.get_json())["message"]
+
+
+async def test_review_rejects_unknown_action(client, username_free, auth, acli, sent_mail, submit_and_verify, post_form):
+    """Regression: anything but approve/deny used to be a 500."""
+    token = await submit_and_verify()
+    sent_mail.clear()
+    resp = await post_form("/api/jira-account-review", {"token": token, "action": "delete"}, auth("committer"))
+    assert resp.status_code == 200
+    data = await resp.get_json()
+    assert data["success"] is False and "Invalid action" in data["message"]
+    assert DB.fetchone("pending", token=token)["denied_ts"] == 0  # request untouched
+    assert not acli.calls
+    assert not sent_mail

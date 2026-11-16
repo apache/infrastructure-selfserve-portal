@@ -140,3 +140,16 @@ async def test_deny_marks_request_and_notifies(auth, sent_mail, submit_and_verif
         [confluenceaccount.NOTIFICATION_TARGET, "private@httpd.apache.org"],
     ]
     assert "Wiki is read-only." in sent_mail[0]["message"]
+
+
+async def test_review_rejects_unknown_action(auth, acli, sent_mail, submit_and_verify, post_form):
+    """Regression: anything but approve/deny used to be a 500."""
+    token = await submit_and_verify()
+    sent_mail.clear()
+    resp = await post_form("/api/confluence-account-review", {"token": token, "action": "delete"}, auth("committer"))
+    assert resp.status_code == 200
+    data = await resp.get_json()
+    assert data["success"] is False and "Invalid action" in data["message"]
+    assert DB.fetchone("cwiki_pending", token=token)["denied_ts"] == 0  # request untouched
+    assert not acli.calls
+    assert not sent_mail
