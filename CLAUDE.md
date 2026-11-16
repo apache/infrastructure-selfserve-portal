@@ -13,14 +13,16 @@ docker compose build                                   # image with MySQL, Postg
 docker compose up                                      # app on http://localhost:8000
 docker compose exec selfserve docker-config/smtpd.sh   # capture outgoing email (separate terminal)
 docker compose run --rm -p8000:8000 --entrypoint /bin/bash selfserve   # then docker-config/start.sh to restart app only
+pip install -r requirements-dev.txt                    # pinned pylint/mypy, same as CI
 pylint --recursive y server                            # lint (config: pylintrc)
 mypy --ignore-missing-imports server                   # types
 python -m pytest tests                                 # run from repo root
 ```
 
 Host machines usually lack the deps (`bonsai` needs libsasl2/libldap) — run lint/tests inside the container.
-CI (`.github/workflows/linting.yml`) runs mypy and pylint on Python 3.10 on every push. `pylintrc` has
-`fail-under=10.0`, so **any** pylint message fails the build. Run both before pushing.
+CI runs on every push, Python 3.10: `.github/workflows/lint.yml` (pylint) and `typecheck.yml` (mypy) —
+kept separate so each has its own README badge. `pylintrc` has `fail-under=10.0`, so **any** pylint
+message fails the build. Run both before pushing. Bump tool versions only in `requirements-dev.txt`.
 
 ## Layout
 

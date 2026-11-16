@@ -1,0 +1,5 @@
+# Lint and type-check tools used by CI (.github/workflows/lint.yml, typecheck.yml).
+# Pinned so a new pylint/mypy release can't break CI on its own; bump deliberately.
+pylint==4.1.4
+mypy==2.4.1
+types-PyYAML==6.0.12.20261113
