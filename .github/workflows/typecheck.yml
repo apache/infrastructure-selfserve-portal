@@ -1,0 +1,37 @@
+name: Type check
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mypy:
+    name: mypy (Python ${{ matrix.python-version }})
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64/tag=infra
+    strategy:
+      fail-fast: false  # report every Python version, not just the first failure
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/setup-python-uv
+      with:
+        python-version: ${{ matrix.python-version }}
+    # mypy's incremental cache: exact hit when nothing changed, otherwise reuse the
+    # newest cache for the same Python + lockfile and let mypy refresh it.
+    - name: Cache mypy
+      uses: actions/cache@v4
+      with:
+        path: .mypy_cache
+        key: mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}-${{ hashFiles('server/**/*.py') }}
+        restore-keys: |
+          mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}-
+    - name: Type check with mypy
+      run: uv run --no-sync mypy --ignore-missing-imports server
+    - name: Minimize uv cache
+      if: always()
+      run: uv cache prune --ci

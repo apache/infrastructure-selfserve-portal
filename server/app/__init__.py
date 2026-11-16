@@ -97,8 +97,8 @@ def main():
     async def load_endpoints():
         """Load all API end points. This is run before Quart starts serving requests"""
         async with asfquart.APP.app_context():
-            from . import endpoints
-            from .lib import tokens
+            from . import endpoints  # pylint: disable=unused-import  # registers routes
+            from .lib import tokens  # pylint: disable=unused-import  # registers token handler
 
             # Regularly update the list of projects from LDAP
             asfquart.APP.add_background_task(config.get_projects_from_ldap)

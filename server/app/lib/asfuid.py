@@ -76,6 +76,8 @@ async def membership(project: str):
         if config.server.debug_mode is True and quart.request.authorization.username == config.server.debug_user:
             return True, True
         try:
+            # Never attempt an LDAP bind with an empty password (that would be an anonymous bind)
+            assert quart.request.authorization.password, "No password supplied"
             lc = LDAPClient(
                 username=quart.request.authorization.username, password=quart.request.authorization.password
             )

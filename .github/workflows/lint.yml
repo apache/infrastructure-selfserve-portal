@@ -1,0 +1,28 @@
+name: Lint
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pylint:
+    name: pylint (Python ${{ matrix.python-version }})
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64/tag=infra
+    strategy:
+      fail-fast: false  # report every Python version, not just the first failure
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/setup-python-uv
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Lint with pylint
+      run: uv run --no-sync pylint --recursive y server
+    - name: Minimize uv cache
+      if: always()
+      run: uv cache prune --ci

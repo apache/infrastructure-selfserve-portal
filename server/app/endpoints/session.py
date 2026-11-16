@@ -36,6 +36,8 @@ async def process():
     if action == "logout":  # Clear the session
         asfquart.session.clear()
         return "Logged out!"
+    if not session:  # Not logged in. Same answer as asfquart's own /api/auth gives.
+        return {"success": False, "message": "No active session found."}, 404
     return {
         "uid": session.uid,
         "name": session.fullname,

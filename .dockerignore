@@ -3,4 +3,5 @@
 
 # Allow what we want
 !docker-config/**
-!requirements.txt
+!pyproject.toml
+!uv.lock
