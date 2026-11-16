@@ -35,6 +35,15 @@ An additional terminal may be used to connect to the running container.
 
     ```$ docker compose up```
 
+# Configuration
+
+The app uses `docker-config/config.yaml` directly, so changes to it take effect on the next start.
+
+To customise the configuration locally, copy it to `selfserve-portal.yaml` at the top of the
+source tree (this file is ignored by git) and edit the copy; it is then used instead.
+If `docker-config/config.yaml` changes later, the start script prints a warning so you can
+bring your copy up to date (or delete it to go back to the default).
+
 # Start the mail server in the container
 
 The container must be running.
