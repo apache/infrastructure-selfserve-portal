@@ -1,0 +1,44 @@
+name: Type check
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mypy:
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64/tag=infra
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+        cache-dependency-path: |
+          requirements.txt
+          requirements-dev.txt
+    - name: Install dependencies
+      run: |
+        # Runner images ship without apt package lists, so refresh them first.
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends python3-dev libldap2-dev libsasl2-dev # for bonsai
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -r requirements-dev.txt
+    # mypy's incremental cache: exact hit when nothing changed, otherwise reuse the
+    # newest cache for the same Python + dependency set and let mypy refresh it.
+    - name: Cache mypy
+      uses: actions/cache@v4
+      with:
+        path: .mypy_cache
+        key: mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements*.txt') }}-${{ hashFiles('server/**/*.py') }}
+        restore-keys: |
+          mypy-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements*.txt') }}-
+    - name: Type check with mypy
+      run: mypy --ignore-missing-imports server

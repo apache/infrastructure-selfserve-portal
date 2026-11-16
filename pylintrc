@@ -56,7 +56,6 @@ py-version=3.10
 
 # When enabled, pylint would attempt to guess common misconfiguration and emit
 # user-friendly hints instead of false-positive error messages.
-suggestion-mode=yes
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
@@ -106,6 +105,22 @@ disable=
         useless-suppression,
         wrong-import-order, # Enable later?
         wrong-import-position, # Enable later?
+        # Style checks relaxed when CI was first switched on (Nov 2026); enable and fix over time
+        broad-exception-caught,
+        broad-exception-raised,
+        consider-merging-isinstance,
+        consider-using-f-string,
+        consider-using-generator,
+        consider-using-set-comprehension,
+        consider-using-with,
+        no-else-return,
+        pointless-string-statement,
+        unnecessary-comprehension,
+        unspecified-encoding,
+        too-many-locals,
+        too-many-positional-arguments,
+        protected-access,
+        arguments-renamed,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

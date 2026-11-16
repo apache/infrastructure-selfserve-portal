@@ -30,10 +30,10 @@ import quart
 ONE_DAY = 86400  # A day in seconds
 
 # Mappings dict for userid<->email
-CONFLUENCE_EMAIL_MAPPINGS = {}
+CONFLUENCE_EMAIL_MAPPINGS: dict[str, str] = {}
 
 # Reactivation queue. No real need for permanent storage here, all requests can be ephemeral.
-CONFLUENCE_REACTIVATION_QUEUE = {}
+CONFLUENCE_REACTIVATION_QUEUE: dict[str, str] = {}
 
 # ACLI command - TODO: Add to yaml??
 ACLI_CMD = "/opt/confluence-cli/acli.sh"
@@ -83,7 +83,9 @@ async def activate_account(username: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    stdout_b, stderr_b = await proc.communicate()
+    stdout = stdout_b.decode("utf-8", errors="replace")
+    stderr = stderr_b.decode("utf-8", errors="replace")
     if proc.returncode != 0:  # If any errors show up in acli, bork
         # Test for ACLI whining but having done the job due to privacy redactions in Jira (email addresses being blank)
         good_bit = '"active":true'  # If the ACLI JSON output has this, it means the update worked, despite ACLI complaining.

@@ -21,14 +21,12 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware
 import asfquart
 import asfquart.session
 import quart
 import aiohttp
 import uuid
 import urllib.parse
-import time
 
 OAUTH_URL_INIT = "https://oauth.apache.org/auth?state=%s&redirect_uri=%s"
 OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
