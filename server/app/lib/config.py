@@ -77,7 +77,8 @@ class ServerConfiguration:
         if not self.debug_password:
             self.debug_password = str(uuid.uuid4())[:8]
         if self.debug_mode is True:
-            log.log("Debug mode enabled:")
+            log.log("WARNING: Debug mode enabled. Anyone with the debug password can log in as anyone")
+            log.log("WARNING: via http://localhost.../api/debug-login. Never enable this in production.")
             log.log(f"Debug username: {self.debug_user}")
             log.log(f"Debug password: {self.debug_password}")
         self.max_form_size = text_to_int(yml.get("max_form_size", "100mb"))

@@ -22,6 +22,7 @@ PUBLIC = {
     "/api/confluence-account",
     "/api/confluence-account-activate",
     "/api/confluence-account-activate-confirm",
+    "/api/debug-login",  # 404 unless server.debug_mode is on (local testing only)
 }
 
 # Need a session; maps each route to a method it accepts.
