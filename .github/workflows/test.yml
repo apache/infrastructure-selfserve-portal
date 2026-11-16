@@ -1,0 +1,35 @@
+name: Test
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest (Python ${{ matrix.python-version }})
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64/tag=infra
+    strategy:
+      fail-fast: false  # report every Python version, not just the first failure
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: ./.github/actions/setup-python-uv
+      with:
+        python-version: ${{ matrix.python-version }}
+    # Unit + integration tests with branch coverage; fails below
+    # [tool.coverage.report] fail_under in pyproject.toml.
+    - name: Run tests with coverage gate
+      run: uv run --no-sync pytest --cov --cov-report=term-missing
+    - name: Coverage summary
+      if: always()
+      run: |
+        echo "### Coverage (Python ${{ matrix.python-version }})" >> "$GITHUB_STEP_SUMMARY"
+        uv run --no-sync coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY" || true
+    - name: Minimize uv cache
+      if: always()
+      run: uv cache prune --ci

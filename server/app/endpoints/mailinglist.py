@@ -21,7 +21,7 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, config, asfuid, email, log, utils
+from ..lib import config, email, log, utils
 import asfquart
 import asfquart.auth
 import asfquart.session

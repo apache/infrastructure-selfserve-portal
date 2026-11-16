@@ -20,9 +20,10 @@ import uuid
 
 """Handler for jira account creation"""
 
-from ..lib import middleware, config, email
+from ..lib import config, email
 import asfquart
 import asyncio
+import quart
 import psycopg
 
 ONE_DAY = 86400  # A day in seconds
@@ -31,10 +32,10 @@ ONE_DAY = 86400  # A day in seconds
 JIRA_PGSQL_DSN = psycopg.conninfo.make_conninfo(**config.jirapsql.yaml)
 
 # Mappings dict for userid<->email
-JIRA_EMAIL_MAPPINGS = {}
+JIRA_EMAIL_MAPPINGS: dict[str, str] = {}
 
 # Reactivation queue. No real need for permanent storage here, all requests can be ephemeral.
-JIRA_REACTIVATION_QUEUE = {}
+JIRA_REACTIVATION_QUEUE: dict[str, str] = {}
 
 # ACLI command - TODO: Add to yaml??
 ACLI_CMD = "/opt/jira-cli/acli.sh"
@@ -81,7 +82,9 @@ async def activate_account(username: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    stdout_b, stderr_b = await proc.communicate()
+    stdout = stdout_b.decode("utf-8", errors="replace")
+    stderr = stderr_b.decode("utf-8", errors="replace")
     if proc.returncode != 0:  # If any errors show up in acli, bork
         # Test for ACLI whining but having done the job due to privacy redactions in Jira (email addresses being blank)
         good_bit = '"active":true'  # If the ACLI JSON output has this, it means the update worked, despite ACLI complaining.
@@ -105,7 +108,6 @@ async def process_reactivation_request():
     - Wait for confirmation...
     """
     formdata = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     jira_username = formdata.get("username")
     jira_email = formdata.get("email")
     if jira_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
@@ -114,7 +116,7 @@ async def process_reactivation_request():
         if JIRA_EMAIL_MAPPINGS[jira_username].lower() == jira_email.lower():  # We have a match!
             # Generate and send confirmation link
             token = str(uuid.uuid4())
-            verify_url = f"https://{asfquart.app.request.host}/jira-account-reactivate.html?{token}"
+            verify_url = f"https://{quart.request.host}/jira-account-reactivate.html?{token}"
             email.from_template(
                 "jira_account_reactivate.txt",
                 recipient=jira_email,
@@ -140,7 +142,6 @@ async def process_reactivation_request():
 async def process_confirm_reactivation():
     """Processes confirmation link handling (and actual reactivation of an account)"""
     formdata = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     token = formdata.get("token")
     if token and token in JIRA_REACTIVATION_QUEUE:  # Verify token
         username = JIRA_REACTIVATION_QUEUE[token]

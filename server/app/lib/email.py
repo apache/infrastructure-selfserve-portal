@@ -23,6 +23,7 @@ if not __debug__:
 from . import config
 import asfpy.messaging
 import os
+import typing
 
 """Simple lib for sending emails based on templates"""
 
@@ -30,7 +31,7 @@ import os
 DEFAULT_MAIL_HOST = "infra.apache.org"
 
 
-def from_template(template_filename: str, recipient: str, variables: dict, thread_start: bool=False, thread_key: str=None):
+def from_template(template_filename: str, recipient: str, variables: dict, thread_start: bool=False, thread_key: typing.Optional[str] = None):
     """generate and send email from template"""
     template_path = os.path.join(config.messaging.template_dir, template_filename)
     assert os.path.isfile(template_path), f"Could not find template {template_path}"
