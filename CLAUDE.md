@@ -23,7 +23,8 @@ uv run pytest --cov                                    # + branch-coverage gate,
 Inside the docker container the same tools are installed into the system Python, so drop the `uv run`.
 `bonsai` needs libsasl2/libldap headers to build on the host; if `uv sync` fails there, use the container.
 CI runs on every push against Python 3.10, 3.12 and 3.14: `.github/workflows/lint.yml` (pylint),
-`typecheck.yml` (mypy) and `test.yml` (pytest + coverage gate), kept separate so each has its own README badge. Both get their environment from
+`typecheck.yml` (mypy) and `test.yml` (pytest + coverage gate), kept separate so each has its own README badge.
+`requirements.yml` runs once (no matrix) to check pyproject.toml → uv.lock → requirements.txt are in sync. Both get their environment from
 the composite action `.github/actions/setup-python-uv` (Python, uv, apt libs, `uv sync`, shared uv cache);
 new CI workflows should use it too, and Python versions are listed in each workflow's matrix.
 Code must stay 3.10-compatible (`requires-python`, pylint `py-version`). `pylintrc` has `fail-under=10.0`, so **any** pylint
@@ -32,7 +33,7 @@ message fails the build. Run both before pushing.
 ## Dependencies (uv)
 
 - `pyproject.toml` + `uv.lock` are the source of truth. Add/remove with `uv add <pkg>` / `uv add --dev <pkg>`; never hand-edit `uv.lock`.
-- `requirements.txt` is **generated** for production (the PipService host still installs it with pipenv). After any dependency change, regenerate it — CI fails if it drifts:
+- `requirements.txt` is **generated** for production (the PipService host still installs it with pipenv). After any dependency change, regenerate it — the `requirements.yml` workflow fails if `uv.lock` or `requirements.txt` drifts:
   `uv export --no-dev --no-hashes --no-emit-project --frozen -q -o requirements.txt`
 - Dev tools (pylint, mypy, pytest) live in the `dev` group and are pinned; bump them deliberately.
 - Don't change `pipservice-selfserve-portal.service` or remove `requirements.txt` without coordinating with the production deployment.

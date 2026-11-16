@@ -27,7 +27,7 @@ Dependencies are managed with [uv](https://docs.astral.sh/uv/): `pyproject.toml`
     uv run pytest --cov                        # with the coverage gate CI enforces
 
 `requirements.txt` is generated from `uv.lock` for the production PipService deployment.
-After changing dependencies (`uv add ...`), regenerate it:
+After changing dependencies (`uv add ...`), regenerate it (CI's *Requirements sync* workflow checks this):
 
     uv export --no-dev --no-hashes --no-emit-project --frozen -q -o requirements.txt
 
