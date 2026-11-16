@@ -30,5 +30,6 @@ from ..lib import config
 async def process_public():
     return {
         "projects": config.projects,
-        "mail_domains": config.messaging.mail_mappings
+        "mail_domains": config.messaging.mail_mappings,
+        "project_names": config.committee_names,
     }

@@ -11,4 +11,5 @@ from . import (
     jira_create,
     jira_activate_account,
     debug_login,
+    matomo,
 )

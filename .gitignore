@@ -202,3 +202,4 @@ server/apptoken.txt
 
 docker-config/cert.pem
 docker-config/key.pem
+matomo.yaml

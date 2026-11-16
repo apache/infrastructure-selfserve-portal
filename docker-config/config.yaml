@@ -29,6 +29,12 @@ messaging:
   template_dir: "/opt/selfserve-portal/server/email_templates"
   mail_relay: localhost
 
+matomo:
+  # Matomo instance URL and superuser API token, kept in a separate file (written by puppet)
+  # so dev and prod nodes can each point at their own instance. See matomo.example.yaml.
+  credentials: /opt/selfserve-portal/matomo.yaml
+  anonymous_view: true  # Give new properties public (anonymous) view access, like all existing ones
+
 webmod_list_url: http://localhost/lists
 
 cwikimysql:

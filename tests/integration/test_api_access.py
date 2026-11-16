@@ -34,6 +34,7 @@ PROTECTED = {
     "/api/confluence-archive": "POST",
     "/api/confluence-create": "POST",
     "/api/mailinglist": "POST",
+    "/api/matomo-site-create": "POST",
     "/api/queue": "GET",
 }
 

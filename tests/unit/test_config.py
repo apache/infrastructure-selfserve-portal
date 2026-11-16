@@ -142,6 +142,7 @@ async def test_mailing_list_refresh_keeps_known_lists_on_failure(http, one_pass,
 def mail_mappings(monkeypatch):
     monkeypatch.setattr(config, "projects", ["httpd", "infra", "newpodling"])
     monkeypatch.setattr(config.messaging, "mail_mappings", {"stale": "stale.apache.org"})
+    monkeypatch.setattr(config, "committee_names", {"stale": "Stale"})
 
 
 async def test_committee_mappings_use_whimsy_mail_list_names(http, mail_mappings):
@@ -167,3 +168,38 @@ async def test_committee_mappings_are_kept_when_whimsy_fails(http, mail_mappings
     http.routes[config.WHIMSY_COMMITTEE_URL] = answer
     await config.fetch_committee_mappings()
     assert config.messaging.mail_mappings == {"stale": "stale.apache.org"}
+
+
+def test_matomo_configuration_reads_credentials_file(tmp_path):
+    credentials = tmp_path / "matomo.yaml"
+    credentials.write_text("url: https://analytics-dev.example.org\ntoken: abc123\n")
+    cfg = config.MatomoConfiguration({"credentials": str(credentials)})
+    assert cfg.url == "https://analytics-dev.example.org/"  # always ends in a slash
+    assert cfg.token == "abc123"
+    assert cfg.enabled and cfg.anonymous_view
+
+
+@pytest.mark.parametrize("contents", [None, "url: https://analytics.example.org/\n", "token: abc\n", ""])
+def test_matomo_configuration_is_disabled_without_complete_credentials(tmp_path, contents):
+    credentials = tmp_path / "matomo.yaml"
+    if contents is not None:
+        credentials.write_text(contents)
+    cfg = config.MatomoConfiguration({"credentials": str(credentials), "anonymous_view": False})
+    assert not cfg.enabled
+    assert cfg.anonymous_view is False
+    assert not config.MatomoConfiguration({}).enabled
+
+
+def test_matomo_configuration_rejects_a_malformed_credentials_file(tmp_path):
+    credentials = tmp_path / "matomo.yaml"
+    credentials.write_text("- just\n- a list\n")
+    with pytest.raises(AssertionError):
+        config.MatomoConfiguration({"credentials": str(credentials)})
+
+
+async def test_committee_mappings_record_display_names(http, mail_mappings):
+    """Display names give Matomo properties their names, e.g. "Apache HTTP Server"."""
+    committees = {"httpd": {"mail_list": "httpd", "display_name": "HTTP Server"}, "infra": {"mail_list": "infrastructure"}}
+    http.routes[config.WHIMSY_COMMITTEE_URL] = (200, {"committees": committees})
+    await config.fetch_committee_mappings()
+    assert config.committee_names == {"httpd": "HTTP Server"}

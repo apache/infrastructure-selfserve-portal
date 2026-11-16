@@ -1,0 +1,22 @@
+Matomo property created: {site_name}
+--
+Hi, there.
+
+As requested by {requester}, a new Matomo web analytics property has been
+created for the {project} project:
+
+  Name:     {site_name}
+  URL:      {site_url}
+  Site ID:  {site_id}
+  Reports:  {dashboard_url}
+
+To start collecting statistics, add the following tracking code to every page
+of the site, just before the closing </head> tag:
+
+{tracking_code}
+
+Please make sure the site links to the ASF privacy policy, which covers Matomo:
+https://privacy.apache.org/policies/privacy-policy-public.html
+
+If you have any questions, please raise an INFRA Jira ticket:
+https://issues.apache.org/jira/projects/INFRA

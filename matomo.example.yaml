@@ -1,0 +1,5 @@
+# Matomo API access for the ASF selfserve portal.
+# Deployed by puppet to the path set in config.yaml (matomo.credentials).
+# Point dev nodes at the dev Matomo instance and prod nodes at the prod one.
+url: https://analytics.apache.org/
+token: 0123456789abcdef0123456789abcdef  # token_auth of a Matomo superuser (POST-only token recommended)
