@@ -82,7 +82,7 @@ def post_form(client):
     Content-Length for form=, which asfquart's formdata() relies on."""
 
     async def post(path: str, form: dict, headers: dict | None = None):
-        body = urllib.parse.urlencode(form).encode()
+        body = urllib.parse.urlencode(form, doseq=True).encode()  # a list value = a repeated field
         all_headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Content-Length": str(len(body)),

@@ -52,8 +52,8 @@ branch = true
 [tool.coverage.report]
 show_missing = true
 precision = 2
-# Gate = measured branch coverage when the suite was last extended (83.26% on 3.12, with
+# Gate = measured branch coverage when the suite was last extended (83.32% on 3.12, with
 # the development login and page caching tests), rounded down. Raise it when you add tests; never lower it to get
 # a PR through. Nearly all of the remainder is code nothing imports or calls (oauth.py,
 # lib/asfuid.py, and glued/rate_limited/auth_failed in lib/middleware.py).
-fail_under = 83.2
+fail_under = 83.3

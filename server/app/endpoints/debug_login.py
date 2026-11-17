@@ -31,20 +31,26 @@ import html
 import quart
 import re
 import secrets
+import string
 import urllib.parse
 
 DEBUG_LOGIN_URI = "/api/debug-login"
 OAUTH_URI = "/api/auth"
 LOCAL_HOSTS = ("localhost", "127.0.0.1", "::1")
 RE_UID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
-RE_PROJECT = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 
-FORM = """<!doctype html>
+# string.Template ($name), not str.format: the page's CSS and script are full of braces
+FORM = string.Template("""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Development login - ASF Self-serve Portal</title>
 <link href="/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .pmc-picker > summary { list-style: none; cursor: pointer; }
+    .pmc-picker > summary::-webkit-details-marker { display: none; }
+    .pmc-options { max-height: 16rem; overflow-y: auto; }
+</style>
 </head>
 <body class="container py-4" style="max-width: 640px;">
 <h1>Development login</h1>
@@ -52,12 +58,12 @@ FORM = """<!doctype html>
     This portal runs in debug mode. This form replaces ASF OAuth and lets you log in as anyone.
     Debug mode must never be enabled in production.
 </div>
-{error}
-<form method="post" action="{action}">
-    <input type="hidden" name="login" value="{login}">
+$error
+<form method="post" action="$action">
+    <input type="hidden" name="login" value="$login">
     <div class="mb-3">
         <label for="uid" class="form-label">User ID</label>
-        <input required class="form-control" id="uid" name="uid" value="{uid}" pattern="[a-z0-9][a-z0-9._\\-]*">
+        <input required class="form-control" id="uid" name="uid" value="$uid" pattern="[a-z0-9][a-z0-9._\\-]*">
     </div>
     <div class="mb-3">
         <label for="password" class="form-label">Debug password</label>
@@ -65,9 +71,8 @@ FORM = """<!doctype html>
         <div class="form-text">server.debug_password in the configuration; the app also prints it at startup.</div>
     </div>
     <div class="mb-3">
-        <label for="pmcs" class="form-label">(P)PMCs this user is on</label>
-        <input class="form-control" id="pmcs" name="pmcs" value="{pmcs}" placeholder="e.g. aall, aamm">
-        <div class="form-text">Comma-separated project names. The user is also a committer on each of them.</div>
+        <label for="pmc-summary" class="form-label">(P)PMCs this user is on</label>
+        $pmc_picker
     </div>
     <div class="mb-3">
         <div class="form-check"><input class="form-check-input" type="checkbox" id="root" name="root" value="1"><label class="form-check-label" for="root">Root (Infrastructure)</label></div>
@@ -76,9 +81,27 @@ FORM = """<!doctype html>
     </div>
     <button type="submit" class="btn btn-primary">Log in</button>
 </form>
+<script>
+    // Show the chosen projects in the closed dropdown, and filter the list as you type
+    const picker = document.querySelector(".pmc-picker");
+    if (picker) {
+        const summary = picker.querySelector("summary");
+        const boxes = Array.from(picker.querySelectorAll("input[name=pmcs]"));
+        const show = () => {
+            const chosen = boxes.filter((b) => b.checked).map((b) => b.value);
+            summary.textContent = chosen.length ? chosen.join(", ") : "None (choose from the list)";
+        };
+        boxes.forEach((b) => b.addEventListener("change", show));
+        picker.querySelector("input[type=search]").addEventListener("input", (ev) => {
+            const text = ev.target.value.trim().toLowerCase();
+            boxes.forEach((b) => { b.closest(".form-check").hidden = !b.value.includes(text); });
+        });
+        show();
+    }
+</script>
 </body>
 </html>
-"""
+""")
 
 
 def debug_login_allowed() -> bool:
@@ -101,12 +124,32 @@ def safe_redirect(target: str) -> str:
     return target
 
 
-def render_form(login: str, uid: str = "", pmcs: str = "", error: str = "", status: int = 200):
-    page = FORM.format(
+def render_pmc_picker(chosen: list[str]) -> str:
+    """A dropdown of every project known from LDAP, with a checkbox each, so testers can see what exists."""
+    if not config.projects:
+        return '<div class="alert alert-secondary mb-0">No projects are known yet (the LDAP lookup has not finished). Reload this page in a moment.</div>'
+    options = "\n".join(
+        f'<div class="form-check"><input class="form-check-input" type="checkbox" name="pmcs" value="{html.escape(name)}" '
+        f'id="pmc-{html.escape(name)}"{" checked" if name in chosen else ""}>'
+        f'<label class="form-check-label" for="pmc-{html.escape(name)}">{html.escape(name)}</label></div>'
+        for name in config.projects
+    )
+    return f"""<details class="pmc-picker">
+            <summary class="form-select" id="pmc-summary">{html.escape(", ".join(chosen)) or "None (choose from the list)"}</summary>
+            <div class="border rounded mt-1 p-2">
+                <input type="search" class="form-control form-control-sm mb-2" placeholder="Filter projects" aria-label="Filter projects">
+                <div class="pmc-options">{options}</div>
+            </div>
+        </details>
+        <div class="form-text">{len(config.projects)} projects known from LDAP. The user is also a committer on each one chosen.</div>"""
+
+
+def render_form(login: str, uid: str = "", pmcs: list[str] | None = None, error: str = "", status: int = 200):
+    page = FORM.substitute(
         action=DEBUG_LOGIN_URI,
         login=html.escape(login),
         uid=html.escape(uid or config.server.debug_user),
-        pmcs=html.escape(pmcs),
+        pmc_picker=render_pmc_picker(pmcs or []),
         error=f'<div class="alert alert-danger">{html.escape(error)}</div>' if error else "",
     )
     return quart.Response(page, status=status, content_type="text/html; charset=utf-8")
@@ -140,16 +183,15 @@ async def process_debug_login():
     form = await quart.request.form
     login = form.get("login", "/")
     uid = form.get("uid", "").strip().lower()
-    pmc_text = form.get("pmcs", "")
-    pmcs = sorted({name.strip().lower() for name in pmc_text.split(",") if name.strip()})
+    pmcs = sorted(set(form.getlist("pmcs")))
 
     if not secrets.compare_digest(form.get("password", "").encode(), str(config.server.debug_password).encode()):
-        return render_form(login, uid, pmc_text, "Wrong debug password.", status=403)
+        return render_form(login, uid, pmcs, "Wrong debug password.", status=403)
     if not RE_UID.match(uid):
-        return render_form(login, uid, pmc_text, "Please enter a valid user ID (lowercase letters, digits, '.', '_' or '-').", status=400)
-    bad = [name for name in pmcs if not RE_PROJECT.match(name)]
-    if bad:
-        return render_form(login, uid, pmc_text, f"Invalid project name(s): {', '.join(bad)}", status=400)
+        return render_form(login, uid, pmcs, "Please enter a valid user ID (lowercase letters, digits, '.', '_' or '-').", status=400)
+    unknown = [name for name in pmcs if name not in config.projects]
+    if unknown:
+        return render_form(login, uid, pmcs, f"Unknown project(s): {', '.join(unknown)}", status=400)
 
     asfquart.session.write(
         {

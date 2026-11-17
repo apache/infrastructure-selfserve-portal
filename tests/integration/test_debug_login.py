@@ -17,7 +17,7 @@ def debug_mode(monkeypatch):
 
 
 async def log_in(post_form, **form):
-    body = {"login": "/mailinglist-new.html", "uid": "testuser", "password": PASSWORD, "pmcs": "httpd, Tomcat"}
+    body = {"login": "/mailinglist-new.html", "uid": "testuser", "password": PASSWORD, "pmcs": ["tomcat", "httpd"]}
     body.update(form)
     return await post_form("/api/debug-login", {k: v for k, v in body.items() if v is not None})
 
@@ -73,6 +73,25 @@ async def test_form_is_shown_with_escaped_values(client, debug_mode):
     assert "Never" in page or "never" in page  # the production warning
 
 
+async def test_form_offers_every_known_project(client, debug_mode):
+    page = await (await client.get("/api/debug-login")).get_data(as_text=True)
+    for name in config.projects:
+        assert f'name="pmcs" value="{name}"' in page
+    assert f"{len(config.projects)} projects known from LDAP" in page
+
+
+async def test_form_keeps_the_chosen_projects_after_an_error(post_form, debug_mode):
+    page = await (await log_in(post_form, password="wrong", pmcs=["tomcat"])).get_data(as_text=True)
+    assert 'value="tomcat" id="pmc-tomcat" checked' in page
+    assert 'value="httpd" id="pmc-httpd">' in page
+
+
+async def test_form_says_so_before_ldap_has_answered(client, debug_mode, monkeypatch):
+    monkeypatch.setattr(config, "projects", [])
+    page = await (await client.get("/api/debug-login")).get_data(as_text=True)
+    assert "No projects are known yet" in page and 'name="pmcs"' not in page
+
+
 # --- on: logging in ---------------------------------------------------------------
 
 
@@ -82,7 +101,7 @@ async def test_login_creates_the_chosen_session(client, post_form, debug_mode):
     assert resp.headers["Refresh"] == "0; url=/mailinglist-new.html"
     data = await session_of(client)
     assert data["uid"] == "testuser"
-    assert data["pmcs"] == ["httpd", "tomcat"]  # trimmed, lowercased, sorted
+    assert data["pmcs"] == ["httpd", "tomcat"]  # sorted
     assert data["projects"] == ["httpd", "tomcat"]
     assert data["root"] is True
 
@@ -93,8 +112,14 @@ async def test_logged_in_user_can_use_protected_endpoints(client, post_form, deb
     assert (await client.get("/api/jira-project-schemes")).status_code == 200
 
 
+async def test_login_with_no_projects(client, post_form, debug_mode):
+    await log_in(post_form, pmcs=None)
+    data = await session_of(client)
+    assert (data["pmcs"], data["root"]) == ([], False)
+
+
 async def test_plain_pmc_member_is_not_root(client, post_form, debug_mode):
-    await log_in(post_form, uid="bob", pmcs="httpd")
+    await log_in(post_form, uid="bob", pmcs=["httpd"])
     data = await session_of(client)
     assert (data["uid"], data["pmcs"], data["root"]) == ("bob", ["httpd"], False)
 
@@ -124,7 +149,7 @@ async def test_redirect_after_login_stays_on_this_site(client, post_form, debug_
         ({"password": None}, 403, "Wrong debug password"),
         ({"uid": "Not A Uid!"}, 400, "valid user ID"),
         ({"uid": ""}, 400, "valid user ID"),
-        ({"pmcs": "httpd, bad/name"}, 400, "Invalid project name(s): bad/name"),
+        ({"pmcs": ["httpd", "nosuchproject"]}, 400, "Unknown project(s): nosuchproject"),
     ],
 )
 async def test_login_rejections(client, post_form, debug_mode, form, status, message):

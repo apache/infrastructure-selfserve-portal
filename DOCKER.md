@@ -58,8 +58,9 @@ Sessions do not survive a restart of the app.
 The development login only answers requests addressed to localhost (or 127.0.0.1 / [::1]), and
 does nothing unless `debug_mode` is true. Never enable `debug_mode` in production.
 
-Note: the docker LDAP stub knows made-up projects only (`aall`, `aamm`, ... `kkvv`); enter
-those as (P)PMCs to try project-specific features.
+The (P)PMCs are chosen from a dropdown of every project the app knows from LDAP. The docker
+LDAP stub knows made-up projects only (`aall`, `aamm`, ... `kkvv`); type in the dropdown's
+filter box to find one.
 
 # Start the mail server in the container
 
