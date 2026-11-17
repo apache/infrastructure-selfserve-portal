@@ -3,6 +3,7 @@
 import base64
 import hashlib
 import pathlib
+import re
 
 import pytest
 
@@ -50,3 +51,31 @@ async def test_serves_compiled_html_and_static_assets(client, compiled):
     js = await client.get("/js/selfserve.js")
     assert js.status_code == 200
     assert (await client.get("/no-such-file.css")).status_code == 404
+
+
+async def test_script_urls_change_with_their_contents(compiled, monkeypatch, tmp_path):
+    """A changed script gets a new URL, so a browser's cached old copy can't fail the new SRI check."""
+    hook, outdir = compiled
+    await hook()
+    first = re.search(r'src="/js/selfserve\.js\?v=(\w+)" integrity="sha384-', (outdir / "index.html").read_text())
+    assert first
+
+    static = tmp_path / "htdocs"
+    (static / "js").mkdir(parents=True)
+    (static / "index.html").write_bytes((pathlib.Path(selfserve.STATIC_DIR) / "index.html").read_bytes())
+    (static / "js" / "selfserve.js").write_text("// changed\n")
+    monkeypatch.setattr(selfserve, "STATIC_DIR", str(static))
+    await hook()
+    second = re.search(r'src="/js/selfserve\.js\?v=(\w+)"', (outdir / "index.html").read_text())
+    assert second and second.group(1) != first.group(1)
+
+
+async def test_pages_are_revalidated_and_assets_cached(client, compiled):
+    hook, _outdir = compiled
+    await hook()
+    page = await client.get("/index.html")
+    assert "no-cache" in page.headers["Cache-Control"]
+    assert (await client.get("/index.html", headers={"If-None-Match": page.headers["ETag"]})).status_code == 304
+    js = await client.get("/js/selfserve.js?v=anything")
+    assert js.status_code == 200
+    assert "no-cache" not in js.headers["Cache-Control"] and "max-age=43200" in js.headers["Cache-Control"]
