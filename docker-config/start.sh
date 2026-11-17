@@ -35,15 +35,35 @@ pgrep postgres || {
 }
 
 # dummy server to emulate webmod.a.o/lists
-pgrep python3 || (
+# (match on the script name: other python3 processes, e.g. the mail server, may already be running)
+pgrep -f '^python3 webmod_server.py' >/dev/null || (
     cd docker-config/webmod
     python3 webmod_server.py >/tmp/webmod_server.log 2>&1 &
 )
 
 sleep 1 # for database startup
 
-# Create override config for use by docker
-test -r selfserve-portal.yaml || cp docker-config/config.yaml selfserve-portal.yaml
+# Configuration: use docker-config/config.yaml as-is, so changes to it always take effect.
+# To customise it, copy it to selfserve-portal.yaml (gitignored) and edit the copy; it is then used instead.
+if [ -n "$SELFSERVE_CONFIG" ]
+then
+    echo "Using configuration from SELFSERVE_CONFIG=$SELFSERVE_CONFIG"
+elif [ -r selfserve-portal.yaml ]
+then
+    echo "Using local configuration override selfserve-portal.yaml"
+    if [ docker-config/config.yaml -nt selfserve-portal.yaml ]
+    then
+        echo "WARNING: docker-config/config.yaml has changed since selfserve-portal.yaml was last edited."
+        echo "WARNING: Compare the two, or delete selfserve-portal.yaml to use docker-config/config.yaml directly."
+    fi
+else
+    export SELFSERVE_CONFIG="$PWD/docker-config/config.yaml"
+    echo "Using configuration from docker-config/config.yaml"
+fi
+
+# Without this, the app's own print() output (warnings, errors, mail and Slack fallbacks)
+# sits in Python's buffer and never reaches `docker compose logs`
+export PYTHONUNBUFFERED=1
 
 cd server
 python3 -m hypercorn -b 0.0.0.0:8000 server:application

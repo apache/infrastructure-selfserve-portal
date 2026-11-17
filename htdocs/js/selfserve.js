@@ -118,7 +118,7 @@ async function OAuthGate(callback) {
     }
     // Construct OAuth URL and redirect to it
     let origin = encodeURIComponent(document.location.href);
-    document.location.href = `https://${document.location.hostname}/api/auth?login=${origin}`;
+    document.location.href = `${document.location.origin}/api/auth?login=${origin}`;
   } else if (session.status === 200) { // Found a working session
     const preferences = await session.json();
     if (callback) callback(preferences, QSDict);
@@ -698,3 +698,105 @@ async function jira_create_prime() {
   await jira_seed_schemes();
 }
 
+
+/********* MATOMO FUNCTIONS *********/
+let matomo_public = {projects: [], mail_domains: {}, project_names: {}};
+
+async function matomo_prime(prefs) {
+  // Seeds the project dropdown with the projects the user may request properties for
+  const qsProject = new URLSearchParams(document.location.search).get('project');
+  const pubresp = await GET("/api/public");
+  matomo_public = await pubresp.json();
+  const projectlist = document.getElementById('project');
+  for (const project of matomo_public.projects) {
+    if (prefs.isRoot || prefs.committees.includes(project)) {
+      const opt = document.createElement("option");
+      opt.text = project;
+      opt.value = project;
+      opt.selected = project == qsProject;
+      projectlist.appendChild(opt);
+    }
+  }
+  if (projectlist.value) matomo_update_hints(projectlist.value);
+}
+
+function matomo_domain(project) {
+  return (matomo_public.mail_domains || {})[project] || `${project}.apache.org`;
+}
+
+function matomo_base_name(project) {
+  // Mirrors project_site_name() in server/app/endpoints/matomo.py
+  const name = (matomo_public.project_names || {})[project] || project.charAt(0).toUpperCase() + project.slice(1);
+  return name.startsWith("Apache ") ? name : `Apache ${name}`;
+}
+
+function matomo_is_main(project, url) {
+  // Is this the project's main website (https://project.apache.org/, with or without www.)?
+  try {
+    const parsed = new URL(url);
+    const domain = matomo_domain(project);
+    return (parsed.hostname === domain || parsed.hostname === `www.${domain}`) && parsed.pathname.replace(/\/+$/, '') === '';
+  } catch (e) {
+    return false;
+  }
+}
+
+function matomo_update_hints(project) {
+  const domain = matomo_domain(project);
+  document.getElementById('matomo_domain').innerText = domain;
+  for (const el of document.getElementsByClassName('matomo_domain_example')) el.innerText = domain;
+  const url = document.getElementById('url');
+  url.placeholder = `https://${domain}`;
+  url.value = `https://${domain}`;
+  matomo_update_label();
+}
+
+function matomo_update_label() {
+  // Shows the label field for non-main sites, and previews the property name
+  const project = document.getElementById('project').value;
+  const name = document.getElementById('matomo_site_name');
+  if (!project) {
+    name.innerText = '-';
+    return;
+  }
+  const label = document.getElementById('label');
+  const main = matomo_is_main(project, document.getElementById('url').value);
+  document.getElementById('label_group').style.display = main ? 'none' : 'block';
+  label.required = !main;
+  const base = matomo_base_name(project);
+  name.innerText = main ? base : `${base} - ${label.value.trim() || '...'}`;
+}
+
+async function matomo_create(form) {
+  // Request a new Matomo property, then show its site ID and tracking code
+  const data = new FormData(form);
+
+  // Set spinner, hide real button
+  hide_main_buttons();
+  const spin = document.getElementById('buttons_spin');
+  spin.style.display = "block";
+
+  const resp = await POST("/api/matomo-site-create", {
+    data: data
+  });
+  const result = await resp.json();
+  if (result.success) {
+    form.style.display = "none";
+    document.getElementById('matomo_result_message').innerText = result.message;
+    document.getElementById('matomo_result_name').innerText = result.site_name;
+    document.getElementById('matomo_result_url').innerText = result.site_url;
+    document.getElementById('matomo_result_id').innerText = result.site_id;
+    const dashboard = document.getElementById('matomo_result_dashboard');
+    dashboard.href = result.dashboard_url;
+    dashboard.innerText = result.dashboard_url;
+    document.getElementById('matomo_result_code').textContent = result.tracking_code
+      || "The tracking code could not be retrieved automatically. The Infrastructure team has been notified.";
+    document.getElementById('matomo_result').style.display = "block";
+  } else {
+    toast(result.message);
+    // hide spinner, put button back
+    show_main_buttons();
+    spin.style.display = "none";
+  }
+}
+/********* END OF MATOMO FUNCTIONS *********/

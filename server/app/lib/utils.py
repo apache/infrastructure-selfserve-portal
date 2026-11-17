@@ -34,11 +34,11 @@ def check_email_address(email: str) -> bool:
     if len(parts) != 2: # must have just one '@'
         return False
     local, domain = parts
-    return VALID_EMAIL_LOCAL.fullmatch(local) and len(domain.split('.')) > 1 and VALID_EMAIL_DOMAIN.fullmatch(domain)
+    return bool(VALID_EMAIL_LOCAL.fullmatch(local) and len(domain.split('.')) > 1 and VALID_EMAIL_DOMAIN.fullmatch(domain))
 
 # generic user id check; OK for JIRA and CONFLENCE (and ASF ids)
 def check_user_id_syntax(uid: str) -> bool:
-    return VALID_USERNAME_RE.fullmatch(uid)
+    return bool(VALID_USERNAME_RE.fullmatch(uid))
 
 # same as above currently
 def check_confluence_id_syntax(uid: str) -> bool:

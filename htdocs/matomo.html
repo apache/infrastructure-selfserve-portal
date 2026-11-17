@@ -1,0 +1,70 @@
+<h1>Request a Matomo analytics property</h1>
+
+<p>
+    The ASF runs its own <a href="https://matomo.org/" target="_blank">Matomo</a> instance for privacy-friendly web analytics.
+    Use this form to set up a new Matomo property (site) for one of your project's websites.
+    You will get a site ID and the tracking code to add to your pages. Both are also sent to your project's private mailing list.
+    Reports for all ASF properties are publicly viewable.
+</p>
+
+<form id="matomo_form" onsubmit="matomo_create(this); return false;">
+    <div class="mb-3">
+        <label for="project" class="form-label">Apache project</label>
+        <select required class="form-control" id="project" name="project" aria-describedby="projectHelp" onchange="matomo_update_hints(this.value);">
+            <option selected disabled value="">--- Select a project ---</option>
+        </select>
+        <div id="projectHelp" class="form-text">Select the project this site belongs to. You can only request properties for projects whose PMC you are on.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="url" class="form-label" style="display: block;">Site URL</label>
+        <input required pattern="https://.+" type="text" class="form-control" id="url" name="url" placeholder="https://project.apache.org" aria-describedby="urlHelp" oninput="matomo_update_label();">
+        <div id="urlHelp" class="form-text">
+            The address of the site to track. It must be on your project's domain (<span id="matomo_domain">project.apache.org</span>) or one of its subdomains,
+            for instance https://<span class="matomo_domain_example">project.apache.org</span> or https://<span class="matomo_domain_example">project.apache.org</span>/docs.
+        </div>
+    </div>
+
+    <div class="mb-3" id="label_group" style="display: none;">
+        <label for="label" class="form-label" style="display: block;">Site label</label>
+        <input type="text" class="form-control" id="label" name="label" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9 .\-]*" placeholder="Documentation" style="display: inline-block; width: auto;" oninput="matomo_update_label();" aria-describedby="labelHelp">
+        <div id="labelHelp" class="form-text">
+            Sites other than the project's main website need a short label (up to 40 letters, digits, spaces, dots or dashes).
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <span class="form-label">Property name in Matomo:</span> <b id="matomo_site_name">-</b>
+    </div>
+
+    <div id="buttons_real">
+        <button type="submit" class="btn btn-primary">Create Matomo property</button>
+    </div>
+    <div id="buttons_spin" style="display: none;">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing request...
+        </button>
+    </div>
+    <br/>
+    <hr/>
+</form>
+
+<div id="matomo_result" style="display: none;">
+    <div class="alert alert-success" id="matomo_result_message"></div>
+    <dl class="row">
+        <dt class="col-sm-3">Property name</dt><dd class="col-sm-9" id="matomo_result_name"></dd>
+        <dt class="col-sm-3">Site URL</dt><dd class="col-sm-9" id="matomo_result_url"></dd>
+        <dt class="col-sm-3">Site ID</dt><dd class="col-sm-9"><code id="matomo_result_id"></code></dd>
+        <dt class="col-sm-3">Reports</dt><dd class="col-sm-9 text-break"><a id="matomo_result_dashboard" target="_blank" href="#"></a></dd>
+    </dl>
+    <p>Add this tracking code to every page of the site, just before the closing <code>&lt;/head&gt;</code> tag:</p>
+    <pre class="border rounded p-3 bg-light"><code id="matomo_result_code"></code></pre>
+    <a href="/" class="btn btn-secondary">Back to the front page</a>
+</div>
+
+<script>
+    document.body.onload = () => {
+        OAuthGate(matomo_prime);
+    }
+</script>

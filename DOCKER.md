@@ -35,6 +35,33 @@ An additional terminal may be used to connect to the running container.
 
     ```$ docker compose up```
 
+# Configuration
+
+The app uses `docker-config/config.yaml` directly, so changes to it take effect on the next start.
+
+To customise the configuration locally, copy it to `selfserve-portal.yaml` at the top of the
+source tree (this file is ignored by git) and edit the copy; it is then used instead.
+If `docker-config/config.yaml` changes later, the start script prints a warning so you can
+bring your copy up to date (or delete it to go back to the default).
+
+# Logging in
+
+The docker configuration turns on `debug_mode`, which replaces ASF OAuth with a development login.
+Open http://localhost:8000/ and go to any page that needs a login; you are sent to a form where you
+choose who to be: a user ID, the (P)PMCs they are on, and whether they are root, a Foundation member
+or a chair. The password is `debug_password` from the configuration (`selfserve-dev` in
+`docker-config/config.yaml`); the app also prints it at startup.
+
+To switch identity, log out via http://localhost:8000/api/auth?logout=/ and log in again.
+Sessions do not survive a restart of the app.
+
+The development login only answers requests addressed to localhost (or 127.0.0.1 / [::1]), and
+does nothing unless `debug_mode` is true. Never enable `debug_mode` in production.
+
+The (P)PMCs are chosen from a dropdown of every project the app knows from LDAP. The docker
+LDAP stub knows made-up projects only (`aall`, `aamm`, ... `kkvv`); type in the dropdown's
+filter box to find one.
+
 # Start the mail server in the container
 
 The container must be running.

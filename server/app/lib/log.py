@@ -34,7 +34,7 @@ async def slack(message: str):
     # Token style
     elif config.messaging.slack_token and config.messaging.slack_channel:
         async with aiohttp.ClientSession() as client:
-            resp = await client.post(
+            await client.post(
                 "https://slack.com/api/chat.postMessage",
                 headers={"Authorization": f"Bearer {config.messaging.slack_token}"},
                 json={"channel": config.messaging.slack_channel, "text": message},

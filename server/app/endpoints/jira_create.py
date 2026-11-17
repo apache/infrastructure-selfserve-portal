@@ -21,7 +21,7 @@
 if not __debug__:
     raise RuntimeError("This code requires assert statements to be enabled")
 
-from ..lib import middleware, asfuid, email, log, config
+from ..lib import email, log, config
 import asfquart
 import asfquart.auth
 import asfquart.session
@@ -220,8 +220,6 @@ async def process_jira_space_create():
 @asfquart.auth.require
 async def list_schemes():
     """Lists current valid schemes for Jira"""
-    form_data = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     scheme_dict = {}
     for key, filepath in JIRA_SCHEME_FILES.items():
         if os.path.isfile(filepath):

@@ -62,21 +62,27 @@ def main():
         if path.endswith("/"):
             path += "index.html"
         if path.endswith(".html"):  # Serve HTML from the compiled output dir
-            return await quart.send_from_directory(COMPILED_DIR, path)
+            # Pages carry the current script URLs and SRI hashes, so browsers must revalidate them
+            # on every load (a cheap 304 when unchanged); a cached old page would point at old scripts.
+            resp = await quart.send_from_directory(COMPILED_DIR, path, cache_timeout=0)
+            resp.cache_control.no_cache = True
+            return resp
         return await quart.send_from_directory(STATIC_DIR, path)
 
     @asfquart.APP.before_serving
     async def compile_html():
         """Compiles HTML files in htdocs/ using a master template"""
         master_template = open(os.path.join(TEMPLATES_DIR, "master.html")).read()
-        # Add sub-resource integrity to all scripts
+        # Add sub-resource integrity to all scripts, and a version to their URLs: scripts are cached for
+        # hours, so a changed script needs a new URL, or a browser's cached copy fails the new SRI check.
         for script_src in re.finditer(r'(src="(.+?\.js)")', master_template):
             script_name = script_src.group(2).lstrip("/")
             script_path = os.path.join(STATIC_DIR, script_name)
             if os.path.isfile(script_path):
                 sri = file_to_sri(script_path)
+                version = hashlib.sha256(sri.encode()).hexdigest()[:12]
                 orig_src = script_src.group(1)
-                new_src = f'{orig_src} integrity="{sri}"'
+                new_src = f'src="{script_src.group(2)}?v={version}" integrity="{sri}"'
                 master_template = master_template.replace(orig_src, new_src)
         if not os.path.isdir(COMPILED_DIR):
             log.log(
@@ -97,8 +103,8 @@ def main():
     async def load_endpoints():
         """Load all API end points. This is run before Quart starts serving requests"""
         async with asfquart.APP.app_context():
-            from . import endpoints
-            from .lib import tokens
+            from . import endpoints  # pylint: disable=unused-import  # registers routes
+            from .lib import tokens  # pylint: disable=unused-import  # registers token handler
 
             # Regularly update the list of projects from LDAP
             asfquart.APP.add_background_task(config.get_projects_from_ldap)
