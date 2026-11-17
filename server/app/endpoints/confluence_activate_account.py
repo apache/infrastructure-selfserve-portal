@@ -30,10 +30,10 @@ import quart
 ONE_DAY = 86400  # A day in seconds
 
 # Mappings dict for userid<->email
-CONFLUENCE_EMAIL_MAPPINGS = {}
+CONFLUENCE_EMAIL_MAPPINGS: dict[str, str] = {}
 
 # Reactivation queue. No real need for permanent storage here, all requests can be ephemeral.
-CONFLUENCE_REACTIVATION_QUEUE = {}
+CONFLUENCE_REACTIVATION_QUEUE: dict[str, str] = {}
 
 # ACLI command - TODO: Add to yaml??
 ACLI_CMD = "/opt/confluence-cli/acli.sh"
@@ -43,10 +43,12 @@ APP = asfquart.APP
 
 async def update_confluence_email_map():
     """Updates the confluence userid<->email mappings from mysql on a daily basis"""
-    pool = await aiomysql.create_pool(**config.cwikimysql.yaml)
+    pool = None
     while True:
         print("Updating Confluence email mappings dict")
         try:
+            if pool is None:  # Connect inside the loop, so an unreachable database at startup is retried
+                pool = await aiomysql.create_pool(**config.cwikimysql.yaml)
             tmp_dict = {}
             async with pool.acquire() as conn:
                 async with conn.cursor() as cur:
@@ -83,7 +85,9 @@ async def activate_account(username: str):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    stdout_b, stderr_b = await proc.communicate()
+    stdout = stdout_b.decode("utf-8", errors="replace")
+    stderr = stderr_b.decode("utf-8", errors="replace")
     if proc.returncode != 0:  # If any errors show up in acli, bork
         # Test for ACLI whining but having done the job due to privacy redactions in Jira (email addresses being blank)
         good_bit = '"active":true'  # If the ACLI JSON output has this, it means the update worked, despite ACLI complaining.
@@ -103,6 +107,8 @@ async def process_reactivation_request_cwiki():
     formdata = await asfquart.utils.formdata()
     confluence_username = formdata.get("username")
     confluence_email = formdata.get("email")
+    if not isinstance(confluence_username, str) or not isinstance(confluence_email, str):
+        return {"success": False, "message": "Please provide both your Confluence username and the email address you registered it with."}
     if confluence_email.lower().endswith("@apache.org"):  # This is LDAP operated, don't touch!
         return {"success": False, "message": "Reactivation of internal ASF accounts cannot be done through this tool."}
     if confluence_username and confluence_username in CONFLUENCE_EMAIL_MAPPINGS:
@@ -133,14 +139,14 @@ async def process_confirm_reactivation_cwiki():
     if token and token in CONFLUENCE_REACTIVATION_QUEUE:  # Verify token
         username = CONFLUENCE_REACTIVATION_QUEUE[token]
         del CONFLUENCE_REACTIVATION_QUEUE[token]  # Remove right away, before entering the async wait
-        if username in CONFLUENCE_EMAIL_MAPPINGS:
-            try:
-                await activate_account(username)
-            except AssertionError as e:
-                return {"success": False, "activated": False, "error": str(e)}
-            return {"success": True, "activated": True}
-    else:
-        return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
+        if username not in CONFLUENCE_EMAIL_MAPPINGS:  # Account went away since the request was made
+            return {"success": False, "activated": False, "error": "The Confluence account for this request could no longer be found. Please resubmit your request."}
+        try:
+            await activate_account(username)
+        except AssertionError as e:
+            return {"success": False, "activated": False, "error": str(e)}
+        return {"success": True, "activated": True}
+    return {"success": False, "error": "Your token could not be found in our database. Please resubmit your request."}
 
 
 # Schedule background updater of email mappings

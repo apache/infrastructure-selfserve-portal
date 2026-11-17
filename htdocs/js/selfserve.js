@@ -118,7 +118,7 @@ async function OAuthGate(callback) {
     }
     // Construct OAuth URL and redirect to it
     let origin = encodeURIComponent(document.location.href);
-    document.location.href = `https://${document.location.hostname}/api/auth?login=${origin}`;
+    document.location.href = `${document.location.origin}/api/auth?login=${origin}`;
   } else if (session.status === 200) { // Found a working session
     const preferences = await session.json();
     if (callback) callback(preferences, QSDict);

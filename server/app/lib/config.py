@@ -35,7 +35,10 @@ import json
 
 # If pipservice, we may use the pipservice module to define a config. Use if found.
 PIPSERVICE_CONFIG = os.path.join(os.path.realpath(".."), "selfserve-portal.yaml")
-CONFIG_FILE = PIPSERVICE_CONFIG if os.path.isfile(PIPSERVICE_CONFIG) else "config.yaml"
+# SELFSERVE_CONFIG overrides both (used by the test suite).
+CONFIG_FILE = os.environ.get("SELFSERVE_CONFIG") or (
+    PIPSERVICE_CONFIG if os.path.isfile(PIPSERVICE_CONFIG) else "config.yaml"
+)
 WEBMOD_MAILING_LIST_URL = "https://webmod.apache.org/lists"
 WHIMSY_COMMITTEE_URL = "https://whimsy.apache.org/public/committee-info.json"
 
@@ -74,7 +77,8 @@ class ServerConfiguration:
         if not self.debug_password:
             self.debug_password = str(uuid.uuid4())[:8]
         if self.debug_mode is True:
-            log.log("Debug mode enabled:")
+            log.log("WARNING: Debug mode enabled. Anyone with the debug password can log in as anyone")
+            log.log("WARNING: via http://localhost.../api/debug-login. Never enable this in production.")
             log.log(f"Debug username: {self.debug_user}")
             log.log(f"Debug password: {self.debug_password}")
         self.max_form_size = text_to_int(yml.get("max_form_size", "100mb"))
@@ -120,8 +124,8 @@ class MessagingConfiguration:
     def __init__(self, yml: dict):
         self.sender = yml["sender"]
         self.template_dir = yml["template_dir"]
-        self.mailing_lists = []
-        self.mail_mappings = {}
+        self.mailing_lists: list[str] = []
+        self.mail_mappings: dict[str, str] = {}
         self.slack_url = yml.get("slack_url")  # Incoming webhook style
         self.slack_token = yml.get("slack_token")  # restricted token style
         self.slack_channel = yml.get("slack_channel")  # token style, cont'd.
@@ -158,14 +162,17 @@ async def get_projects_from_ldap():
             ldap_data = await asyncio.wait_for(
                 asfpy.clitools.ldapsearch_cli_async(ldap_base, "children", "cn=*"), ldap_search_timeout
             )
+            # Only replace the project list if LDAP gave a plausibly complete answer; otherwise keep the old one.
             if ldap_data and len(ldap_data) > 100:
-                project_list = set([x["cn"][0] for x in ldap_data])
-            projects.clear()
-            project_list.add("infra")  # Add infra for testing
-            project_list.add("tooling")  # INFRA-26363: one-off for tooling while the org finds a place for it in LDAP
-            projects.extend(sorted(project_list))
-            # Grab the mailing list hostname mappings for our projects
-            await fetch_committee_mappings()
+                project_list = {x["cn"][0] for x in ldap_data}
+                project_list.add("infra")  # Add infra for testing
+                project_list.add("tooling")  # INFRA-26363: one-off for tooling while the org finds a place for it in LDAP
+                projects.clear()
+                projects.extend(sorted(project_list))
+                # Grab the mailing list hostname mappings for our projects
+                await fetch_committee_mappings()
+            else:
+                print(f"LDAP returned too few projects ({len(ldap_data or [])}), keeping current list; retrying in 10 minutes")
         except asyncio.exceptions.TimeoutError:
             print("LDAP lookup for list of projects timed out, retrying in 10 minutes")
         await asyncio.sleep(600)
@@ -217,5 +224,5 @@ storage = StorageConfiguration(cfg_yaml.get("storage", {}))
 messaging = MessagingConfiguration(cfg_yaml.get("messaging", {}))
 jirapsql = JiraPSQLConfiguration(cfg_yaml.get("jirapsql", {}))
 cwikimysql = CwikiMySQLConfiguration(cfg_yaml.get("cwikimysql", {}))
-projects = []  # Filled every 10 min by get_projects_from_ldap
-rate_limits = {}  # Tracks IPs and their usage, resets every day
+projects: list[str] = []  # Filled every 10 min by get_projects_from_ldap
+rate_limits: dict[str, int] = {}  # Tracks IPs and their usage, resets every day

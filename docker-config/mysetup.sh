@@ -18,9 +18,18 @@
 
 # Script to set up the MySQL database.
 
+set -eo pipefail  # Any failure below fails the image build, instead of leaving it without a database
+
 mysqld &
 
-sleep 1 # wait for server startup (how to check ?)
+# Wait for the server to accept connections (up to 60s)
+for _ in $(seq 1 60)
+do
+    mysqladmin ping --silent >/dev/null && break
+    echo "Waiting for MySQL to start..."
+    sleep 1
+done
+mysqladmin ping --silent >/dev/null || { echo "MySQL did not start" >&2; exit 1; }
 
 # Init the database
 cat <<EOD | mysql

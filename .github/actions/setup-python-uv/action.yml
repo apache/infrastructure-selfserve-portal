@@ -1,0 +1,46 @@
+name: Set up Python + uv
+description: >
+  Shared environment for this repo's CI jobs: Python, uv, bonsai's system
+  libraries, and the locked dependencies (incl. the dev group) in .venv.
+  The uv cache key depends only on the OS, Python version and uv.lock, so
+  every workflow using this action shares one cache entry per Python version.
+  Callers should finish with `uv cache prune --ci` (if: always()).
+
+inputs:
+  python-version:
+    description: Python version to install, e.g. "3.12"
+    required: true
+  uv-version:
+    description: uv version to install
+    required: false
+    default: "0.13.5"
+
+runs:
+  using: composite
+  steps:
+  - name: Set up Python ${{ inputs.python-version }}
+    uses: actions/setup-python@v5
+    with:
+      python-version: ${{ inputs.python-version }}
+  - name: Install uv ${{ inputs.uv-version }}
+    shell: bash
+    run: |
+      python -m pip install "uv==${{ inputs.uv-version }}"
+      echo "UV_PYTHON=${{ inputs.python-version }}" >> "$GITHUB_ENV"
+      echo "UV_CACHE_DIR=${{ runner.temp }}/uv-cache" >> "$GITHUB_ENV"
+  - name: Cache uv
+    uses: actions/cache@v4
+    with:
+      path: ${{ runner.temp }}/uv-cache
+      key: uv-${{ runner.os }}-py${{ inputs.python-version }}-${{ hashFiles('uv.lock') }}
+      restore-keys: |
+        uv-${{ runner.os }}-py${{ inputs.python-version }}-
+  - name: Install system libraries
+    shell: bash
+    run: |
+      # Runner images ship without apt package lists, so refresh them first.
+      sudo apt-get update -qq
+      sudo apt-get install -y --no-install-recommends python3-dev libldap2-dev libsasl2-dev # for bonsai
+  - name: Install dependencies
+    shell: bash
+    run: uv sync --locked

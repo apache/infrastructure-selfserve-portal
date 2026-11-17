@@ -18,7 +18,7 @@
 """Selfserve Portal for the Apache Software Foundation"""
 """Handler for public data feeds"""
 import asfquart
-from ..lib import middleware, config
+from ..lib import config
 
 
 @asfquart.APP.route(
@@ -28,8 +28,6 @@ from ..lib import middleware, config
     ],
 )
 async def process_public():
-    form_data = await asfquart.utils.formdata()
-    session = await asfquart.session.read()
     return {
         "projects": config.projects,
         "mail_domains": config.messaging.mail_mappings

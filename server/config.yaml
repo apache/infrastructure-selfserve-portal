@@ -5,11 +5,11 @@ server:
   port: 8000
   error_reporting: show   #show: include error traceback in json response, else: output an incident ID only, show incident in stderr
   max_form_size: 5mb # largest form data payload.
-  debug_mode: false  # If set to true, adds a test account for trying out features.
-  debug_password: ~ # Sets the debug superuser password, if debug_mode is true.
+  debug_mode: false  # If set to true, replaces ASF OAuth with a development login (localhost only). Never in production!
+  debug_password: ~ # Sets the development login password, if debug_mode is true.
                     # Can be one of:
-                    # ~: (nil) Auto-generate a new random password for this superuser on startup
-                    # "string": Use this string as the superuser debug password
+                    # ~: (nil) Auto-generate a new random password on each startup (printed in the log)
+                    # "string": Use this string as the development login password
   rate_limit_per_ip: 100  # Max 100 lookup requests per day, or we bork!
 ldap:
   uri: ldaps://ldap-eu.apache.org:636
